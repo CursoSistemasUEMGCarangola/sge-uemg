@@ -10,3 +10,5 @@ Antes de iniciar os próximos desenvolvimentos, proceda com um Retrieval-Augment
 **Regra 1**: Antes de gerar qualquer código complexo, verifique neste arquivo se já existe uma solução padronizada ou um erro conhecido.
 
 **Regra 2**: Se eu te pedir para corrigir um bug e você perceber que é um problema recorrente (listado no arquivo), me avise imediatamente antes de tentar corrigir.
+
+**Regra 3**: O arquivo `sql/schema.sql` deve ser mantido sempre atualizado pelo usuário e é a Fonte da Verdade. Sempre verifique se o `prisma/schema.prisma` possui os modelos e campos equivalentes aos do SQL. Se houver divergência, atualize o Prisma.

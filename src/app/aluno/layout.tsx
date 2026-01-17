@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Home, FileText, PlusCircle, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { logoutAction } from "@/features/auth/actions/logout-action"
 
 export default function AlunoLayout({
     children,
@@ -36,10 +37,12 @@ export default function AlunoLayout({
                         </Button>
                     </Link>
                     <div className="mt-auto border-t pt-4">
-                        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground">
-                            <LogOut className="h-4 w-4" />
-                            Sair
-                        </Button>
+                        <form action={logoutAction}>
+                            <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-red-500 hover:bg-red-50">
+                                <LogOut className="h-4 w-4" />
+                                Sair
+                            </Button>
+                        </form>
                     </div>
                 </nav>
             </aside>

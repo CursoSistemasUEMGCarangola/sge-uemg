@@ -51,4 +51,15 @@
 
 **Contexto:** Erro ao importar schema Zod de um arquivo `'use server'` para um Client Component.
 **Solução:** Mover schemas de validação para arquivos "puros" (ex: `schemas/register-schema.ts`) sem diretiva `'use server'`.
-**Prevenção:** Nunca exportar objetos/constantes de arquivos Server Actions se eles forem usados no cliente.
+
+### [2026-01-17] - [PRISMA] Tratamento de Erro P2002 (Unique Constraint)
+
+**Contexto:** Ao cadastrar usuário com email ou matrícula já existentes, o Prisma retorna erro genérico ou falha silenciosa se não tratado especificamente.
+**Solução:** Capturar `error.code === 'P2002'` no bloco catch e verificar `error.meta.target` para identificar qual campo (email/matricula) violou a unicidade, retornando mensagem amigável.
+**Prevenção:** Sempre tratar P2002 em formulários de criação (cadastro, novo estágio).
+
+### [2026-01-17] - [DB] Sincronização SQL vs Prisma
+
+**Contexto:** O arquivo `sql/schema.sql` é a fonte da verdade, mas o Prisma não o lê automaticamente. Divergências causaram erros (ex: tabela `documento_modelo` faltando no Prisma).
+**Solução:** Criada regra no RAG e script mental para sempre comparar os dois arquivos.
+**Prevenção:** Sempre que alterar o SQL, atualizar manualmente o `schema.prisma` e rodar `npx prisma generate`.

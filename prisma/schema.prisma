@@ -208,3 +208,11 @@ enum StatusAprovacao {
   REJEITADO
   @@map("status_aprovacao")
 }
+
+model DocumentoModelo {
+  id          Int    @id @default(autoincrement()) @map("id_documento")
+  nomeArquivo String @map("nome_arquivo")
+  urlLink     String @map("url_link")
+
+  @@map("documento_modelo")
+}

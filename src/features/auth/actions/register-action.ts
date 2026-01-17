@@ -93,19 +93,31 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
       // Create Aluno record
       await tx.aluno.create({
         data: {
-          profile_id: userId,
+          profileId: userId,
           matricula: matricula,
-          periodo_atual: parseInt(periodo),
+          periodoAtual: parseInt(periodo),
         },
       })
     })
 
   } catch (error: any) {
+    // Tratamento específico para erro de unicidade do Prisma (P2002)
+    if (error.code === 'P2002') {
+      const field = error.meta?.target?.[0];
+      if (field === 'matricula') {
+        return { success: false, message: "Esta matrícula já está cadastrada no sistema." };
+      }
+      if (field === 'email') {
+        return { success: false, message: "Este e-mail já está em uso." };
+      }
+      return { success: false, message: "Dados duplicados encontrados no sistema." };
+    }
+
     return {
       success: false,
-      message: "Erro interno no servidor ao registrar aluno: " + error.message,
+      message: "Erro interno no servidor ao registrar aluno: " + (error.message || "Erro desconhecido"),
     }
   }
 
-  redirect('/aluno/dashboard') // Or login page
+  redirect('/login')
 }
