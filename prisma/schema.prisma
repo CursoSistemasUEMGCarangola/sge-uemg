@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id           String   @id @db.Uuid
+  email        String
+  nomeCompleto String   @map("nome_completo")
+  telefone     String?
+  role         Role     @default(ALUNO)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  aluno     Aluno?
+  professor Professor?
+
+  @@map("profiles")
+}
+
+model Aluno {
+  id           Int    @id @default(autoincrement()) @map("id_aluno")
+  profileId    String @unique @map("profile_id") @db.Uuid
+  matricula    String @unique
+  periodoAtual Int    @map("periodo_atual")
+
+  profile   Profile           @relation(fields: [profileId], references: [id])
+  contratos ContratoEstagio[]
+
+  @@map("aluno")
+}
+
+model Professor {
+  id        Int    @id @default(autoincrement()) @map("id_professor")
+  profileId String @unique @map("profile_id") @db.Uuid
+  masp      String @unique
+
+  profile Profile         @relation(fields: [profileId], references: [id])
+  ofertas OfertaEstagio[]
+
+  @@map("professor")
+}
+
+model CursoEstagio {
+  id                Int    @id @default(autoincrement()) @map("id_curso_estagio")
+  nome              String
+  periodoVinculado  Int    @map("periodo_vinculado")
+  cargaHorariaTotal Int    @map("carga_horaria_total")
+
+  ofertas OfertaEstagio[]
+
+  @@map("curso_estagio")
+}
+
+model CampoEstagio {
+  id                     Int    @id @default(autoincrement()) @map("id_campo")
+  razaoSocial            String @map("razao_social")
+  nomeFantasia           String @map("nome_fantasia")
+  telefoneContato        String? @map("telefone_contato")
+  emailContato           String? @map("email_contato")
+  supervisorNome         String @map("supervisor_nome")
+  supervisorTelefone     String @map("supervisor_telefone")
+  supervisorEmail        String @map("supervisor_email")
+  supervisorCargo        String @map("supervisor_cargo")
+  supervisorAreaFormacao String @map("supervisor_area_formacao")
+  supervisorTitulacao    String @map("supervisor_titulacao")
+
+  contratos ContratoEstagio[]
+
+  @@map("campo_estagio")
+}
+
+model OfertaEstagio {
+  id                  Int      @id @default(autoincrement()) @map("id_oferta")
+  cursoEstagioId      Int      @map("id_curso_estagio")
+  professorOrientadorId Int    @map("id_professor_orientador")
+  semestreLetivo      String   @map("semestre_letivo")
+  ativo               Boolean? @default(true)
+  createdAt           DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  curso     CursoEstagio      @relation(fields: [cursoEstagioId], references: [id])
+  professor Professor         @relation(fields: [professorOrientadorId], references: [id])
+  contratos ContratoEstagio[]
+
+  @@map("oferta_estagio")
+}
+
+model EtapaDefinicao {
+  id                Int    @id @default(autoincrement()) @map("id_etapa_def")
+  numeroEtapa       Int    @map("numero_etapa")
+  descricao         String
+  orientacaoTextual String @map("orientacao_textual")
+
+  acompanhamentos AcompanhamentoEtapa[]
+
+  @@map("etapa_definicao")
+}
+
+model ContratoEstagio {
+  id                     Int              @id @default(autoincrement()) @map("id_contrato")
+  idAluno                Int              @map("id_aluno")
+  idOferta               Int              @map("id_oferta")
+  idCampo                Int              @map("id_campo")
+  modalidade             Modalidade
+  tipoDocumentacao       TipoDocumentacao @map("tipo_documentacao")
+  atribuicoes            String
+  dataInicioPrevista     DateTime         @map("data_inicio_prevista") @db.Date
+  cargaHorariaDiaria     Int              @map("carga_horaria_diaria")
+  statusAprovacao        StatusAprovacao? @default(PENDENTE) @map("status_aprovacao")
+  observacoesProfessor   String?          @map("observacoes_professor")
+  textoRelatorioAvaliacao String?         @map("texto_relatorio_avaliacao")
+  dataConclusaoEstagio   DateTime?        @map("data_conclusao_estagio") @db.Date
+  createdAt              DateTime?        @default(now()) @map("created_at") @db.Timestamptz
+
+  aluno           Aluno                 @relation(fields: [idAluno], references: [id])
+  oferta          OfertaEstagio         @relation(fields: [idOferta], references: [id])
+  campo           CampoEstagio          @relation(fields: [idCampo], references: [id])
+  acompanhamentos AcompanhamentoEtapa[]
+  diarios         DiarioAtividade[]
+
+  @@map("contrato_estagio")
+}
+
+model AcompanhamentoEtapa {
+  id            Int         @id @default(autoincrement()) @map("id_acompanhamento")
+  idContrato    Int         @map("id_contrato")
+  idEtapaDef    Int         @map("id_etapa_def")
+  status        StatusEtapa @default(PENDENTE)
+  dataLimite    DateTime?   @map("data_limite") @db.Date
+  dataConclusao DateTime?   @map("data_conclusao") @db.Date
+  observacoes   String?     @map("observacoes")
+  linkDocumento String?     @map("link_documento")
+  updatedAt     DateTime?   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  contrato ContratoEstagio @relation(fields: [idContrato], references: [id])
+  etapaDef EtapaDefinicao  @relation(fields: [idEtapaDef], references: [id])
+
+  @@map("acompanhamento_etapa")
+}
+
+model DiarioAtividade {
+  id                  Int      @id @default(autoincrement()) @map("id_diario")
+  idContrato          Int      @map("id_contrato")
+  dataAtividade       DateTime @map("data_atividade") @db.Date
+  descricaoAtividades String   @map("descricao_atividades")
+  horasRealizadas     Int      @map("horas_realizadas")
+
+  contrato ContratoEstagio @relation(fields: [idContrato], references: [id])
+
+  @@map("diario_atividade")
+}
+
+model SystemConfig {
+  key   String @id
+  value String
+
+  @@map("system_config")
+}
+
+model FeriadoRecesso {
+  id        Int      @id @default(autoincrement()) @map("id_feriado")
+  data      DateTime @unique @db.Date
+  descricao String
+  tipo      TipoFeriado
+
+  @@map("feriado_recesso")
+}
+
+enum TipoFeriado {
+  FERIADO
+  RECESSO
+}
+
+enum Role {
+  ALUNO
+  PROFESSOR
+  ADMIN
+  @@map("tipo_perfil")
+}
+
+enum Modalidade {
+  PRESENCIAL
+  HIBRIDO
+  REMOTO
+}
+
+enum TipoDocumentacao {
+  TCE
+  ESTAGIO_OBRIGATORIO
+  ESTAGIO_NAO_OBRIGATORIO
+}
+
+enum StatusEtapa {
+  PENDENTE
+  EM_ANALISE
+  APROVADO
+  REJEITADO
+  @@map("status_etapa")
+}
+
+enum StatusAprovacao {
+  PENDENTE
+  APROVADO
+  REJEITADO
+  @@map("status_aprovacao")
+}
