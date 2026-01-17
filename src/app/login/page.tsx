@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { LockKeyhole, User } from 'lucide-react'
+import { LockKeyhole, User, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 // Initial state for the form action
 const initialState = {
@@ -28,7 +29,14 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#305B7D] p-4">
             <Card className="w-full max-w-md shadow-lg">
-                <CardHeader className="space-y-1 text-center">
+                <CardHeader className="space-y-1 text-center relative">
+                    <div className="absolute left-4 top-4">
+                        <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                            <Link href="/">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
                     <CardTitle className="text-2xl font-bold text-[#305B7D]">SGE - UEMG</CardTitle>
                     <CardDescription>
                         Sistema de Gestão de Estágios
@@ -73,6 +81,27 @@ export default function LoginPage() {
                         )}
                         <Button type="submit" className="w-full bg-[#E31837] hover:bg-[#b0132b]">
                             Entrar
+                        </Button>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Novo no sistema?
+                                </span>
+                            </div>
+                        </div>
+
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="w-full border-[#305B7D] text-[#305B7D] hover:bg-[#305B7D] hover:text-white"
+                        >
+                            <Link href="/auth/cadastro">
+                                PRIMEIRO ACESSO
+                            </Link>
                         </Button>
                     </form>
                 </CardContent>

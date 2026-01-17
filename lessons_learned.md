@@ -40,3 +40,15 @@
 **Contexto:** "Piscada" de conteúdo ou tela branca enquanto dados carregam.
 **Solução:** Criação de `loading.tsx` com Skeletons (Shadcn UI) replicando o layout final.
 **Prevenção:** Sempre criar `loading.tsx` para rotas que fazem fetch de dados no servidor (`await`).
+
+### [2026-01-17] - [PRISMA] Nomenclatura de Campos no Cliente
+
+**Contexto:** Erro `Argument 'nomeCompleto' is missing` ao tentar criar registro. O Prisma exige o nome da propriedade definida no modelo (`nomeCompleto`), não o nome da coluna no banco (`nome_completo`).
+**Solução:** Ajustar o objeto `data` para usar `nomeCompleto`.
+**Prevenção:** Verificar sempre o `schema.prisma` para ver o nome da propriedade (antes do `@map`) ao escrever queries.
+
+### [2026-01-17] - [NEXTJS] Importação de Zod em Server Actions
+
+**Contexto:** Erro ao importar schema Zod de um arquivo `'use server'` para um Client Component.
+**Solução:** Mover schemas de validação para arquivos "puros" (ex: `schemas/register-schema.ts`) sem diretiva `'use server'`.
+**Prevenção:** Nunca exportar objetos/constantes de arquivos Server Actions se eles forem usados no cliente.

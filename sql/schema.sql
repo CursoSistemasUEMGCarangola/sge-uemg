@@ -115,6 +115,7 @@ CREATE TABLE public.profiles (
   nome_completo character varying NOT NULL,
   role USER-DEFINED NOT NULL DEFAULT 'ALUNO'::tipo_perfil,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  telefone text,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );

@@ -98,3 +98,29 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 - [ ] **Documentation:** README atualizado e guia de uso básico.
 
 **DoD:** Projeto pronto para deploy final e entrega à UEMG.
+
+---
+
+## FASE 7: ADVANCED FEATURES & STABILITY
+
+**Objetivo:** Ferramentas administrativas, refinamento de UX e robustez técnica.
+
+- [ ] **Profile Management:** Adicionar campo telefone e página "Minha Conta".
+- [ ] **Admin Tools:** Exportação de dados de contratos para CSV.
+- [ ] **Interface Polish:** Implementar Empty States ricos e Loading Skeletons.
+- [ ] **Database Resilience:** Mitigar falhas de conexão IPv6 (Prisma/Supabase) e garantir fallbacks.
+
+**DoD:** Admin exporta relatórios, usuários gerenciam perfis e sistema recupera-se de erros de conexão.
+
+---
+
+## FASE 8: PUBLIC LANDING & ACCESS
+
+**Objetivo:** Porta de entrada profissional e controle de acesso segmentado.
+
+- [x] **Landing Page:** Home page pública com "Hero Section", "Diferenciais" e Call to Action.
+- [x] **Blog/News:** Seção de artigos ou avisos na página inicial.
+- [x] **Access Control:** Fluxos de login claros e distintos para Alunos e Professores.
+- [x] **Student Registration:** Fluxo completo de cadastro do aluno com validações (Zod) e UI (Shadcn).
+
+**DoD:** Visitante não-autenticado acessa Landing Page informativa; Aluno consegue se cadastrar e logar; Login redireciona para dashboard correta.
