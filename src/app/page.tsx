@@ -26,7 +26,7 @@ export default async function LandingPage() {
                     Portal de Estágios
                 </h1>
                 <p className="text-muted-foreground mt-2 text-center max-w-md px-4">
-                    Gestão simplificada de estágios para a comunidade acadêmica da UEMG Unidade Carangola.
+                    Gestão de estágios do curso de Sistemas de Informação da UEMG Unidade Carangola.
                 </p>
             </header>
 
