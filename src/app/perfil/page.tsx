@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import { createClient } from "@/lib/auth"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BadgeCheck } from "lucide-react"
 import { ProfileForm } from "./profile-form"
-
-const prisma = new PrismaClient()
 
 export default async function PerfilPage() {
     const supabase = await createClient()

@@ -96,6 +96,8 @@ CREATE TABLE public.oferta_estagio (
   id_curso_estagio integer NOT NULL,
   id_professor_orientador integer NOT NULL,
   semestre_letivo character varying NOT NULL,
+  data_inicio date NOT NULL,
+  data_fim date NOT NULL,
   ativo boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT oferta_estagio_pkey PRIMARY KEY (id_oferta),

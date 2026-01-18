@@ -8,11 +8,19 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 BEGIN;
 
 -- 1. Limpar tabelas dependentes (Transaction Data)
-DELETE FROM public.diario_atividade;
-DELETE FROM public.acompanhamento_etapa;
-DELETE FROM public.contrato_estagio;
-DELETE FROM public.oferta_estagio;
-DELETE FROM public.campo_estagio;
+-- 1. Limpar tabelas dependentes (Transaction Data)
+DO $$
+DECLARE
+    t text;
+BEGIN
+    FOR t IN 
+        SELECT tablename FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename IN ('diario_atividade', 'acompanhamento_etapa', 'contrato_estagio', 'oferta_estagio', 'campo_estagio', 'feriado_recesso', 'documento_modelo', 'system_config')
+    LOOP
+        EXECUTE 'DELETE FROM public.' || quote_ident(t);
+    END LOOP;
+END $$;
 
 -- 2. Limpar usuários (User Data) - preservando o Admin
 DELETE FROM public.aluno;

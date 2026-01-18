@@ -1,8 +1,8 @@
 'use server'
 
 import { z } from "zod"
-import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 import { registerStudentSchema } from "../schemas/register-schema"
 
@@ -35,22 +35,23 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
 
   const { email, password, fullName, matricula, periodo, termsAccepted } = validatedFields.data
 
-  const supabase = createClient()
+  // Use Admin Client to bypass email verification requirement
+  const adminClient = createAdminClient()
 
   try {
-    // 1. Create Auth User
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // 1. Create Auth User (Pre-confirmed)
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          full_name: fullName,
-          role: 'ALUNO',
-        },
-      },
+      email_confirm: true, // Explicitly confirm email
+      user_metadata: {
+        full_name: fullName,
+        role: 'ALUNO',
+      }
     })
 
     if (authError) {
+      console.error('Registration Error:', authError)
       return {
         success: false,
         message: authError.message,
@@ -60,19 +61,13 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
     if (!authData.user || !authData.user.id) {
       return {
         success: false,
-        message: "Erro ao criar usuário de autenticação.",
+        message: "Erro crítico ao criar usuário. Tente novamente.",
       }
     }
 
     const userId = authData.user.id
 
     // 2. Transact: Create Profile + Aluno
-    // Note: If you have a Trigger for Profile creation on Signup, this step might duplicate or conflict.
-    // Based on the 'schema.sql' provided, there is no Visible Trigger code. We will assume explicit creation is cleaner or required.
-    // However, Supabase Auth often pairs with a public.profiles trigger. 
-    // IF a trigger exists, we should only update or Create Aluno. 
-    // SAFEST APPROACH: Try to create Profile, if conflict (trigger already made it), update it.
-
     await prisma.$transaction(async (tx) => {
       // Upsert profile to handle potential trigger existence
       await tx.profile.upsert({
@@ -80,12 +75,14 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
         update: {
           nomeCompleto: fullName,
           email: email,
+          telefone: validatedFields.data.telefone,
           role: 'ALUNO',
         },
         create: {
           id: userId,
           nomeCompleto: fullName,
           email: email,
+          telefone: validatedFields.data.telefone,
           role: 'ALUNO',
         }
       })
@@ -99,6 +96,11 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
         },
       })
     })
+
+    return {
+      success: true,
+      message: "Cadastro realizado com sucesso!",
+    }
 
   } catch (error: any) {
     // Tratamento específico para erro de unicidade do Prisma (P2002)
@@ -119,5 +121,5 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
     }
   }
 
-  redirect('/login')
+
 }

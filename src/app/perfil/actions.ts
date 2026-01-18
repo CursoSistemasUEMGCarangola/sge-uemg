@@ -1,12 +1,10 @@
 'use server'
 
 import { createClient } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient()
-
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(prevState: any, formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -36,6 +34,8 @@ export async function updateProfile(formData: FormData) {
     }
 
     revalidatePath('/perfil')
+    revalidatePath('/aluno/perfil')
+    revalidatePath('/admin/perfil')
     revalidatePath('/aluno') // Update dashboard name
     revalidatePath('/admin') // Update dashboard name
     return { success: true }

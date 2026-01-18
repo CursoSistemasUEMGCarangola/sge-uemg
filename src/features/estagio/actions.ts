@@ -2,12 +2,11 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { PrismaClient, StatusEtapa } from "@prisma/client"
+import { StatusEtapa } from "@prisma/client"
 import { NovoEstagioFormData, novoEstagioSchema } from "./schemas"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { isJanelaCadastroAberta } from "@/lib/system"
-
-const prisma = new PrismaClient()
 
 export async function createEstagio(data: NovoEstagioFormData) {
     // 1. Validate Input (Double check on server)

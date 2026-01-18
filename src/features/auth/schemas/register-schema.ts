@@ -11,6 +11,7 @@ export const registerStudentSchema = z.object({
     email: z.string().email("Email inválido"),
     confirmEmail: z.string().email("Confirmação de email inválida"),
     periodo: z.string().min(1, "Período é obrigatório"),
+    telefone: z.string().min(14, "Telefone incompleto"),
     password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
     confirmPassword: z.string().min(6, "Confirmação de senha é obrigatória"),
     termsAccepted: z.boolean().refine((val) => val === true, {

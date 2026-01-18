@@ -15,6 +15,15 @@ const initialState = {
 
 // @ts-ignore
 export function ProfileForm({ profile }) {
+
+    const formatPhone = (value: string) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1')
+    }
+
     // @ts-ignore
     const [state, formAction] = useFormState(updateProfile, initialState)
 
@@ -57,9 +66,12 @@ export function ProfileForm({ profile }) {
                         <Input
                             id="telefone"
                             name="telefone"
-                            placeholder="(31) 99999-9999"
+                            placeholder="(XX) XXXXX-XXXX"
                             // @ts-ignore
                             defaultValue={profile.telefone || ''}
+                            onChange={(e) => {
+                                e.target.value = formatPhone(e.target.value)
+                            }}
                             className="pl-9"
                         />
                     </div>

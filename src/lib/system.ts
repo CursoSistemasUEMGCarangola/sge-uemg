@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 export async function isJanelaCadastroAberta(): Promise<boolean> {
     const config = await prisma.systemConfig.findUnique({

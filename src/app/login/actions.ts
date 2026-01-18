@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/auth'
+import { createClient, getCurrentUserRole } from '@/lib/auth'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -16,9 +16,20 @@ export async function login(formData: FormData) {
     })
 
     if (error) {
-        return { error: 'Credenciais inválidas. Tente novamente.' }
+        console.error('Login error:', error)
+        return { error: error.message }
     }
 
-    revalidatePath('/', 'layout')
-    redirect('/')
+    const role = await getCurrentUserRole()
+
+    if (role === 'PROFESSOR') {
+        revalidatePath('/admin', 'layout')
+        redirect('/admin')
+    } else if (role === 'ALUNO') {
+        revalidatePath('/aluno', 'layout')
+        redirect('/aluno')
+    } else {
+        revalidatePath('/', 'layout')
+        redirect('/')
+    }
 }

@@ -1,10 +1,9 @@
 "use server"
 
-import { PrismaClient, TipoFeriado } from "@prisma/client"
+import { TipoFeriado } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { getCurrentUserRole } from "@/lib/auth"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 export async function addFeriado(data: Date, descricao: string, tipo: TipoFeriado) {
     const role = await getCurrentUserRole()

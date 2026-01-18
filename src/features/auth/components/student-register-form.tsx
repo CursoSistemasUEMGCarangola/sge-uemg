@@ -24,6 +24,14 @@ import { useRef, useState, useTransition } from "react"
 import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 // Schema inference from server action file to keep synced
 type RegisterFormValues = z.infer<typeof registerStudentSchema>
@@ -31,6 +39,7 @@ type RegisterFormValues = z.infer<typeof registerStudentSchema>
 export function StudentRegisterForm() {
     const [isPending, startTransition] = useTransition()
     const [serverError, setServerError] = useState<string | null>(null)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerStudentSchema),
@@ -40,12 +49,21 @@ export function StudentRegisterForm() {
             confirmMatricula: "",
             email: "",
             confirmEmail: "",
+            telefone: "",
             periodo: "",
             password: "",
             confirmPassword: "",
             termsAccepted: false,
         },
     })
+
+    const formatPhone = (value: string) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1')
+    }
 
     async function onSubmit(data: RegisterFormValues) {
         setServerError(null)
@@ -61,7 +79,9 @@ export function StudentRegisterForm() {
 
             const result = await registerStudentAction(null as any, formData)
 
-            if (result?.success === false) {
+            if (result?.success) {
+                setShowSuccessModal(true)
+            } else if (result?.success === false) {
                 setServerError(result.message || "Erro desconhecido.")
                 if (result.errors) {
                     // Map server errors back to form fields if possible
@@ -119,6 +139,7 @@ export function StudentRegisterForm() {
                                 </FormItem>
                             )}
                         />
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Matrícula */}
@@ -180,29 +201,53 @@ export function StudentRegisterForm() {
                             />
                         </div>
 
-                        {/* Periodo */}
-                        <FormField
-                            control={form.control}
-                            name="periodo"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Período Atual</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Telefone */}
+                            <FormField
+                                control={form.control}
+                                name="telefone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Telefone / WhatsApp</FormLabel>
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione o período" />
-                                            </SelectTrigger>
+                                            <Input
+                                                placeholder="(XX) XXXXX-XXXX"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const formatted = formatPhone(e.target.value)
+                                                    field.onChange(formatted)
+                                                }}
+                                            />
                                         </FormControl>
-                                        <SelectContent>
-                                            {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => (
-                                                <SelectItem key={p} value={p.toString()}>{p}º Período</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* Periodo */}
+                            <FormField
+                                control={form.control}
+                                name="periodo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Período Atual</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione o período" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => (
+                                                    <SelectItem key={p} value={p.toString()}>{p}º Período</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Senha */}
@@ -270,6 +315,25 @@ export function StudentRegisterForm() {
                     </form>
                 </Form>
             </CardContent>
+
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-xl text-green-600">Cadastro realizado com sucesso</DialogTitle>
+                        <DialogDescription className="text-center text-base pt-2">
+                            Faça seu login no sistema com seu e-mail e senha.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-center">
+                        <Button asChild className="w-full sm:w-1/2">
+                            <Link href="/login">
+                                Login
+                            </Link>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </Card>
     )
 }

@@ -30,7 +30,7 @@ export default function AlunoLayout({
                             Novo Estágio
                         </Button>
                     </Link>
-                    <Link href="/perfil">
+                    <Link href="/aluno/perfil">
                         <Button variant="ghost" className="w-full justify-start gap-2">
                             <User className="h-4 w-4" />
                             Minha Conta

@@ -105,12 +105,13 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 **Objetivo:** Ferramentas administrativas, refinamento de UX e robustez técnica.
 
-- [ ] **Profile Management:** Adicionar campo telefone e página "Minha Conta".
-- [ ] **Admin Tools:** Exportação de dados de contratos para CSV.
-- [ ] **Interface Polish:** Implementar Empty States ricos e Loading Skeletons.
-- [ ] **Database Resilience:** Mitigar falhas de conexão IPv6 (Prisma/Supabase) e garantir fallbacks.
+- [x] **Profile Management:** Adicionar campo telefone e página "Minha Conta".
+- [x] **Admin Tools:** CRUD de Alunos, Professores e Estágios.
+- [x] **Internship Management:** Gestão de "Tipos de Estágio" (Definitions) e "Atribuições de Orientação" (Offers).
+- [x] **Interface Polish:** Implementar Empty States ricos e Loading Skeletons.
+- [x] **Database Resilience:** Mitigar falhas de conexão IPv6 (Prisma/Supabase) e garantir fallbacks.
 
-**DoD:** Admin exporta relatórios, usuários gerenciam perfis e sistema recupera-se de erros de conexão.
+**DoD:** Admin exporta relatórios, usuários gerenciam perfis, orientações são distribuídas e sistema recupera-se de erros de conexão.
 
 ---
 

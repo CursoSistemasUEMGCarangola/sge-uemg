@@ -1,8 +1,9 @@
 import Link from "next/link"
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Calendar } from "lucide-react"
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Calendar, UserRoundCheck, Briefcase } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getCurrentUserRole } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { logoutAction } from "@/features/auth/actions/logout-action"
 
 export default async function AdminLayout({
     children,
@@ -32,44 +33,60 @@ export default async function AdminLayout({
                             Painel
                         </Button>
                     </Link>
-                    <Link href="/admin/estagios">
+
+                    <Link href="/admin/perfil">
                         <Button variant="ghost" className="w-full justify-start gap-2">
-                            <FileText className="h-4 w-4" />
-                            Estágios
+                            {/* @ts-ignore - User icon import */}
+                            <Users className="h-4 w-4" />
+                            Meus Dados
                         </Button>
                     </Link>
+
+                    {role === 'ADMIN' && (
+                        <>
+                            <Link href="/admin/professores">
+                                <Button variant="ghost" className="w-full justify-start gap-2">
+                                    <UserRoundCheck className="h-4 w-4" />
+                                    Professores
+                                </Button>
+                            </Link>
+                            <Link href="/admin/alunos">
+                                <Button variant="ghost" className="w-full justify-start gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Alunos
+                                </Button>
+                            </Link>
+                        </>
+                    )}
+
                     <Link href="/admin/calendario">
                         <Button variant="ghost" className="w-full justify-start gap-2">
                             <Calendar className="h-4 w-4" />
                             Calendário
                         </Button>
                     </Link>
-                    <Link href="/admin/alunos">
+
+                    <Link href="/admin/estagios">
                         <Button variant="ghost" className="w-full justify-start gap-2">
-                            <Users className="h-4 w-4" />
-                            Alunos
-                        </Button>
-                    </Link>
-                    <Link href="/admin/configuracoes">
-                        <Button variant="ghost" className="w-full justify-start gap-2">
-                            <Settings className="h-4 w-4" />
-                            Configurações
+                            <FileText className="h-4 w-4" />
+                            Estágios
                         </Button>
                     </Link>
 
-                    <Link href="/perfil">
+                    <Link href="/admin/ofertas">
                         <Button variant="ghost" className="w-full justify-start gap-2">
-                            {/* @ts-ignore - User icon import */}
-                            <Users className="h-4 w-4" />
-                            Minha Conta
+                            <Briefcase className="h-4 w-4" />
+                            Atribuir Orientação
                         </Button>
                     </Link>
 
                     <div className="mt-auto border-t pt-4">
-                        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground">
-                            <LogOut className="h-4 w-4" />
-                            Sair
-                        </Button>
+                        <form action={logoutAction}>
+                            <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-red-500 hover:bg-red-50">
+                                <LogOut className="h-4 w-4" />
+                                Sair
+                            </Button>
+                        </form>
                     </div>
                 </nav>
             </aside>

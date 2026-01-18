@@ -58,8 +58,26 @@
 **Solução:** Capturar `error.code === 'P2002'` no bloco catch e verificar `error.meta.target` para identificar qual campo (email/matricula) violou a unicidade, retornando mensagem amigável.
 **Prevenção:** Sempre tratar P2002 em formulários de criação (cadastro, novo estágio).
 
-### [2026-01-17] - [DB] Sincronização SQL vs Prisma
+### [2026-01-18] - [AUTH] Confirmação de Email vs Supabase Admin
 
-**Contexto:** O arquivo `sql/schema.sql` é a fonte da verdade, mas o Prisma não o lê automaticamente. Divergências causaram erros (ex: tabela `documento_modelo` faltando no Prisma).
-**Solução:** Criada regra no RAG e script mental para sempre comparar os dois arquivos.
-**Prevenção:** Sempre que alterar o SQL, atualizar manualmente o `schema.prisma` e rodar `npx prisma generate`.
+**Contexto:** Novos cadastros de alunos falhavam no login com erro "Email not confirmed". O projeto requer que o cadastro já nasça ativado, sem necessidade de clicar em link de email.
+**Solução:** Substituir `supabase.auth.signUp` (que exige confirmação) por `supabaseAdmin.auth.admin.createUser` com `email_confirm: true`. Para isso, foi necessário configurar `SUPABASE_SERVICE_ROLE_KEY` no `.env` e criar um cliente admin (`src/lib/supabase/admin.ts`).
+**Prevenção:** Se precisar criar usuários "pré-aprovados", sempre use a API Admin do Supabase, pois a API pública sempre dispara o fluxo de email confirm (a menos que desligado no painel, o que pode ser inseguro globalmente).
+
+### [2026-01-18] - [PRISMA] Multi-Schema e Supabase
+
+**Contexto:** Erro `P4002` (Inconsistent Schema) ao dar `db push`. O Supabase possui schemas internos (`auth`, `storage`) que conflitam se o Prisma não estiver ciente.
+**Solução:** Habilitar `previewFeatures = ["multiSchema"]`, definir `schemas = ["public", "auth"]` no datasource e adicionar anotação `@@schema("public")` em todos os modelos.
+**Prevenção:** Em projetos Supabase com Prisma, inicie já com configuração Multi-Schema para evitar refatoração massiva de annotations depois.
+
+### [2026-01-18] - [DEV] Prisma Generate com Server Rodando (Windows)
+
+**Contexto:** Erro `EPERM: operation not permitted` ao rodar `npx prisma generate` enquanto `npm run dev` está ativo no Windows. O binário do cliente fica travado pelo processo do Node.
+**Solução:** Parar o servidor de desenvolvimento antes de regenerar o cliente Prisma.
+**Prevenção:** No Windows, sempre derrubar o servidor antes de comandos que alteram `node_modules/.prisma`.
+
+### [2026-01-18] - [UX] Terminologia (Oferta vs Atribuição)
+
+**Contexto:** O termo "Oferta de Estágio" causava confusão, parecendo algo para alunos se candidatarem, quando na verdade era uma alocação de carga horária de professor ("Atribuição de Orientação").
+**Solução:** Refatoração de textos na UI para "Atribuição" e "Orientação", mantendo o nome técnico da tabela `OfertaEstagio` para evitar quebra de contratos de banco.
+**Prevenção:** Validar glossário com o cliente antes de modelar o banco, ou aceitar que a UI pode divergir do Schema.
