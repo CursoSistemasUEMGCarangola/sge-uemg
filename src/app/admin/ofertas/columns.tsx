@@ -13,6 +13,7 @@ export type OfferData = {
     cursoNome: string
     professorNome: string
     semestre: string
+    periodoVinculado: string
     ativo: boolean | null
     periodo: string
 }
@@ -39,6 +40,10 @@ export const columns: ColumnDef<OfferData>[] = [
     {
         accessorKey: "semestre",
         header: "Semestre",
+    },
+    {
+        accessorKey: "periodoVinculado",
+        header: "Período Curricular",
     },
     {
         accessorKey: "periodo",

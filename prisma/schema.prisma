@@ -116,8 +116,8 @@ model ContratoEstagio {
   idAluno                Int              @map("id_aluno")
   idOferta               Int              @map("id_oferta")
   idCampo                Int              @map("id_campo")
-  modalidade             Modalidade
-  tipoDocumentacao       TipoDocumentacao @map("tipo_documentacao")
+  modalidade             String
+  tipoDocumentacao       String           @map("tipo_documentacao")
   atribuicoes            String
   dataInicioPrevista     DateTime         @map("data_inicio_prevista") @db.Date
   cargaHorariaDiaria     Int              @map("carga_horaria_diaria")
@@ -168,21 +168,33 @@ model DiarioAtividade {
   @@schema("public")
 }
 
-model SystemConfig {
-  key   String @id
-  value String
-
-  @@map("system_config")
-  @@schema("public")
-}
 
 model FeriadoRecesso {
   id        Int      @id @default(autoincrement()) @map("id_feriado")
-  data      DateTime @unique @db.Date
+  data      DateTime @unique @map("data_evento") @db.Date
   descricao String
   tipo      TipoFeriado
 
   @@map("feriado_recesso")
+  @@schema("public")
+}
+
+model DocumentoModelo {
+  id          Int    @id @default(autoincrement()) @map("id_documento")
+  nomeArquivo String @map("nome_arquivo")
+  urlLink     String @map("url_link")
+
+  @@map("documento_modelo")
+  @@schema("public")
+}
+
+model InformacoesGeraisEstagio {
+  id        Int     @id @default(autoincrement())
+  categoria String
+  descricao String
+  ativo     Boolean? @default(true)
+
+  @@map("informacoes_gerais_estagio")
   @@schema("public")
 }
 
@@ -231,11 +243,10 @@ enum StatusAprovacao {
   @@schema("public")
 }
 
-model DocumentoModelo {
-  id          Int    @id @default(autoincrement()) @map("id_documento")
-  nomeArquivo String @map("nome_arquivo")
-  urlLink     String @map("url_link")
+model SystemConfig {
+  key   String @id
+  value String
 
-  @@map("documento_modelo")
+  @@map("system_config")
   @@schema("public")
 }

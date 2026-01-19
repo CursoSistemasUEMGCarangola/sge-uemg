@@ -40,8 +40,8 @@ CREATE TABLE public.contrato_estagio (
   id_aluno integer NOT NULL,
   id_oferta integer NOT NULL,
   id_campo integer NOT NULL,
-  modalidade USER-DEFINED NOT NULL,
-  tipo_documentacao USER-DEFINED NOT NULL,
+  modalidade character varying NOT NULL,
+  tipo_documentacao character varying NOT NULL,
   atribuicoes text NOT NULL,
   data_inicio_prevista date NOT NULL,
   carga_horaria_diaria integer NOT NULL CHECK (carga_horaria_diaria >= 1 AND carga_horaria_diaria <= 6),
@@ -91,15 +91,22 @@ CREATE TABLE public.feriado_recesso (
   tipo USER-DEFINED NOT NULL,
   CONSTRAINT feriado_recesso_pkey PRIMARY KEY (id_feriado)
 );
+CREATE TABLE public.informacoes_gerais_estagio (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  categoria character varying NOT NULL,
+  descricao character varying NOT NULL,
+  ativo boolean DEFAULT true,
+  CONSTRAINT informacoes_gerais_estagio_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.oferta_estagio (
   id_oferta integer GENERATED ALWAYS AS IDENTITY NOT NULL,
   id_curso_estagio integer NOT NULL,
   id_professor_orientador integer NOT NULL,
   semestre_letivo character varying NOT NULL,
-  data_inicio date NOT NULL,
-  data_fim date NOT NULL,
   ativo boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  data_inicio date NOT NULL DEFAULT CURRENT_DATE,
+  data_fim date NOT NULL DEFAULT CURRENT_DATE,
   CONSTRAINT oferta_estagio_pkey PRIMARY KEY (id_oferta),
   CONSTRAINT oferta_estagio_id_curso_estagio_fkey FOREIGN KEY (id_curso_estagio) REFERENCES public.curso_estagio(id_curso_estagio),
   CONSTRAINT oferta_estagio_id_professor_orientador_fkey FOREIGN KEY (id_professor_orientador) REFERENCES public.professor(id_professor)
@@ -120,4 +127,9 @@ CREATE TABLE public.profiles (
   telefone text,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.system_config (
+  key text NOT NULL,
+  value text NOT NULL,
+  CONSTRAINT system_config_pkey PRIMARY KEY (key)
 );

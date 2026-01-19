@@ -25,8 +25,9 @@ export default async function AdminOfertasPage() {
         cursoNome: oferta.curso.nome,
         professorNome: oferta.professor.profile.nomeCompleto,
         semestre: oferta.semestreLetivo,
+        periodoVinculado: `${oferta.curso.periodoVinculado}º`,
         ativo: oferta.ativo,
-        periodo: `${new Date(oferta.dataInicio).toLocaleDateString()} - ${new Date(oferta.dataFim).toLocaleDateString()}`
+        periodo: `${new Date(oferta.dataInicio).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} - ${new Date(oferta.dataFim).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}`
     }))
 
     return (

@@ -9,94 +9,102 @@ import { prisma } from "@/lib/prisma"
 import { isJanelaCadastroAberta } from "@/lib/system"
 
 export async function createEstagio(data: NovoEstagioFormData) {
-    // 1. Validate Input (Double check on server)
-    const result = novoEstagioSchema.safeParse(data)
-    if (!result.success) {
-        return { error: "Dados inválidos. Verifique o formulário." }
-    }
+    console.log("SERVER ACTION: createEstagio START")
 
-    // 2. Validate Janela Temporal
-    const isOpen = await isJanelaCadastroAberta()
-    if (!isOpen) {
-        return { error: "O período de cadastro de novos estágios está fechado." }
-    }
-
-    // 3. Get Current User (Student)
+    // 1. Authentication & Validation
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+        console.log("SERVER ACTION: User not authenticated")
         return { error: "Usuário não autenticado." }
     }
+    console.log("SERVER ACTION: User authenticated", user.id)
 
-    // Fetch Aluno Record
-    const aluno = await prisma.aluno.findUnique({
-        where: { profileId: user.id }
-    })
-
-    if (!aluno) {
-        return { error: "Perfil de aluno não encontrado." }
+    const validation = novoEstagioSchema.safeParse(data)
+    if (!validation.success) {
+        console.log("SERVER ACTION: Zod validation failed", JSON.stringify(validation.error.format(), null, 2))
+        return { error: "Dados inválidos. Verifique o formulário." }
     }
+    console.log("SERVER ACTION: Zod validation success")
 
-    const { empresa, contrato } = result.data
+    const { empresa, supervisor, estagio } = validation.data
 
     try {
-        // 4. Transaction: Create Campo -> Create Contrato -> Create Acompanhamentos
+        // 2. Fetch Student Profile
+        const aluno = await prisma.aluno.findUnique({
+            where: { profileId: user.id }
+        })
+
+        if (!aluno) {
+            console.log("SERVER ACTION: Student profile not found for user", user.id)
+            return { error: "Perfil de aluno não encontrado." }
+        }
+        console.log("SERVER ACTION: Student found", { id: aluno.id, periodo: aluno.periodoAtual })
+
+        // 3. Find Active Offer for Student's Period
+        // matching the student's current period.
+        const oferta = await prisma.ofertaEstagio.findFirst({
+            where: {
+                ativo: true,
+                curso: {
+                    periodoVinculado: aluno.periodoAtual
+                }
+            },
+            include: { curso: true } // just in case we need info
+        })
+
+        if (!oferta) {
+            console.log(`SERVER ACTION: No active offer found for period ${aluno.periodoAtual}`)
+            return { error: `Nenhuma oferta de estágio ativa encontrada para o ${aluno.periodoAtual}º período.` }
+        }
+        console.log("SERVER ACTION: Offer found", oferta.id)
+
+        // 4. Create Internship (Transaction to ensure consistency)
         await prisma.$transaction(async (tx) => {
-            // A. Create Campo
-            const novoCampo = await tx.campoEstagio.create({
+            console.log("SERVER ACTION: Starting transaction")
+            // A. Create CampoEstagio (Company + Supervisor)
+            const campo = await tx.campoEstagio.create({
                 data: {
                     razaoSocial: empresa.razaoSocial,
                     nomeFantasia: empresa.nomeFantasia,
-                    telefoneContato: empresa.telefoneContato,
-                    emailContato: empresa.emailContato,
-                    supervisorNome: empresa.supervisorNome,
-                    supervisorCargo: empresa.supervisorCargo,
-                    supervisorAreaFormacao: empresa.supervisorAreaFormacao,
-                    supervisorTitulacao: empresa.supervisorTitulacao,
-                    supervisorTelefone: empresa.supervisorTelefone,
-                    supervisorEmail: empresa.supervisorEmail
+                    telefoneContato: empresa.telefone,
+                    emailContato: empresa.email,
+                    supervisorNome: supervisor.nome,
+                    supervisorTelefone: supervisor.telefone,
+                    supervisorEmail: supervisor.email,
+                    supervisorCargo: supervisor.cargo,
+                    supervisorAreaFormacao: supervisor.formacao,
+                    supervisorTitulacao: supervisor.titulacao,
                 }
             })
+            console.log("SERVER ACTION: CampoEstagio created", campo.id)
 
-            // B. Create Contrato
-            const novoContrato = await tx.contratoEstagio.create({
+            // B. Create ContratoEstagio
+            const contrato = await tx.contratoEstagio.create({
                 data: {
                     idAluno: aluno.id,
-                    idOferta: contrato.ofertaId,
-                    idCampo: novoCampo.id,
-                    modalidade: contrato.modalidade,
-                    tipoDocumentacao: contrato.tipoDocumentacao,
-                    atribuicoes: contrato.atribuicoes,
-                    dataInicioPrevista: contrato.dataInicioPrevista,
-                    cargaHorariaDiaria: contrato.cargaHorariaDiaria,
-                    statusAprovacao: "PENDENTE"
+                    idOferta: oferta.id,
+                    idCampo: campo.id,
+                    modalidade: estagio.modalidade as any, // Cast to avoid stale type error
+                    tipoDocumentacao: estagio.tipoDocumentacao as any, // Cast to avoid stale type error
+                    dataInicioPrevista: estagio.dataInicio,
+                    cargaHorariaDiaria: estagio.cargaHorariaDiaria,
+                    atribuicoes: estagio.atribuicoes,
+                    statusAprovacao: 'PENDENTE'
                 }
             })
-
-            // C. Initialize 8 Steps
-            // We need to fetch the definitions first or assumes IDs 1-8
-            // Ideally we fetch active definitions
-            const steps = await tx.etapaDefinicao.findMany()
-
-            // This is safe because map is synchronous, but we need to await the createMany (not supported well in all transaction contexts? prefer create)
-            // Actually createMany is safer for bulk
-            await tx.acompanhamentoEtapa.createMany({
-                data: steps.map(step => ({
-                    idContrato: novoContrato.id,
-                    idEtapaDef: step.id,
-                    status: StatusEtapa.PENDENTE
-                }))
-            })
+            console.log("SERVER ACTION: ContratoEstagio created", contrato.id)
         })
 
-    } catch (error) {
-        console.error("Erro ao criar estágio:", error)
-        return { error: "Erro interno ao salvar o estágio. Tente novamente." }
-    }
+        console.log("SERVER ACTION: Transaction committed")
+        revalidatePath('/aluno')
+        return { success: true }
 
-    revalidatePath('/aluno')
-    redirect('/aluno')
+    } catch (error) {
+        console.error("Error creating estagio:", error)
+        return { error: "Ocorreu um erro ao salvar o estágio. Tente novamente." }
+    }
 }
 
 export async function approveStage(contratoId: number, etapaId: number, feedback?: string) {

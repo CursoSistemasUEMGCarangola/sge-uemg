@@ -83,6 +83,7 @@ export function StudentRegisterForm() {
                 setShowSuccessModal(true)
             } else if (result?.success === false) {
                 setServerError(result.message || "Erro desconhecido.")
+                window.scrollTo({ top: 0, behavior: 'smooth' })
                 if (result.errors) {
                     // Map server errors back to form fields if possible
                     Object.entries(result.errors).forEach(([field, messages]) => {

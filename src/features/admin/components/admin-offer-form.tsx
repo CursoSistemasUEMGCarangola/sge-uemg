@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { adminOfferSchema, AdminOfferFormValues } from "@/features/admin/schemas/admin-offer-schema"
 import { createOfferAction } from "@/features/admin/actions/create-offer-action"
+import { updateOfferAction } from "@/features/admin/actions/update-offer-action"
 import { useState, useTransition } from "react"
 import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -54,7 +55,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
         },
     })
 
-    async function onSubmit(data: AdminOfferFormValues) {
+    async function onSubmit(data: any) {
         setServerError(null)
         startTransition(async () => {
             const formData = new FormData()
@@ -68,9 +69,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
             formData.append('dataInicio', data.dataInicio.toString())
             formData.append('dataFim', data.dataFim.toString())
 
-            // Note: Update action not implemented yet in this turn, using create for both structure validatity
-            // Ideally we would swap actions here.
-            const action = createOfferAction
+            const action = isEditing ? updateOfferAction : createOfferAction
             const result = await action(null, formData)
 
             if (result?.success) {
@@ -111,7 +110,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                         <FormField
-                            control={form.control}
+                            control={form.control as any}
                             name="cursoEstagioId"
                             render={({ field }) => (
                                 <FormItem>
@@ -139,7 +138,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                         />
 
                         <FormField
-                            control={form.control}
+                            control={form.control as any}
                             name="professorOrientadorId"
                             render={({ field }) => (
                                 <FormItem>
@@ -167,7 +166,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                         />
 
                         <FormField
-                            control={form.control}
+                            control={form.control as any}
                             name="semestreLetivo"
                             render={({ field }) => (
                                 <FormItem>
@@ -182,7 +181,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name="dataInicio"
                                 render={({ field }) => (
                                     <FormItem>
@@ -196,7 +195,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name="dataFim"
                                 render={({ field }) => (
                                     <FormItem>

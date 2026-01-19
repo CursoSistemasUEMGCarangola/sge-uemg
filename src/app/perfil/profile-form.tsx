@@ -44,6 +44,35 @@ export function ProfileForm({ profile }) {
                     </div>
                 </div>
 
+                {/* @ts-ignore */}
+                {profile.matricula && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="matricula">Matrícula (Não alterável)</Label>
+                            <div className="relative">
+                                <User className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="matricula"
+                                    // @ts-ignore
+                                    value={profile.matricula}
+                                    className="pl-9 bg-muted"
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="periodo">Período Atual (Não alterável)</Label>
+                            <Input
+                                id="periodo"
+                                // @ts-ignore
+                                value={`${profile.periodo}º Período`}
+                                className="bg-muted"
+                                disabled
+                            />
+                        </div>
+                    </div>
+                )}
+
                 <div className="space-y-2">
                     <Label htmlFor="nome">Nome Completo</Label>
                     <div className="relative">

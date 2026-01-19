@@ -1,343 +1,442 @@
 "use client"
 
-import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2, CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
-import { Stepper } from "@/components/ui/stepper"
-import { DatePicker } from "@/components/forms/date-picker"
 import { novoEstagioSchema, NovoEstagioFormData } from "@/features/estagio/schemas"
 import { createEstagio } from "@/features/estagio/actions"
-import { Modalidade, TipoDocumentacao } from "@prisma/client"
 
 interface NovoEstagioFormProps {
-    ofertas: any[] // TODO: Type properly
+    informacoesGerais: any[] // We can type this better later or import shared types
 }
 
-export function NovoEstagioForm({ ofertas }: NovoEstagioFormProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [currentStep, setCurrentStep] = useState(1)
+export function NovoEstagioForm({ informacoesGerais }: NovoEstagioFormProps) {
     const { toast } = useToast()
     const router = useRouter()
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    // Filter dynamic options
+    const titulacaoOptions = informacoesGerais?.filter(item => item.categoria === 'TITULACAO_SUPERVISOR') || []
+    const modalidadeOptions = informacoesGerais?.filter(item => item.categoria === 'MODALIDADE') || []
+    const tipoDocumentacaoOptions = informacoesGerais?.filter(item => item.categoria === 'TIPO_DOCUMENTACAO') || []
 
     const form = useForm<NovoEstagioFormData>({
-        resolver: zodResolver(novoEstagioSchema) as any,
+        resolver: zodResolver(novoEstagioSchema),
         defaultValues: {
             empresa: {
-                emailContato: "" // Default empty string for optional email to avoid null issues
+                razaoSocial: "",
+                nomeFantasia: "",
+                telefone: "",
+                email: ""
             },
-            contrato: {
-                // Defaults
-                modalidade: Modalidade.PRESENCIAL,
-                tipoDocumentacao: TipoDocumentacao.TCE
+            supervisor: {
+                nome: "",
+                telefone: "",
+                email: "",
+                cargo: "",
+                formacao: "",
+                titulacao: ""
+            },
+            estagio: {
+                modalidade: "",
+                tipoDocumentacao: "",
+                cargaHorariaDiaria: 6,
+                atribuicoes: "",
+                dataInicio: undefined,
             }
         }
     })
 
     async function onSubmit(data: NovoEstagioFormData) {
         setIsSubmitting(true)
-        const result = await createEstagio(data)
+        try {
+            const result = await createEstagio(data)
 
-        if (result?.error) {
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Erro no envio",
+                    description: result.error
+                })
+            } else {
+                toast({
+                    title: "Sucesso!",
+                    description: "Os dados do estágio foram gravados com sucesso."
+                })
+                router.push("/aluno")
+            }
+        } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Erro ao criar estágio",
-                description: result.error
+                title: "Erro inesperado",
+                description: "Ocorreu um erro ao processar sua solicitação."
             })
+        } finally {
             setIsSubmitting(false)
-        } else {
-            toast({
-                title: "Estágio iniciado!",
-                description: "Você será redirecionado para o dashboard."
-            })
-            // Redirect handled by Server Action or here
         }
     }
 
-    // Split form into conceptual steps for the UI (even if it's one big form for React Hook Form)
-    // Step 1: Dados do Estágio (Contrato)
-    // Step 2: Dados da Empresa (Campo)
-    // Step 3: Supervisor
-
-    // For simplicity in this Phase 2 MVP, we will render all in one page or simple tabs, 
-    // but using the Stepper to show "Progresso do Processo" not just form steps.
-    // Wait, the Stepper in the requirement is for the 8 steps of the internship process itself, or for the Wizard?
-    // "Implement Stepper Component (Visual Indicator of 8 steps)." -> likely the internship lifecycle.
-    // "Create 'New Internship' Wizard/Form (Step 1: Dados do Estágio + Empresa)." -> This suggests the form is just the "Step 1" of the whole lifecycle.
-
     return (
-        <div className="space-y-6">
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
-                    {/* 1. Seleção da Oferta e Dados Básicos */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>1. Dados do Estágio</CardTitle>
-                            <CardDescription>Informe os detalhes do período e modalidade.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 md:grid-cols-2">
-                            <FormField
-                                control={form.control}
-                                name="contrato.ofertaId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Período Letivo / Oferta</FormLabel>
-                                        <Select onValueChange={(val) => field.onChange(Number(val))} defaultValue={field.value?.toString()}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione a oferta" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {ofertas.map((of) => (
-                                                    <SelectItem key={of.id} value={of.id.toString()}>
-                                                        {of.semestreLetivo} - {of.curso.nome}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                {/* Dados da Empresa */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dados da Empresa / Concedente</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="empresa.razaoSocial"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Razão Social</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Razão social da empresa" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                            <FormField
-                                control={form.control}
-                                name="contrato.modalidade"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Modalidade</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione a modalidade" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {Object.values(Modalidade).map((m) => (
-                                                    <SelectItem key={m} value={m}>{m}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                        <FormField
+                            control={form.control}
+                            name="empresa.nomeFantasia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nome Comercial</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Nome comercial da empresa" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                            <FormField
-                                control={form.control}
-                                name="contrato.tipoDocumentacao"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tipo de Documentação</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione o tipo" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {Object.values(TipoDocumentacao).map((t) => (
-                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                        <FormField
+                            control={form.control}
+                            name="empresa.telefone"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Telefone da Empresa</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="(00) 0000-0000" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                            <FormField
-                                control={form.control}
-                                name="contrato.dataInicioPrevista"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel>Data de Início Prevista</FormLabel>
-                                        <DatePicker date={field.value} setDate={field.onChange} />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                        <FormField
+                            control={form.control}
+                            name="empresa.email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>E-mail da Empresa</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" placeholder="contato@empresa.com" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
 
-                            <FormField
-                                control={form.control}
-                                name="contrato.cargaHorariaDiaria"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Carga Horária Diária (Horas)</FormLabel>
+                {/* Dados do Supervisor */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dados do Supervisor de Campo</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="supervisor.nome"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nome do Supervisor</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Nome completo" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="supervisor.cargo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Cargo</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: Gerente de TI" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="supervisor.telefone"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Telefone do Supervisor</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="(00) 0000-0000" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="supervisor.email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>E-mail do Supervisor</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" placeholder="supervisor@empresa.com" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="supervisor.formacao"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Formação Acadêmica</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: Engenharia de Software" className="placeholder:text-gray-400" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="supervisor.titulacao"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Titulação</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
-                                            <Input type="number" min={1} max={6} {...field} />
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione a titulação" />
+                                            </SelectTrigger>
                                         </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                        <SelectContent>
+                                            {titulacaoOptions.map((option: any) => (
+                                                <SelectItem key={option.id} value={option.descricao}>
+                                                    {option.descricao}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
 
-                            <FormField
-                                control={form.control}
-                                name="contrato.atribuicoes"
-                                render={({ field }) => (
-                                    <FormItem className="col-span-2">
-                                        <FormLabel>Atribuições / Atividades Previstas</FormLabel>
+                {/* Dados do Estágio */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dados do Estágio</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="estagio.modalidade"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Modalidade</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
-                                            <Input placeholder="Descreva as atividades que serão realizadas" {...field} />
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione a modalidade" />
+                                            </SelectTrigger>
                                         </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
+                                        <SelectContent>
+                                            {modalidadeOptions.map((option: any) => (
+                                                <SelectItem key={option.id} value={option.descricao}>
+                                                    {option.descricao}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    {/* 2. Dados da Empresa (Campo) */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>2. Dados da Empresa (Campo de Estágio)</CardTitle>
-                            <CardDescription>Informações sobre a empresa concedente.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 md:grid-cols-2">
-                            <FormField
-                                control={form.control}
-                                name="empresa.razaoSocial"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Razão Social</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.nomeFantasia"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nome Fantasia</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.emailContato"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>E-mail da Empresa (Opcional)</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.telefoneContato"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Telefone da Empresa</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
+                        <FormField
+                            control={form.control}
+                            name="estagio.tipoDocumentacao"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tipo de Documentação</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione o tipo" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {tipoDocumentacaoOptions.map((option: any) => (
+                                                <SelectItem key={option.id} value={option.descricao}>
+                                                    {option.descricao}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    {/* 3. Supervisor */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>3. Supervisor do Estágio</CardTitle>
-                            <CardDescription>Quem será o responsável por você na empresa.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 md:grid-cols-2">
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorNome"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nome Completo</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorCargo"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Cargo</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorAreaFormacao"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Área de Formação</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorTitulacao"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Titulação</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorEmail"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>E-mail do Supervisor</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="empresa.supervisorTelefone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Telefone do Supervisor</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                        <CardFooter>
-                            <Button type="submit" disabled={isSubmitting} className="w-full">
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Iniciar Processo de Estágio
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </form>
-            </Form>
-        </div>
+                        <FormField
+                            control={form.control}
+                            name="estagio.dataInicio"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Data de Início Prevista</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full pl-3 text-left font-normal",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "PPP", { locale: ptBR })
+                                                    ) : (
+                                                        <span>Selecione uma data</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) =>
+                                                    date < new Date("1900-01-01")
+                                                }
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="estagio.cargaHorariaDiaria"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Carga Horária Diária (Horas)</FormLabel>
+                                    <Select
+                                        onValueChange={(value) => field.onChange(parseInt(value))}
+                                        defaultValue={field.value?.toString()}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione as horas" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {[1, 2, 3, 4, 5, 6].map((hours) => (
+                                                <SelectItem key={hours} value={hours.toString()}>
+                                                    {hours} horas
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="estagio.atribuicoes"
+                            render={({ field }) => (
+                                <FormItem className="col-span-1 md:col-span-2">
+                                    <FormLabel>Atribuições do Estagiário</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            placeholder="Descreva quais serão suas atribuições, quais atividades você desenvolverá em seu estágio"
+                                            className="min-h-[100px] placeholder:text-gray-400"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <div className="text-sm text-yellow-600 font-semibold mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                                        <p>O texto deve ser DETALHADO sobre as atividades que serão realizadas. Além disso, você deve relacionar essas atividades a competências da sua formação no curso. Escreva corretamente, respeitando todas as normas gramaticais.</p>
+                                        <p className="mt-1 font-bold text-red-600">SE O SEU TEXTO FOR INSUFICIENTE, ELE NÃO SERÁ ACEITO.</p>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
+
+                <div className="flex justify-end">
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Enviar dados do Estágio
+                    </Button>
+                </div>
+            </form>
+        </Form>
     )
 }

@@ -56,6 +56,12 @@ export default async function AdminLayout({
                                     Alunos
                                 </Button>
                             </Link>
+                            <Link href="/admin/configuracoes">
+                                <Button variant="ghost" className="w-full justify-start gap-2">
+                                    <Settings className="h-4 w-4" />
+                                    Configurações
+                                </Button>
+                            </Link>
                         </>
                     )}
 

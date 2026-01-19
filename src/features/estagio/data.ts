@@ -1,8 +1,16 @@
 import { prisma } from "@/lib/prisma"
 
-export async function getOfertasAtivas() {
+export async function getOfertasAtivas(periodo?: number) {
+    const whereClause: any = { ativo: true }
+
+    if (periodo) {
+        whereClause.curso = {
+            periodoVinculado: periodo
+        }
+    }
+
     const ofertas = await prisma.ofertaEstagio.findMany({
-        where: { ativo: true },
+        where: whereClause,
         include: {
             curso: true,
             professor: {
@@ -92,5 +100,12 @@ export async function getDiarioAtividades(contratoId: number) {
     return await prisma.diarioAtividade.findMany({
         where: { idContrato: contratoId },
         orderBy: { dataAtividade: 'asc' }
+    })
+}
+
+export async function getInformacoesGerais() {
+    return await prisma.informacoesGeraisEstagio.findMany({
+        where: { ativo: true },
+        orderBy: { descricao: 'asc' }
     })
 }
