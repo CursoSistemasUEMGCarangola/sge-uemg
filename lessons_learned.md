@@ -81,3 +81,21 @@
 **Contexto:** O termo "Oferta de Estágio" causava confusão, parecendo algo para alunos se candidatarem, quando na verdade era uma alocação de carga horária de professor ("Atribuição de Orientação").
 **Solução:** Refatoração de textos na UI para "Atribuição" e "Orientação", mantendo o nome técnico da tabela `OfertaEstagio` para evitar quebra de contratos de banco.
 **Prevenção:** Validar glossário com o cliente antes de modelar o banco, ou aceitar que a UI pode divergir do Schema.
+
+### [2026-01-19] - [DB] Enum vs String em Inputs Dinâmicos
+
+**Contexto:** O formulário envia valores dinâmicos ("Presencial", "Remoto") vindos da tabela `informacoes_gerais_estagio`. O banco tinha colunas `modalidade` e `tipo_documentacao` tipadas como ENUM fixo (`USER-DEFINED`). Isso causou erro de validação do banco ao tentar salvar valores que tecnicamente eram strings válidas mas não correspondiam ao tipo ENUM estrito do Postgres.
+**Solução:** Conversão das colunas para `TEXT` (`ALTER COLUMN ... TYPE text`), permitindo flexibilidade total para opções cadastradas dinamicamente no painel administrativo.
+**Prevenção:** Se o conjunto de opções de um campo é gerenciado pelo usuário (CRUD), evite ENUM no banco. Use `TEXT` e valide na aplicação/schema.
+
+### [2026-01-19] - [TYPESCRIPT] Tipagem Estrita em Server Actions com Prisma
+
+**Contexto:** Mesmo após alterar o `schema.prisma` para `String`, o TypeScript no editor (`actions.ts`) continuava acusando erro de que `string` não era assignable para o tipo antigo (que ele cacheou ou inferiu incorretamente).
+**Solução:** Casting explícito para `any` (`valor as any`) nos campos problemáticos dentro do Server Action para destravar o build, assumindo que a validação Zod e o banco (agora TEXT) garantem a integridade.
+**Prevenção:** Em refatorações de tipo de banco, confiar mais no `prisma generate` e reiniciar o TS Server. Se persistir, o cast é uma solução pragmática para não bloquear o fluxo.
+
+### [2026-01-19] - [NEXTJS] Webpack Cache e Prisma
+
+**Contexto:** Erro `TypeError: __webpack_modules__[moduleId] is not a function` após mudanças drásticas de schema e regeneração do cliente Prisma.
+**Solução:** Limpeza agressiva do cache: `rm -rf .next` seguido de `npx prisma generate` e `npm run build`.
+**Prevenção:** Ao encontrar erros crípticos de módulo no Next.js após mexer no banco, limpar a pasta `.next` é o primeiro passo.
