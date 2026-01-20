@@ -12,7 +12,24 @@ export default function ProfessorRegisterPage() {
                         Cadastro de Professor
                     </p>
                 </div>
+
+                {/* 
                 <ProfessorRegisterForm />
+                */}
+
+                <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
+                    <div className="flex">
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-yellow-800">Cadastro Restrito</h3>
+                            <div className="mt-2 text-sm text-yellow-700">
+                                <p>
+                                    Por questões de segurança, o cadastro de professores deve ser realizado exclusivamente pelo administrador do sistema.
+                                    Entre em contato com a Coordenação do Curso para solicitar seu acesso.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )

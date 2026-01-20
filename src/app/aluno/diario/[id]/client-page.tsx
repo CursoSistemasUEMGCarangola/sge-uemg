@@ -18,12 +18,16 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { logAtividade, deleteAtividade } from "@/features/estagio/actions"
 
+import { ConfirmActivitiesDialog } from "./confirm-activities-dialog"
+
 interface DiarioClientProps {
     contratoId: number
     initialEntries: any[]
+    etapaId: number
+    canSubmit: boolean
 }
 
-export function DiarioClient({ contratoId, initialEntries }: DiarioClientProps) {
+export function DiarioClient({ contratoId, initialEntries, etapaId, canSubmit }: DiarioClientProps) {
     const [date, setDate] = useState<Date | undefined>(new Date())
     const [horas, setHoras] = useState<string>("4")
     const [descricao, setDescricao] = useState("")
@@ -118,7 +122,16 @@ export function DiarioClient({ contratoId, initialEntries }: DiarioClientProps) 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex justify-between items-center">
-                            <span>Diário de Bordo</span>
+                            <div className="flex items-center gap-4">
+                                <span>Diário de Bordo</span>
+                                {canSubmit && (
+                                    <ConfirmActivitiesDialog
+                                        contratoId={contratoId}
+                                        totalHoras={totalHoras}
+                                        etapaId={etapaId}
+                                    />
+                                )}
+                            </div>
                             <span className="text-sm font-normal bg-secondary/10 text-secondary px-3 py-1 rounded-full">
                                 Total Acumulado: {totalHoras}h
                             </span>

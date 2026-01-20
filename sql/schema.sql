@@ -8,6 +8,8 @@ CREATE TABLE public.acompanhamento_etapa (
   status USER-DEFINED NOT NULL DEFAULT 'PENDENTE'::status_etapa,
   data_limite date,
   data_conclusao date,
+  observacoes text,
+  link_documento text,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT acompanhamento_etapa_pkey PRIMARY KEY (id_acompanhamento),
   CONSTRAINT acompanhamento_etapa_id_contrato_fkey FOREIGN KEY (id_contrato) REFERENCES public.contrato_estagio(id_contrato),

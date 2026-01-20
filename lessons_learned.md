@@ -99,3 +99,15 @@
 **Contexto:** Erro `TypeError: __webpack_modules__[moduleId] is not a function` após mudanças drásticas de schema e regeneração do cliente Prisma.
 **Solução:** Limpeza agressiva do cache: `rm -rf .next` seguido de `npx prisma generate` e `npm run build`.
 **Prevenção:** Ao encontrar erros crípticos de módulo no Next.js após mexer no banco, limpar a pasta `.next` é o primeiro passo.
+
+### [2026-01-20] - [JS/DATE] Tratamento de Datas e Timezones (UTC vs Local)
+
+**Contexto:** Datas salvas como `YYYY-MM-DD` no banco (via Prisma `DateTime`) eram interpretadas como UTC Midnight. Ao exibir no frontend usando `new Date()`, o navegador convertia para o fuso local (Brasília -3h), resultando no dia anterior.
+**Solução:** Usar `toLocaleDateString('pt-BR', { timeZone: 'UTC' })` para garantir que a data seja exibida exatamente como salva, ignorando o deslocamento do navegador, ou usar bibliotecas como `date-fns-tz` para controle explícito.
+**Prevenção:** Em sistemas de datas "burocráticas" (sem hora relevante), tratar sempre como UTC na renderização.
+
+### [2026-01-20] - [NEXTJS] Interatividade em Páginas Server-Side (Server Actions + Client Components)
+
+**Contexto:** Necessidade de adicionar botões com confirmação (Dialogs) e feedback (Toast) em uma página detalhe renderizada no servidor (`page.tsx`). Server Actions não podem ser invocados diretamente de event handlers em Server Components.
+**Solução:** Criar um "Client Component wrapper" (ex: `contract-actions.tsx`) que contém a lógica de UI (`useState`, `useTransition`, `AlertDialog`) e invoca a Server Action. Esse componente é então importado na página Server-Side.
+**Prevenção:** Segregar claramente: Página (Fetch dados) -> Componente Cliente (Interatividade) -> Server Action (Mutação).

@@ -67,7 +67,11 @@ export default async function AlunoDashboard() {
                                                 {contrato.campo.nomeFantasia}
                                             </CardTitle>
                                             <CardDescription>
-                                                Modalidade: {contrato.modalidade} | Carga Horária: {contrato.cargaHorariaDiaria}h/dia
+                                                <span className="font-semibold mr-1">{contrato.oferta.curso.nome}</span>
+                                                <span className="font-semibold mx-1">•
+                                                    Modalidade: {contrato.modalidade}</span>
+                                                <span className="font-semibold mx-1">•
+                                                    Carga horária: {contrato.cargaHorariaDiaria}h/dia</span>
                                             </CardDescription>
                                         </div>
                                         <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
@@ -79,7 +83,7 @@ export default async function AlunoDashboard() {
                                     <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
                                         <div className="flex items-center gap-2">
                                             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                            <span>Início: {format(new Date(contrato.dataInicioPrevista), "dd/MM/yyyy")}</span>
+                                            <span>Início: {new Date(contrato.dataInicioPrevista).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Clock className="h-4 w-4 text-muted-foreground" />

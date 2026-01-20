@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { getCurrentUserRole, createClient } from "@/lib/auth"
 
 export async function getOfertasAtivas(periodo?: number) {
     const whereClause: any = { ativo: true }
@@ -35,7 +36,11 @@ export async function getStudentDashboardData(profileId: string) {
         where: { idAluno: aluno.id },
         include: {
             campo: true,
-            oferta: true,
+            oferta: {
+                include: {
+                    curso: true
+                }
+            },
             acompanhamentos: {
                 orderBy: { idEtapaDef: 'asc' },
                 include: {
@@ -108,4 +113,70 @@ export async function getInformacoesGerais() {
         where: { ativo: true },
         orderBy: { descricao: 'asc' }
     })
+}
+
+export async function getAdminDashboardData() {
+    const role = await getCurrentUserRole()
+    if (!role) return { contratos: [], ofertas: [] }
+
+    let whereClause: any = {}
+
+    if (role === 'PROFESSOR') {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+            const professor = await prisma.professor.findUnique({
+                where: { profileId: user.id }
+            })
+            if (professor) {
+                whereClause.oferta = {
+                    professorOrientadorId: professor.id
+                }
+            } else {
+                return { contratos: [], ofertas: [] } // Professor profile not found
+            }
+        }
+    } else if (role !== 'ADMIN') {
+        return { contratos: [], ofertas: [] } // Aluno shouldn't call this
+    }
+
+    const contratos = await prisma.contratoEstagio.findMany({
+        where: whereClause,
+        include: {
+            aluno: {
+                include: {
+                    profile: true
+                }
+            },
+            campo: true,
+            oferta: {
+                include: {
+                    curso: true
+                }
+            },
+            acompanhamentos: {
+                orderBy: { idEtapaDef: 'asc' },
+                include: {
+                    etapaDef: true
+                }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    })
+
+    let ofertas: any[] = []
+    if (role === 'PROFESSOR' && whereClause.oferta) {
+        ofertas = await prisma.ofertaEstagio.findMany({
+            where: {
+                professorOrientadorId: whereClause.oferta.professorOrientadorId,
+                ativo: true
+            },
+            include: {
+                curso: true
+            }
+        })
+    }
+
+    return { contratos, ofertas }
 }

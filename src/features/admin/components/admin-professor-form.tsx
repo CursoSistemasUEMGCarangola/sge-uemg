@@ -46,6 +46,7 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
         // @ts-ignore - Dynamic schema resolution causes type mismatch with rigid generic
         resolver: zodResolver(isEditing ? adminProfessorUpdateSchema : adminProfessorSchema),
         defaultValues: {
+            id: initialData?.id || "",
             fullName: initialData?.fullName || "",
             masp: initialData?.masp || "",
             email: initialData?.email || "",
@@ -54,65 +55,55 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
         },
     })
 
+    const [showPassword, setShowPassword] = useState(false)
+
     const formatPhone = (value: string) => {
         return value
-            .replace(/\D/g, '')
-            .replace(/^(\d{2})(\d)/, '($1) $2')
-            .replace(/(\d{5})(\d)/, '$1-$2')
-            .replace(/(-\d{4})\d+?$/, '$1')
+            .replace(/\D/g, "")
+            .replace(/^(\d{2})(\d)/g, "($1) $2")
+            .replace(/(\d)(\d{4})$/, "$1-$2")
+            .slice(0, 15)
     }
 
-    async function onSubmit(data: RegisterFormValues) {
-        setServerError(null)
+    const generateStrongPassword = () => {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+        let password = ""
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        form.setValue("password", password)
+        setShowPassword(true)
+    }
+
+    async function onSubmit(values: any) {
         startTransition(async () => {
-            const formData = new FormData()
-            if (isEditing && initialData) {
-                formData.append('id', initialData.id)
-            }
-            Object.entries(data).forEach(([key, value]) => {
-                formData.append(key, value?.toString() || "")
-            })
+            try {
+                const formData = new FormData()
+                Object.entries(values).forEach(([key, value]) => {
+                    if (value) formData.append(key, value as string)
+                })
 
-            const action = isEditing ? updateProfessorAction : createProfessorAction
-            const result = await action(null as any, formData)
+                const result = isEditing
+                    ? await updateProfessorAction(null, formData)
+                    : await createProfessorAction(null, formData)
 
-            if (result?.success) {
-                router.push('/admin/professores')
-                router.refresh()
-            } else if (result?.success === false) {
-                setServerError(result.error || "Erro desconhecido.")
-                if (result.fieldErrors) {
-                    Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-                        // @ts-ignore
-                        form.setError(field, { message: messages[0] })
-                    })
+                if (!result.success) {
+                    setServerError(result.error || "Erro desconhecido")
+                } else {
+                    setServerError(null)
+                    router.push("/admin/professores")
+                    router.refresh()
                 }
+            } catch (error) {
+                setServerError("Ocorreu um erro ao salvar o professor.")
             }
         })
     }
 
-    const [showPassword, setShowPassword] = useState(false)
-
-    const generateStrongPassword = () => {
-        const length = 12
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
-        let retVal = ""
-        for (let i = 0, n = charset.length; i < length; ++i) {
-            retVal += charset.charAt(Math.floor(Math.random() * n))
-        }
-        form.setValue("password", retVal)
-        setShowPassword(true) // Show the password so they can copy it
-    }
-
     return (
         <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                <Link href="/admin/professores">
-                    <Button variant="ghost" size="icon">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                </Link>
-                <CardTitle className="text-xl">{isEditing ? "Editar Professor" : "Novo Professor"}</CardTitle>
+            <CardHeader>
+                <CardTitle>{isEditing ? "Editar Professor" : "Novo Professor"}</CardTitle>
             </CardHeader>
             <CardContent>
                 {serverError && (
@@ -122,9 +113,9 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
                         <AlertDescription>{serverError}</AlertDescription>
                     </Alert>
                 )}
-
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {isEditing && <input type="hidden" {...form.register("id")} />}
 
                         <FormField
                             control={form.control}
@@ -245,7 +236,7 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
                         </Button>
                     </form>
                 </Form>
-            </CardContent>
-        </Card>
+            </CardContent >
+        </Card >
     )
 }

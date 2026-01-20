@@ -19,6 +19,13 @@ const adminClient = createClient(
 export async function registerProfessorAction(prevState: any, formData: FormData) {
     const rawData = Object.fromEntries(formData.entries())
 
+    // SECURITY: Registration Disabled
+    return {
+        success: false,
+        error: "O cadastro de professores foi desativado por segurança. Contate o administrador."
+    }
+
+    /*
     const validatedFields = registerProfessorSchema.safeParse(rawData)
 
     if (!validatedFields.success) {
@@ -117,4 +124,5 @@ export async function registerProfessorAction(prevState: any, formData: FormData
             error: `Erro interno: ${error instanceof Error ? error.message : String(error)}`
         }
     }
+    */
 }

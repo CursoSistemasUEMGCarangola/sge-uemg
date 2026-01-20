@@ -20,7 +20,7 @@
 - **Persistence:** **Proibido armazenamento de arquivos (Blob Storage).** O sistema armazena apenas metadados. Documentos físicos são protocolados fora do sistema.
 - **Client-Side Heavy:** Geração de documentos (PDFs) deve ocorrer no navegador do usuário para poupar CPU do servidor.
 - **Acesso:** Interface deve ser responsiva, mas otimizada para Desktop.
-- **Segurança:** Cadastro de novos usuários restrito por "Janela Temporal" definida pelo Admin.
+- **Segurança:** Cadastro de novos usuários restrito. **Professores só podem ser cadastrados pelo Administrador.** Alunos podem se cadastrar sozinhos durante "Janela Temporal".
 
 ## 3. CANVAS DE ARQUITETURA PROFUNDA (Decisões Estratégicas)
 
@@ -29,7 +29,7 @@
 | Dimensão | Decisão Arquitetural | Justificativa (O Porquê) |
 | :--- | :--- | :--- |
 | **Escopo** | MVP Funcional Completo | Volume baixo (20 alunos/semestre) permite foco total em fluxo lógico sem preocupação com escala massiva. |
-| **Atores/Auth** | RBAC Simples (Aluno/Prof) | Separação clara: Aluno *submete*, Professor *audita/aprova*. Cadastro controlado por janelas de tempo. |
+| **Atores/Auth** | RBAC Simples (Aluno/Prof) | Separação clara. **Cadastro de Professor bloqueado (apenas Admin cria).** Aluno *submete*, Professor *audita*. |
 | **Interface** | Server Components (RSC) | Reduzir JavaScript enviado ao cliente; formulários rápidos e leves. |
 | **Dados** | Relacional (Postgres) | Integridade referencial é vital para ligar Aluno -> Contrato -> 8 Etapas. |
 | **Conectividade** | Online-Only | O sistema não precisa de modo offline complexo (PWA), pois o uso é pontual e administrativo. |

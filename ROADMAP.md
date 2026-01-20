@@ -54,9 +54,9 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 **Objetivo:** Ferramenta para o orientador validar documentos e destravar etapas.
 
-- [ ] **Dashboard do Professor:** Lista de estagiários com filtros (Pendente, Aprovado).
-- [ ] **Review Interface:** Tela de detalhe mostrando dados submetidos vs requisitos.
-- [ ] **Actions:** Botões de Aprovar (avança etapa) ou Rejeitar (retorna com feedback).
+- [x] **Dashboard do Professor:** Lista de estagiários com filtros (Pendente, Aprovado).
+- [x] **Review Interface:** Tela de detalhe mostrando dados submetidos vs requisitos.
+- [x] **Actions:** Botões de Aprovar (avança etapa) ou Rejeitar (retorna com feedback) e Ações Administrativas (Ativar/Excluir).
 - [ ] **Histórico:** Log simples de quem aprovou e quando.
 
 **DoD:** Professor visualiza submissão da Fase 2, rejeita (com motivo) e depois aprova. Sistema avança aluno para Etapa 2.

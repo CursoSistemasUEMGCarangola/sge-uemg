@@ -254,9 +254,37 @@ export async function deleteAtividade(id: number) {
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
 
-    // Check ownership TODO
-
     await prisma.diarioAtividade.delete({ where: { id } })
+    revalidatePath('/aluno')
+    return { success: true }
+}
+
+
+export async function submitRelatorioAtividades(contratoId: number, etapaId: number) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    // 1. Check if there are activities
+    const atividades = await prisma.diarioAtividade.count({
+        where: { idContrato: contratoId }
+    })
+
+    if (atividades === 0) {
+        return { error: "É necessário registrar pelo menos uma atividade antes de enviar." }
+    }
+
+    // 2. Update Stage to EM_ANALISE
+    // We don't have a 'link' here, the 'link' is the system itself (the diary entries).
+    // We could generate a PDF link later, but for now we mark it for review.
+    await prisma.acompanhamentoEtapa.updateMany({
+        where: { idContrato: contratoId, idEtapaDef: etapaId },
+        data: {
+            status: 'EM_ANALISE',
+            observacoes: null,
+            // link_documento: "DIARIO_DIGITAL" // Optional flag
+        }
+    })
+
     revalidatePath('/aluno')
     return { success: true }
 }
@@ -286,4 +314,46 @@ export async function submitRelatorio(contratoId: number, etapaId: number, texto
 
     revalidatePath('/aluno')
     return { success: true }
+}
+
+export async function deleteContractAction(id: number) {
+    const role = await getCurrentUserRole()
+    if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+        return { success: false, error: "Sem permissão para excluir contratos." }
+    }
+
+    try {
+        await prisma.contratoEstagio.delete({
+            where: { id }
+        })
+        revalidatePath('/admin')
+        return { success: true }
+    } catch (error) {
+        console.error("Erro ao excluir contrato:", error)
+        return { success: false, error: "Erro ao excluir o contrato. Verifique se existem dependências." }
+    }
+}
+
+export async function updateContractStatusAction(id: number, status: 'ATIVO' | 'PENDENTE') {
+    const role = await getCurrentUserRole()
+    if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+        return { success: false, error: "Sem permissão (updateContractStatus)." }
+    }
+
+    try {
+        // User request: Change from Pendente to Ativo.
+        // Logic: active -> APROVADO.
+        const dbStatus = status === 'ATIVO' ? 'APROVADO' : 'PENDENTE'
+
+        await prisma.contratoEstagio.update({
+            where: { id },
+            data: { statusAprovacao: dbStatus }
+        })
+        revalidatePath(`/admin/estagios/${id}`)
+        revalidatePath('/admin')
+        return { success: true }
+    } catch (error) {
+        console.error("Erro ao atualizar status:", error)
+        return { success: false, error: "Erro ao atualizar status." }
+    }
 }
