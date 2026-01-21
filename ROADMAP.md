@@ -125,3 +125,17 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 - [x] **Student Registration:** Fluxo completo de cadastro do aluno com validações (Zod) e UI (Shadcn).
 
 **DoD:** Visitante não-autenticado acessa Landing Page informativa; Aluno consegue se cadastrar e logar; Login redireciona para dashboard correta.
+
+---
+
+## FASE 9: STAGE LOGIC & REFINEMENTS (The Brain)
+
+**Objetivo:** Implementar a lógica "inteligente" de progressão de estágios, prazos e ações condicionais.
+
+- [x] **Stage Configuration:** Admin gerencia `EtapaDefinicao` (Prazos, Descrições, Ações de Sistema).
+- [x] **Sequential Logic:** Aprovar Etapa N desbloqueia automaticamente Etapa N+1 com prazo calculado.
+- [x] **Deadline UI:** Exibir prazos claros para o aluno e alertas de atraso para o professor.
+- [x] **Conditional Actions:** Botões na dashboard do aluno (ex: "Enviar Link", "Preencher Plano") aparecem apenas quando a etapa exige.
+- [x] **Manual Recovery:** Scripts SQL robustos para recuperação de desastre (`schema.sql` e `seed_admin.sql`).
+
+**DoD:** Sistema guia o aluno passo-a-passo, gerenciando prazos e bloqueando avanços indevidos, com recuperação simples em caso de falha de dados.

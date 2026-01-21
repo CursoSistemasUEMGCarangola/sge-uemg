@@ -104,6 +104,8 @@ model EtapaDefinicao {
   numeroEtapa       Int    @map("numero_etapa")
   descricao         String
   orientacaoTextual String @map("orientacao_textual")
+  prazoDias         Int    @default(7) @map("prazo_dias")
+  systemAction      String? @map("system_action")
 
   acompanhamentos AcompanhamentoEtapa[]
 

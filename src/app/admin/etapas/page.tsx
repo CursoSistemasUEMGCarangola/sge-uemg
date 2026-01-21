@@ -1,70 +1,65 @@
 import { prisma } from "@/lib/prisma"
-import { getCurrentUserRole } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import { EtapaDialog } from "./etapa-dialog"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { EditStageDialog } from "./edit-stage-dialog"
+import { Badge } from "@/components/ui/badge"
 
-export default async function EtapasPage() {
-    const role = await getCurrentUserRole()
-    if (role !== 'ADMIN') redirect('/admin')
-
+export default async function AdminEtapasPage() {
     const etapas = await prisma.etapaDefinicao.findMany({
         orderBy: { numeroEtapa: 'asc' }
     })
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Etapas do Estágio</h1>
-                    <p className="text-muted-foreground">Defina a sequência de etapas do estágio.</p>
-                </div>
-                <EtapaDialog mode="create" />
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Etapas</h1>
+                <p className="text-muted-foreground">Configure os prazos, orientações e ações automáticas de cada etapa do estágio.</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Etapas Configuradas</CardTitle>
+                    <CardTitle>Etapas do Processo</CardTitle>
                     <CardDescription>
-                        Estas são as etapas que serão geradas automaticamente para novos estágios.
+                        Definições atuais do fluxo de estágio.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[80px]">Ordem</TableHead>
+                                <TableHead className="w-[80px]">Número</TableHead>
                                 <TableHead>Descrição</TableHead>
-                                <TableHead>Orientação</TableHead>
+                                <TableHead>Prazo (Dias)</TableHead>
+                                <TableHead>Ação de Sistema</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {etapas.map((etapa) => (
                                 <TableRow key={etapa.id}>
-                                    <TableCell className="font-bold text-center bg-muted/50 rounded-l-md">
-                                        {etapa.numeroEtapa}
+                                    <TableCell className="font-medium text-center">
+                                        <Badge variant="outline">{etapa.numeroEtapa}</Badge>
                                     </TableCell>
-                                    <TableCell className="font-medium">{etapa.descricao}</TableCell>
-                                    <TableCell className="max-w-[400px] truncate" title={etapa.orientacaoTextual}>
-                                        {etapa.orientacaoTextual}
+                                    <TableCell>
+                                        <div className="font-medium">{etapa.descricao}</div>
+                                        <div className="text-xs text-muted-foreground truncate max-w-[300px]">
+                                            {etapa.orientacaoTextual}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {etapa.prazoDias} dias
+                                    </TableCell>
+                                    <TableCell>
+                                        {etapa.systemAction ? (
+                                            <Badge variant="secondary" className="font-mono text-xs">
+                                                {etapa.systemAction}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground text-xs">-</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <EtapaDialog mode="edit" etapa={etapa} />
+                                        <EditStageDialog etapa={etapa} />
                                     </TableCell>
                                 </TableRow>
                             ))}

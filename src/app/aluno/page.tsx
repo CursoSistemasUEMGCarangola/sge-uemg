@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket } from "lucide-react"
+import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket, FileText } from "lucide-react"
 import { getStudentDashboardData } from "@/features/estagio/data"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
 import { Stepper } from "@/components/ui/stepper"
@@ -64,10 +64,10 @@ export default async function AlunoDashboard() {
                                         <div>
                                             <CardTitle className="text-lg flex items-center gap-2">
                                                 <Building2 className="h-5 w-5 text-muted-foreground" />
-                                                {contrato.campo.nomeFantasia}
+                                                {contrato.oferta.curso.nome}
                                             </CardTitle>
                                             <CardDescription>
-                                                <span className="font-semibold mr-1">{contrato.oferta.curso.nome}</span>
+                                                <span className="font-semibold mr-1">Campo de Estágio: {contrato.campo.nomeFantasia}</span>
                                                 <span className="font-semibold mx-1">•
                                                     Modalidade: {contrato.modalidade}</span>
                                                 <span className="font-semibold mx-1">•
@@ -75,7 +75,7 @@ export default async function AlunoDashboard() {
                                             </CardDescription>
                                         </div>
                                         <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
-                                            {contrato.statusAprovacao}
+                                            {contrato.statusAprovacao === 'APROVADO' ? 'ATIVO' : contrato.statusAprovacao}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -102,32 +102,49 @@ export default async function AlunoDashboard() {
                                             }))}
                                         />
                                         <div className="mt-4 text-center">
-                                            <p className="text-sm text-muted-foreground">
-                                                Etapa Atual: <span className="font-medium text-foreground">{firstPending?.etapaDef.descricao || "Concluído"}</span>
+                                            <p className="text-lg text-muted-foreground">
+                                                <br />Etapa Atual: <span className="font-bold text-xl text-primary">
+                                                    {contrato.statusAprovacao === 'PENDENTE'
+                                                        ? "PENDENTE: AGUARDANDO APROVAÇÃO DO PROFESSOR ORIENTADOR"
+                                                        : (firstPending?.etapaDef.descricao || "Concluído")
+                                                    }
+                                                </span>
                                             </p>
-                                            <p className="text-xs text-muted-foreground mt-1">
+                                            <p className="text-base font-medium text-foreground mt-2">
                                                 {firstPending?.etapaDef.orientacaoTextual}
                                             </p>
                                         </div>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="bg-muted/20 flex justify-end gap-2 p-4">
-                                    <Link href={`/aluno/diario/${contrato.id}`}>
-                                        <Button variant="outline" size="sm">
-                                            <BookOpen className="mr-2 h-4 w-4" />
-                                            Diário
-                                        </Button>
-                                    </Link>
-                                    {firstPending && (
-                                        <SubmitLinkDialog
-                                            contratoId={contrato.id}
-                                            etapaId={firstPending.etapaDef.id}
-                                            etapaNumero={firstPending.etapaDef.numeroEtapa}
-                                            etapaNome={firstPending.etapaDef.descricao}
-                                            currentLink={firstPending.linkDocumento}
-                                            currentText={contrato.textoRelatorioAvaliacao}
-                                        />
+                                <CardFooter className="bg-muted/20 flex flex-col items-end gap-2 p-4 sm:flex-row sm:justify-end">
+                                    {/* Deadline Display */}
+                                    {firstPending?.dataLimite && (
+                                        <div className={`text-sm mr-auto flex items-center gap-1 ${new Date() > new Date(firstPending.dataLimite) ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                                            <Clock className="h-4 w-4" />
+                                            Prazo: {new Date(firstPending.dataLimite).toLocaleDateString('pt-BR')}
+                                        </div>
                                     )}
+
+                                    {/* Actions based on systemAction */}
+                                    {/* Fallback for hardcoded Step 4 or mapped action */}
+                                    {(firstPending?.etapaDef.numeroEtapa === 4 || firstPending?.etapaDef.systemAction === 'FILL_ACTIVITY_PLAN') && (
+                                        <Link href={`/aluno/diario/${contrato.id}`}>
+                                            <Button variant="outline" size="sm">
+                                                <BookOpen className="mr-2 h-4 w-4" />
+                                                Plano de Atividades do Estágio
+                                            </Button>
+                                        </Link>
+                                    )}
+
+                                    {firstPending?.etapaDef.systemAction === 'GENERATE_DOC_CAPA' && (
+                                        <a href={`/aluno/docs/capa/${contrato.id}`} target="_blank">
+                                            <Button variant="outline" size="sm">
+                                                <FileText className="mr-2 h-4 w-4" />
+                                                Gerar Capa
+                                            </Button>
+                                        </a>
+                                    )}
+
                                     {!firstPending && <Button variant="outline" size="sm" disabled>Concluído</Button>}
                                 </CardFooter>
                             </Card>

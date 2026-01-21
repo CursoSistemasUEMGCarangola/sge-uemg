@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     description: 'Sistema de Gestão de Estágios',
 }
 
+import { Toaster } from "@/components/ui/toaster"
+
 export default function RootLayout({
     children,
 }: {
@@ -19,6 +21,7 @@ export default function RootLayout({
         <html lang="pt-BR">
             <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
                 {children}
+                <Toaster />
             </body>
         </html>
     )

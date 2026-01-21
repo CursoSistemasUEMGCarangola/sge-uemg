@@ -24,6 +24,7 @@ const ModalidadeEnum = z.enum(["PRESENCIAL", "REMOTO", "HIBRIDO"])
 const TipoDocumentacaoEnum = z.enum(["TCE", "TERMO_ADITIVO"])
 
 export const estagioSchema = z.object({
+    idCurso: z.coerce.number().min(1, "Selecione o curso de estágio"),
     modalidade: z.string().min(1, "Selecione a modalidade"),
     tipoDocumentacao: z.string().min(1, "Selecione o tipo de documentação"),
     dataInicio: z.date(),

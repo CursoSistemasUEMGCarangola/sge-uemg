@@ -15,11 +15,31 @@ export default async function AlunoLayout({
     const { data: { user } } = await supabase.auth.getUser()
 
     let userName = "Aluno"
+    let hasActiveInternship = false
+
     if (user) {
         const profile = await prisma.profile.findUnique({
-            where: { id: user.id }
+            where: { id: user.id },
+            include: {
+                aluno: {
+                    include: {
+                        contratos: {
+                            where: {
+                                statusAprovacao: 'APROVADO',
+                                dataConclusaoEstagio: null
+                            }
+                        }
+                    }
+                }
+            }
         })
-        if (profile) userName = profile.nomeCompleto
+
+        if (profile) {
+            userName = profile.nomeCompleto
+            if (profile.aluno && profile.aluno.contratos.length > 0) {
+                hasActiveInternship = true
+            }
+        }
     }
 
     return (
@@ -53,15 +73,18 @@ export default async function AlunoLayout({
                             Minha Conta
                         </Button>
                     </Link>
-                    <Link href="/aluno/documentos">
-                        <Button variant="ghost" className="w-full justify-start gap-2">
-                            <FileText className="h-4 w-4" />
-                            Documentos
-                        </Button>
-                    </Link>
+
+                    {hasActiveInternship && (
+                        <Link href="/aluno/documentos">
+                            <Button variant="ghost" className="w-full justify-start gap-2">
+                                <FileText className="h-4 w-4" />
+                                Documentos
+                            </Button>
+                        </Link>
+                    )}
                     <div className="mt-auto border-t pt-4">
                         <form action={logoutAction}>
-                            <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-red-500 hover:bg-red-50">
+                            <Button type="submit" variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-red-500 hover:bg-red-50">
                                 <LogOut className="h-4 w-4" />
                                 Sair
                             </Button>

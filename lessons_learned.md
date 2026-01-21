@@ -111,3 +111,28 @@
 **Contexto:** Necessidade de adicionar botões com confirmação (Dialogs) e feedback (Toast) em uma página detalhe renderizada no servidor (`page.tsx`). Server Actions não podem ser invocados diretamente de event handlers em Server Components.
 **Solução:** Criar um "Client Component wrapper" (ex: `contract-actions.tsx`) que contém a lógica de UI (`useState`, `useTransition`, `AlertDialog`) e invoca a Server Action. Esse componente é então importado na página Server-Side.
 **Prevenção:** Segregar claramente: Página (Fetch dados) -> Componente Cliente (Interatividade) -> Server Action (Mutação).
+
+### [2026-01-21] - [DB] Restauração de Schema e Seed Manual (Wipe Recovery)
+
+**Contexto:** O banco de dados foi completamente apagado. A tentativa de usar `prisma db push` causou conflitos com tipos ENUM já existentes ou definições inconsistentes. Além disso, o seed script (`seed.ts`) falhava por depender de tipos do `@prisma/client` desatualizados em relação ao banco vazio.
+**Solução:**
+
+1. Criação de script SQL manual completo (`sql/schema.sql`) com `DROP TABLE/TYPE IF EXISTS CASCADE` para garantir limpeza total antes da recriação.
+2. Criação de script SQL de seed (`sql/seed_admin.sql`) para inserir dados estáticos (etapas, configs) e usuários ADMIN via SQL direto, contornando a necessidade do cliente Prisma durante a restauração de emergência.
+**Prevenção:** Manter sempre um `schema.sql` atualizado como fonte da verdade "fallback" para disaster recovery, sem depender exclusivamente das migrations do Prisma cli.
+
+### [2026-01-21] - [REACT] Erro `TypeError: Cannot read properties of null (reading 'useContext')` após Wipe
+
+**Contexto:** Após limpar o banco, usuários viam este erro ao tentar acessar páginas protegidas ou usar componentes de UI.
+**Solução:**
+
+1. O erro geralmente indica que um Hook (ex: `useToast` ou AuthContext) está sendo chamado fora de seu Provider, OU que o estado de autenticação (cookies) no navegador está tentando carregar sessões que não existem mais no banco (profile null).
+2. Adição explícita do componente `<Toaster />` no `RootLayout` (`src/app/layout.tsx`).
+3. Limpeza de cookies do navegador para forçar novo login.
+**Prevenção:** Em casos de wipe de banco, sempre limpe os cookies do navegador e garanta que Providers globais (Toast, Auth) estejam no nível mais alto do Layout.
+
+### [2026-01-21] - [NEXTJS] HTML Inválido: Button dentro de Link
+
+**Contexto:** O padrão `<Link><Button>...</Button></Link>` gera HTML inválido (`<a><button>...</button></a>`) e causa problemas de hidratação ou comportamento errático de clique.
+**Solução:** Usar a prop `asChild` do componente Button (do Shadcn/Radix) para que ele renderize o elemento filho (o Link) mantendo os estilos do botão: `<Button asChild><Link>...</Link></Button>`.
+**Prevenção:** Nunca envolver componentes interativos (Button) com Link diretamente; usar composição com `asChild`.

@@ -42,21 +42,21 @@ export async function createEstagio(data: NovoEstagioFormData) {
         }
         console.log("SERVER ACTION: Student found", { id: aluno.id, periodo: aluno.periodoAtual })
 
-        // 3. Find Active Offer for Student's Period
-        // matching the student's current period.
+        // 3. Find Active Offer for Student's Period AND Selected Course
         const oferta = await prisma.ofertaEstagio.findFirst({
             where: {
                 ativo: true,
+                cursoEstagioId: estagio.idCurso, // Filter by selected course
                 curso: {
                     periodoVinculado: aluno.periodoAtual
                 }
             },
-            include: { curso: true } // just in case we need info
+            include: { curso: true }
         })
 
         if (!oferta) {
-            console.log(`SERVER ACTION: No active offer found for period ${aluno.periodoAtual}`)
-            return { error: `Nenhuma oferta de estágio ativa encontrada para o ${aluno.periodoAtual}º período.` }
+            console.log(`SERVER ACTION: No active offer found for period ${aluno.periodoAtual} and course ${estagio.idCurso}`)
+            return { error: `Nenhuma oferta de estágio ativa encontrada para o curso selecionado.` }
         }
         console.log("SERVER ACTION: Offer found", oferta.id)
 
@@ -129,12 +129,14 @@ export async function approveStage(contratoId: number, etapaId: number, feedback
     })
 
     if (nextStageDef) {
+        const deadline = new Date()
+        deadline.setDate(deadline.getDate() + (nextStageDef.prazoDias || 7))
+
         await prisma.acompanhamentoEtapa.updateMany({
             where: { idContrato: contratoId, idEtapaDef: nextStageDef.id },
             data: {
-                status: 'PENDENTE' // Unlock: changes from PENDENTE (or future default) - logic here assumes created as PENDENTE but we might need a status 'BLOQUEADO' initially? 
-                // In Phase 2, we created all as PENDENTE. Let's assume sequential approval just marks current as Done.
-                // Improvement: We can set status 'EM_ANDAMENTO' for next.
+                status: 'PENDENTE', // Unlock
+                dataLimite: deadline
             }
         })
     } else {
@@ -345,10 +347,49 @@ export async function updateContractStatusAction(id: number, status: 'ATIVO' | '
         // Logic: active -> APROVADO.
         const dbStatus = status === 'ATIVO' ? 'APROVADO' : 'PENDENTE'
 
-        await prisma.contratoEstagio.update({
-            where: { id },
-            data: { statusAprovacao: dbStatus }
+        await prisma.$transaction(async (tx) => {
+            // 1. Update Contract Status
+            await tx.contratoEstagio.update({
+                where: { id },
+                data: { statusAprovacao: dbStatus }
+            })
+
+            // 2. If Approved (Active), ensure steps exist
+            if (dbStatus === 'APROVADO') {
+                const count = await tx.acompanhamentoEtapa.count({
+                    where: { idContrato: id }
+                })
+
+                if (count === 0) {
+                    const etapasDef = await tx.etapaDefinicao.findMany({
+                        orderBy: { numeroEtapa: 'asc' }
+                    })
+
+                    // Create records for all steps. Default PENDENTE.
+                    // Set deadline only for the first step.
+                    const now = new Date()
+
+                    for (const def of etapasDef) {
+                        let dataLimite = null
+                        if (def.numeroEtapa === 1) {
+                            const deadline = new Date()
+                            deadline.setDate(deadline.getDate() + (def.prazoDias || 7)) // Default 7 if null
+                            dataLimite = deadline
+                        }
+
+                        await tx.acompanhamentoEtapa.create({
+                            data: {
+                                idContrato: id,
+                                idEtapaDef: def.id,
+                                status: 'PENDENTE',
+                                dataLimite: dataLimite
+                            }
+                        })
+                    }
+                }
+            }
         })
+
         revalidatePath(`/admin/estagios/${id}`)
         revalidatePath('/admin')
         return { success: true }

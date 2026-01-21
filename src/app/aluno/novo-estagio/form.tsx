@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, CalendarIcon } from "lucide-react"
+import { Loader2, CalendarIcon, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -40,10 +40,11 @@ import { novoEstagioSchema, NovoEstagioFormData } from "@/features/estagio/schem
 import { createEstagio } from "@/features/estagio/actions"
 
 interface NovoEstagioFormProps {
-    informacoesGerais: any[] // We can type this better later or import shared types
+    informacoesGerais: any[]
+    cursosDisponiveis: any[]
 }
 
-export function NovoEstagioForm({ informacoesGerais }: NovoEstagioFormProps) {
+export function NovoEstagioForm({ informacoesGerais, cursosDisponiveis }: NovoEstagioFormProps) {
     const { toast } = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -56,6 +57,16 @@ export function NovoEstagioForm({ informacoesGerais }: NovoEstagioFormProps) {
     const form = useForm<NovoEstagioFormData>({
         resolver: zodResolver(novoEstagioSchema),
         defaultValues: {
+            // @ts-ignore - idCurso might default to undefined but Zod expects number. 
+            // We'll let user select.
+            estagio: {
+                idCurso: 0,
+                modalidade: "",
+                tipoDocumentacao: "",
+                cargaHorariaDiaria: 6,
+                atribuicoes: "",
+                dataInicio: undefined,
+            },
             empresa: {
                 razaoSocial: "",
                 nomeFantasia: "",
@@ -69,13 +80,6 @@ export function NovoEstagioForm({ informacoesGerais }: NovoEstagioFormProps) {
                 cargo: "",
                 formacao: "",
                 titulacao: ""
-            },
-            estagio: {
-                modalidade: "",
-                tipoDocumentacao: "",
-                cargaHorariaDiaria: 6,
-                atribuicoes: "",
-                dataInicio: undefined,
             }
         }
     })
@@ -112,6 +116,45 @@ export function NovoEstagioForm({ informacoesGerais }: NovoEstagioFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
+                {/* Seleção do Curso */}
+                <Card className="border-primary/20 bg-primary/5">
+
+                    <CardHeader>
+                        <CardTitle className="text-primary flex items-center gap-2">
+                            <BookOpen className="h-5 w-5" />
+                            Selecione a disciplina de estágio que você vai cursar:
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="estagio.idCurso"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <Select
+                                        onValueChange={(val) => field.onChange(Number(val))}
+                                        defaultValue={field.value ? field.value.toString() : undefined}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger className="bg-background">
+                                                <SelectValue placeholder="Selecionar..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cursosDisponiveis.map((curso: any) => (
+                                                <SelectItem key={curso.id} value={curso.id.toString()}>
+                                                    {curso.nome}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
 
                 {/* Dados da Empresa */}
                 <Card>

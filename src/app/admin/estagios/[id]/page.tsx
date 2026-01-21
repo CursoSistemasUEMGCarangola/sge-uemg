@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Stepper } from "@/components/ui/stepper"
-import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft } from "lucide-react"
+import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft, FileClock } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
@@ -42,13 +42,13 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">{contrato.aluno.profile.nomeCompleto}</h1>
                     <p className="text-muted-foreground mr-4 inline-block">
-                        {contrato.oferta?.curso?.nome}
+                        {contrato.oferta?.curso?.nome} - {contrato.oferta?.curso?.periodoVinculado}º Período
                     </p>
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
                     <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
-                        {contrato.statusAprovacao}
+                        {contrato.statusAprovacao === 'APROVADO' ? 'ATIVO' : contrato.statusAprovacao}
                     </Badge>
                     <ContractActions contractId={contrato.id} status={contrato.statusAprovacao || 'PENDENTE'} />
                 </div>
@@ -109,7 +109,22 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     </Card>
 
                     {/* Action Card */}
-                    {firstPending ? (
+                    {contrato.statusAprovacao === 'PENDENTE' ? (
+                        <Card className="border-yellow-200 bg-yellow-50">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-yellow-800">
+                                    <FileClock className="h-5 w-5" />
+                                    Aguardando Início
+                                </CardTitle>
+                                <CardDescription className="text-yellow-700">
+                                    Este estágio aguarda sua aprovação para iniciar.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="text-sm text-yellow-800">
+                                Verifique os dados e utilize o botão "Aprovar" no topo da página para iniciar o acompanhamento das etapas.
+                            </CardContent>
+                        </Card>
+                    ) : firstPending ? (
                         <Card className={isEmAnalise ? "border-primary" : ""}>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">

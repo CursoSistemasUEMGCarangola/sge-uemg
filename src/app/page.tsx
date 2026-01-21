@@ -47,12 +47,12 @@ export default async function LandingPage() {
                             <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
                                 Acesse para orientar estágios, avaliar relatórios e acompanhar o desempenho dos seus estudantes.
                             </p>
-                            <Link href={user ? "/admin" : "/login"} className="w-full">
-                                <Button className="w-full py-4 text-base font-semibold bg-primary hover:bg-primary/90 gap-2 group-hover:shadow-md transition-all">
+                            <Button asChild className="w-full py-4 text-base font-semibold bg-primary hover:bg-primary/90 gap-2 group-hover:shadow-md transition-all">
+                                <Link href={user ? "/admin" : "/login"}>
                                     {user ? "Ir para o Painel" : "Acessar como Professor"}
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
                     )}
 
@@ -66,12 +66,12 @@ export default async function LandingPage() {
                             <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
                                 Acesse seus documentos, preencha os relatórios e acompanhe o status do seu estágio.
                             </p>
-                            <Link href={user ? "/aluno" : "/login"} className="w-full">
-                                <Button className="w-full py-4 text-base font-semibold bg-secondary hover:bg-secondary/90 text-white gap-2 group-hover:shadow-md transition-all">
+                            <Button asChild className="w-full py-4 text-base font-semibold bg-secondary hover:bg-secondary/90 text-white gap-2 group-hover:shadow-md transition-all">
+                                <Link href={user ? "/aluno" : "/login"}>
                                     {user ? "Ir para o Painel" : "Acessar como Estudante"}
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
                     )}
                 </div>

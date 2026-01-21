@@ -81,7 +81,7 @@ export function ContractActions({ contractId, status }: ContractActionsProps) {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Confirmar Ativação</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Tem certeza que deseja alterar o status deste estágio para <strong>ATIVO</strong>?
+                                Tem certeza que deseja alterar o status deste estágio para <strong>ATIVO</strong>?<br />
                                 Isso indicará que o aluno está apto a iniciar ou continuar as atividades.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
