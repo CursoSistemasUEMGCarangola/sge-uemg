@@ -398,3 +398,62 @@ export async function updateContractStatusAction(id: number, status: 'ATIVO' | '
         return { success: false, error: "Erro ao atualizar status." }
     }
 }
+
+export async function updateEstagioAction(
+    contratoId: number,
+    data: {
+        supervisor: {
+            nome: string;
+            cargo: string;
+            formacao: string;
+            titulacao: string;
+            telefone: string;
+            email: string;
+        };
+        atribuicoes: string;
+    }
+) {
+    const role = await getCurrentUserRole()
+    if (role !== "ALUNO" && role !== "ADMIN") {
+        return { error: "Sem permissão." }
+    }
+
+    try {
+        await prisma.$transaction(async (tx) => {
+            const contrato = await tx.contratoEstagio.findUnique({
+                where: { id: contratoId },
+                include: { campo: true }
+            })
+
+            if (!contrato) throw new Error("Contrato não encontrado")
+
+            // Update Campo
+            await tx.campoEstagio.update({
+                where: { id: contrato.idCampo },
+                data: {
+                    supervisorNome: data.supervisor.nome,
+                    supervisorCargo: data.supervisor.cargo,
+                    supervisorAreaFormacao: data.supervisor.formacao,
+                    supervisorTitulacao: data.supervisor.titulacao,
+                    supervisorTelefone: data.supervisor.telefone,
+                    supervisorEmail: data.supervisor.email,
+                }
+            })
+
+            // Update Atribuicoes
+            await tx.contratoEstagio.update({
+                where: { id: contratoId },
+                data: {
+                    atribuicoes: data.atribuicoes
+                }
+            })
+        })
+
+        revalidatePath(`/aluno/docs/capa/${contratoId}/editar`)
+        revalidatePath('/aluno')
+        return { success: true }
+    } catch (error) {
+        console.error("Erro ao atualizar estágio:", error)
+        return { error: "Erro ao atualizar dados." }
+    }
+}

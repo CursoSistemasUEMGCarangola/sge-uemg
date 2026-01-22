@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { FileClock, CheckCircle2, AlertCircle, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -156,12 +157,9 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
                                             return (
                                                 <div className="flex flex-col items-center gap-1">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${contrato.statusAprovacao === 'ATIVO' ? 'bg-green-100 text-green-700' :
-                                                        contrato.statusAprovacao === 'REJEITADO' ? 'bg-red-100 text-red-700' :
-                                                            'bg-yellow-100 text-yellow-700'
-                                                        }`}>
+                                                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : contrato.statusAprovacao === 'REJEITADO' ? 'destructive' : 'secondary'}>
                                                         {contrato.statusAprovacao}
-                                                    </span>
+                                                    </Badge>
                                                     {isLate && contrato.statusAprovacao === 'ATIVO' && (
                                                         <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded border border-red-200">
                                                             ATRASADO

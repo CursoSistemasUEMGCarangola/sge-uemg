@@ -84,7 +84,7 @@ export default async function NovoEstagioPage() {
 
             <NovoEstagioForm
                 informacoesGerais={informacoesGerais}
-                cursosDisponiveis={cursosDisponiveis}
+                ofertas={ofertas}
             />
         </div>
     )

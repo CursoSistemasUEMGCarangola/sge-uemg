@@ -1,4 +1,4 @@
-import { PrismaClient, Role, StatusEtapa, Modalidade, TipoDocumentacao } from '@prisma/client'
+import { PrismaClient, Role, StatusEtapa } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
@@ -28,7 +28,8 @@ async function main() {
         {
             numeroEtapa: 1,
             descricao: "Entrega de Documentos Físicos",
-            orientacaoTextual: "Protocole a entrega dos documentos físicos (TCE) no setor de protocolos da Instituição."
+            orientacaoTextual: "Protocole a entrega dos documentos físicos (TCE) no setor de protocolos da Instituição.",
+            systemAction: "GENERATE_DOC_CAPA"
         },
         {
             numeroEtapa: 2,
@@ -78,7 +79,8 @@ async function main() {
                 id: etapa.numeroEtapa,
                 numeroEtapa: etapa.numeroEtapa,
                 descricao: etapa.descricao,
-                orientacaoTextual: etapa.orientacaoTextual
+                orientacaoTextual: etapa.orientacaoTextual,
+                systemAction: (etapa as any).systemAction // Add logic to handle optional property safely or update interface above
             },
         })
     }
@@ -153,7 +155,9 @@ async function main() {
             // Campos renomeados no schema
             cursoEstagioId: curso1.id,
             professorOrientadorId: professor.id,
-            ativo: true
+            ativo: true,
+            dataInicio: new Date("2026-02-01"),
+            dataFim: new Date("2026-07-01")
         }
     })
 
@@ -166,12 +170,12 @@ async function main() {
             idOferta: oferta.id,
             idCampo: campo.id,
 
-            modalidade: Modalidade.HIBRIDO,
-            tipoDocumentacao: TipoDocumentacao.TCE,
+            modalidade: 'HIBRIDO',
+            tipoDocumentacao: 'TCE',
             atribuicoes: "Desenvolvimento de software full-stack utilizando React e Node.js",
             dataInicioPrevista: new Date("2026-02-01"),
             cargaHorariaDiaria: 6,
-            statusAprovacao: "APROVADO",
+            statusAprovacao: "ATIVO",
 
             acompanhamentos: {
                 create: etapasData.map(e => ({

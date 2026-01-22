@@ -41,13 +41,14 @@ import { createEstagio } from "@/features/estagio/actions"
 
 interface NovoEstagioFormProps {
     informacoesGerais: any[]
-    cursosDisponiveis: any[]
+    ofertas: any[]
 }
 
-export function NovoEstagioForm({ informacoesGerais, cursosDisponiveis }: NovoEstagioFormProps) {
+export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormProps) {
     const { toast } = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
     // Filter dynamic options
     const titulacaoOptions = informacoesGerais?.filter(item => item.categoria === 'TITULACAO_SUPERVISOR') || []
@@ -142,9 +143,9 @@ export function NovoEstagioForm({ informacoesGerais, cursosDisponiveis }: NovoEs
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {cursosDisponiveis.map((curso: any) => (
-                                                <SelectItem key={curso.id} value={curso.id.toString()}>
-                                                    {curso.nome}
+                                            {ofertas.map((oferta: any) => (
+                                                <SelectItem key={oferta.curso.id} value={oferta.curso.id.toString()}>
+                                                    {oferta.curso.nome}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -382,43 +383,53 @@ export function NovoEstagioForm({ informacoesGerais, cursosDisponiveis }: NovoEs
                         <FormField
                             control={form.control}
                             name="estagio.dataInicio"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Data de Início Prevista</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        "w-full pl-3 text-left font-normal",
-                                                        !field.value && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    {field.value ? (
-                                                        format(field.value, "PPP", { locale: ptBR })
-                                                    ) : (
-                                                        <span>Selecione uma data</span>
-                                                    )}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                disabled={(date) =>
-                                                    date < new Date("1900-01-01")
-                                                }
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                // Watch for selected course to determine min date
+                                const selectedCursoId = form.watch("estagio.idCurso")
+                                const selectedOferta = ofertas.find(o => o.curso.id === Number(selectedCursoId))
+                                const minDate = selectedOferta ? new Date(selectedOferta.dataInicio) : new Date("1900-01-01")
+
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Data de Início Prevista</FormLabel>
+                                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                            <PopoverTrigger asChild>
+                                                <FormControl>
+                                                    <Button
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            "w-full pl-3 text-left font-normal",
+                                                            !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        {field.value ? (
+                                                            format(field.value, "PPP", { locale: ptBR })
+                                                        ) : (
+                                                            <span>Selecione uma data</span>
+                                                        )}
+                                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                    </Button>
+                                                </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={(date) => {
+                                                        field.onChange(date)
+                                                        setIsCalendarOpen(false)
+                                                    }}
+                                                    disabled={(date) =>
+                                                        date < minDate
+                                                    }
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                        <FormMessage />
+                                    </FormItem>
+                                )
+                            }}
                         />
 
                         <FormField

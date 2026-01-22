@@ -149,3 +149,24 @@
 1. Tratar as datas de feriados puramente como strings `YYYY-MM-DD` (UTC text) para comparação.
 2. Usar `modifiers` do `react-day-picker` para injetar classes CSS condicionais (bg-red-100 para feriados).
 **Prevenção:** Em calendários visuais, evite comparar objetos `Date` completos; normalize para string de data.
+
+### [2026-01-22] - [DB/SEED] System Actions no Seed
+
+**Contexto:** O botão "Preencher Capa" não aparecia no Dashboard do Aluno para a Etapa 1, mesmo com o código Frontend correto.
+**Solução:** Identificado que o `seed.ts` criava a Etapa 1 sem preencher o campo `systemAction` (que o código espera ser `'GENERATE_DOC_CAPA'`). O seed foi atualizado e o Admin Panel foi usado para corrigir os dados existentes.
+**Prevenção:** Ao criar features que dependem de configurações de banco (flags, enums, actions), atualizar imediatamente o `seed.ts` para que novos ambientes de dev já nasçam funcionais.
+
+### [2026-01-22] - [REACT-PDF] Geração de PDF com Dados Dinâmicos
+
+**Contexto:** Necessidade de gerar um PDF "Capa de Estágio" que reflete dados editáveis pelo aluno (Supervisor, Atribuições).
+**Solução:** Implementação de um fluxo híbrido:
+
+1. Formulário de Edição (`/editar`) que salva no banco via Server Action.
+2. Rota de PDF (`/pdf/route.tsx`) que lê do banco atualizado e renderiza o template `@react-pdf`.
+**Prevenção:** Não passar dados complexos via URL params para o gerador de PDF. Sempre persistir primeiro, depois gerar o documento a partir do ID do registro.
+
+### [2026-01-22] - [UX] Badge Color Standardization
+
+**Contexto:** O status "ATIVO" aparecia em múltiplas cores (azul, default, verde) dependendo da tela.
+**Solução:** Criação de uma variante `success` explícita no componente `Badge` (`bg-green-600`) e padronização global.
+**Prevenção:** Evitar classes de cores hardcoded (`bg-green-500`) nos componentes de negócio. Usar sempre variantes do Design System (`variant="success"`) para garantir consistência.

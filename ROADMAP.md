@@ -79,10 +79,10 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 **Objetivo:** Gerar PDFs oficiais no navegador para poupar computação serverless.
 
-- [ ] **React-PDF Setup:** Configurar renderizador web (`@react-pdf/renderer`).
-- [ ] **Templates:** Criar layouts para: Termo de Compromisso, Plano de Atividades, Ficha de Avaliação.
-- [ ] **Data Mapping:** Preencher templates com dados do banco (Prisma -> Client Component).
-- [ ] **Download Action:** Botão "Gerar PDF" na dashboard do aluno.
+- [x] **React-PDF Setup:** Configurar renderizador web (`@react-pdf/renderer`).
+- [x] **Templates:** Criar layouts para: Termo de Compromisso (Capa).
+- [x] **Data Mapping:** Preencher templates com dados do banco (Prisma -> Client Component).
+- [x] **Download Action:** Botão "Gerar PDF" na dashboard do aluno.
 
 **DoD:** Aluno clica em "Gerar Termo", PDF é gerado no browser com dados reais e formatação correta, sem call pesado ao backend.
 

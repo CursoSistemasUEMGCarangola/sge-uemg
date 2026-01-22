@@ -47,7 +47,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'default' : 'secondary'}>
+                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>
                         {contrato.statusAprovacao}
                     </Badge>
                     <ContractActions contractId={contrato.id} status={contrato.statusAprovacao || 'PENDENTE'} />
@@ -80,6 +80,16 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                             <div>
                                 <h4 className="font-semibold text-sm">Supervisor</h4>
                                 <p className="text-muted-foreground">{contrato.campo.supervisorNome} ({contrato.campo.supervisorCargo})</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="font-semibold text-sm">Data de Início</h4>
+                                    <p className="text-muted-foreground">{format(contrato.dataInicioPrevista, "PPP", { locale: ptBR })}</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-sm">Previsão de Término</h4>
+                                    <p className="text-muted-foreground">{contrato.dataConclusaoEstagio ? format(contrato.dataConclusaoEstagio, "PPP", { locale: ptBR }) : "Em aberto"}</p>
+                                </div>
                             </div>
                             <Separator />
                             <div>
@@ -128,6 +138,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                         <Card className={isEmAnalise ? "border-primary" : ""}>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
+                                    ORIENTAÇÃO APRESENTADA PARA O ALUNO:<br /><br />
                                     Etapa Atual: {firstPending.etapaDef.descricao}
                                     {isEmAnalise && <Badge>Em Análise</Badge>}
                                 </CardTitle>

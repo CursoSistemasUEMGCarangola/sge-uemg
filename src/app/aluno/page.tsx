@@ -74,8 +74,8 @@ export default async function AlunoDashboard() {
                                                     Carga horária: {contrato.cargaHorariaDiaria}h/dia</span>
                                             </CardDescription>
                                         </div>
-                                        <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
-                                            {contrato.statusAprovacao === 'APROVADO' ? 'ATIVO' : contrato.statusAprovacao}
+                                        <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : contrato.statusAprovacao === 'REJEITADO' ? 'destructive' : 'secondary'}>
+                                            {contrato.statusAprovacao}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -137,12 +137,12 @@ export default async function AlunoDashboard() {
                                     )}
 
                                     {firstPending?.etapaDef.systemAction === 'GENERATE_DOC_CAPA' && (
-                                        <a href={`/aluno/docs/capa/${contrato.id}`} target="_blank">
+                                        <Link href={`/aluno/docs/capa/${contrato.id}/editar`}>
                                             <Button variant="outline" size="sm">
                                                 <FileText className="mr-2 h-4 w-4" />
-                                                Gerar Capa
+                                                Preencher Capa
                                             </Button>
-                                        </a>
+                                        </Link>
                                     )}
 
                                     {!firstPending && <Button variant="outline" size="sm" disabled>Concluído</Button>}
