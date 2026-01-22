@@ -131,8 +131,21 @@
 3. Limpeza de cookies do navegador para forçar novo login.
 **Prevenção:** Em casos de wipe de banco, sempre limpe os cookies do navegador e garanta que Providers globais (Toast, Auth) estejam no nível mais alto do Layout.
 
-### [2026-01-21] - [NEXTJS] HTML Inválido: Button dentro de Link
+### [2026-01-22] - [PRISMA/REFACTOR] Renomeação de Enums (APROVADO -> ATIVO)
 
-**Contexto:** O padrão `<Link><Button>...</Button></Link>` gera HTML inválido (`<a><button>...</button></a>`) e causa problemas de hidratação ou comportamento errático de clique.
-**Solução:** Usar a prop `asChild` do componente Button (do Shadcn/Radix) para que ele renderize o elemento filho (o Link) mantendo os estilos do botão: `<Button asChild><Link>...</Link></Button>`.
-**Prevenção:** Nunca envolver componentes interativos (Button) com Link diretamente; usar composição com `asChild`.
+**Contexto:** Decisão de mudar a terminologia de `APROVADO` para `ATIVO` nos status de estágio.
+**Solução:**
+
+1. Alteração no `schema.prisma`.
+2. Busca global e substituição de string literals no código TypeScript.
+3. Tratamento de erro `EPERM` no Windows ao rodar `prisma generate`: é obrigatório parar o servidor Next.js antes.
+**Prevenção:** Ao renomear Enums, lembre-se que o TypeScript não "pega" literais usados em comparações de string ou queries raw/filtros manuais. É necessário grep global.
+
+### [2026-01-22] - [UI/CALENDAR] Visualização de Feriados e Timezones
+
+**Contexto:** O componente `Calendar` (DayPicker) e o objeto `Date` do JS convertem datas para o fuso local, fazendo feriados (yyyy-mm-dd) aparecerem no dia anterior.
+**Solução:**
+
+1. Tratar as datas de feriados puramente como strings `YYYY-MM-DD` (UTC text) para comparação.
+2. Usar `modifiers` do `react-day-picker` para injetar classes CSS condicionais (bg-red-100 para feriados).
+**Prevenção:** Em calendários visuais, evite comparar objetos `Date` completos; normalize para string de data.

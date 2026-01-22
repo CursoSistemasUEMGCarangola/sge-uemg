@@ -9,7 +9,7 @@ const updateStageSchema = z.object({
     descricao: z.string().min(1, "Descrição é obrigatória"),
     orientacaoTextual: z.string().min(1, "Orientação é obrigatória"),
     prazoDias: z.coerce.number().min(0, "Prazo deve ser maior ou igual a 0"),
-    systemAction: z.string().optional()
+    systemAction: z.string().nullable().optional()
 })
 
 export async function updateStageAction(formData: FormData) {

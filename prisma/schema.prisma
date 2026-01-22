@@ -231,7 +231,7 @@ enum TipoDocumentacao {
 enum StatusEtapa {
   PENDENTE
   EM_ANALISE
-  APROVADO
+  ATIVO
   REJEITADO
   @@map("status_etapa")
   @@schema("public")
@@ -239,7 +239,7 @@ enum StatusEtapa {
 
 enum StatusAprovacao {
   PENDENTE
-  APROVADO
+  ATIVO
   REJEITADO
   @@map("status_aprovacao")
   @@schema("public")

@@ -59,7 +59,7 @@ export function ContratoTable({ contratos }: ContratoTableProps) {
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
+                                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'default' : 'secondary'}>
                                         {contrato.statusAprovacao}
                                     </Badge>
                                 </TableCell>

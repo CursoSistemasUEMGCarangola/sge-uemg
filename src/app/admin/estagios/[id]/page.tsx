@@ -47,8 +47,8 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                    <Badge variant={contrato.statusAprovacao === 'APROVADO' ? 'default' : 'secondary'}>
-                        {contrato.statusAprovacao === 'APROVADO' ? 'ATIVO' : contrato.statusAprovacao}
+                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'default' : 'secondary'}>
+                        {contrato.statusAprovacao}
                     </Badge>
                     <ContractActions contractId={contrato.id} status={contrato.statusAprovacao || 'PENDENTE'} />
                 </div>

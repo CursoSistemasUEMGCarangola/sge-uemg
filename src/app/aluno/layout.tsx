@@ -25,7 +25,7 @@ export default async function AlunoLayout({
                     include: {
                         contratos: {
                             where: {
-                                statusAprovacao: 'APROVADO',
+                                statusAprovacao: 'ATIVO',
                                 dataConclusaoEstagio: null
                             }
                         }

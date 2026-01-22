@@ -22,7 +22,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
     // Calculate stats based on filtered contracts
     const pendentes = filteredContratos.filter(c => c.statusAprovacao === 'PENDENTE').length
-    const ativos = filteredContratos.filter(c => c.statusAprovacao === 'APROVADO' && !c.dataConclusaoEstagio).length
+    const ativos = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !c.dataConclusaoEstagio).length
     const alertas = filteredContratos.filter(c => c.acompanhamentos.some((a: any) => a.status === 'REJEITADO')).length
 
     const handleOfertaClick = (ofertaId: number) => {
@@ -156,13 +156,13 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
                                             return (
                                                 <div className="flex flex-col items-center gap-1">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${contrato.statusAprovacao === 'APROVADO' ? 'bg-green-100 text-green-700' :
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${contrato.statusAprovacao === 'ATIVO' ? 'bg-green-100 text-green-700' :
                                                         contrato.statusAprovacao === 'REJEITADO' ? 'bg-red-100 text-red-700' :
                                                             'bg-yellow-100 text-yellow-700'
                                                         }`}>
-                                                        {contrato.statusAprovacao === 'APROVADO' ? 'ATIVO' : contrato.statusAprovacao}
+                                                        {contrato.statusAprovacao}
                                                     </span>
-                                                    {isLate && contrato.statusAprovacao === 'APROVADO' && (
+                                                    {isLate && contrato.statusAprovacao === 'ATIVO' && (
                                                         <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded border border-red-200">
                                                             ATRASADO
                                                         </span>

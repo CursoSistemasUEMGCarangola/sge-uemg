@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
 
     // Calculate stats
     const pendentes = contratos.filter(c => c.statusAprovacao === 'PENDENTE').length
-    const ativos = contratos.filter(c => c.statusAprovacao === 'APROVADO' && !c.dataConclusaoEstagio).length
+    const ativos = contratos.filter(c => c.statusAprovacao === 'ATIVO' && !c.dataConclusaoEstagio).length
     const alertas = contratos.filter(c => c.acompanhamentos.some((a: any) => a.status === 'REJEITADO')).length
 
     return (

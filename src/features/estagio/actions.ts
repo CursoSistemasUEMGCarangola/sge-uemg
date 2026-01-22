@@ -117,7 +117,7 @@ export async function approveStage(contratoId: number, etapaId: number, feedback
     await prisma.acompanhamentoEtapa.updateMany({
         where: { idContrato: contratoId, idEtapaDef: etapaId },
         data: {
-            status: 'APROVADO',
+            status: 'ATIVO',
             dataConclusao: new Date(),
             observacoes: feedback
         }
@@ -144,7 +144,7 @@ export async function approveStage(contratoId: number, etapaId: number, feedback
         // Maybe update main contract status
         await prisma.contratoEstagio.update({
             where: { id: contratoId },
-            data: { statusAprovacao: 'APROVADO' }
+            data: { statusAprovacao: 'ATIVO' }
         })
     }
 
@@ -344,8 +344,8 @@ export async function updateContractStatusAction(id: number, status: 'ATIVO' | '
 
     try {
         // User request: Change from Pendente to Ativo.
-        // Logic: active -> APROVADO.
-        const dbStatus = status === 'ATIVO' ? 'APROVADO' : 'PENDENTE'
+        // Logic: active -> ATIVO.
+        const dbStatus = status === 'ATIVO' ? 'ATIVO' : 'PENDENTE'
 
         await prisma.$transaction(async (tx) => {
             // 1. Update Contract Status
@@ -355,7 +355,7 @@ export async function updateContractStatusAction(id: number, status: 'ATIVO' | '
             })
 
             // 2. If Approved (Active), ensure steps exist
-            if (dbStatus === 'APROVADO') {
+            if (dbStatus === 'ATIVO') {
                 const count = await tx.acompanhamentoEtapa.count({
                     where: { idContrato: id }
                 })

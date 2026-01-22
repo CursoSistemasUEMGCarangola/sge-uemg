@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (!contrato) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     // Check if approved
-    if (contrato.statusAprovacao !== 'APROVADO') {
+    if (contrato.statusAprovacao !== 'ATIVO') {
         return NextResponse.json({ error: "Estágio não aprovado" }, { status: 403 })
     }
 

@@ -136,6 +136,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 - [x] **Sequential Logic:** Aprovar Etapa N desbloqueia automaticamente Etapa N+1 com prazo calculado.
 - [x] **Deadline UI:** Exibir prazos claros para o aluno e alertas de atraso para o professor.
 - [x] **Conditional Actions:** Botões na dashboard do aluno (ex: "Enviar Link", "Preencher Plano") aparecem apenas quando a etapa exige.
-- [x] **Manual Recovery:** Scripts SQL robustos para recuperação de desastre (`schema.sql` e `seed_admin.sql`).
+- [x] **Manual Recovery:** Scripts SQL robustos para recuperação de desastre (`full_wipe_and_seed.sql`).
+- [x] **Calendar UI:** Visualização aprimorada de feriados e recessos no calendário administrativo.
 
 **DoD:** Sistema guia o aluno passo-a-passo, gerenciando prazos e bloqueando avanços indevidos, com recuperação simples em caso de falha de dados.

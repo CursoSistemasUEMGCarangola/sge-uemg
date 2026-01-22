@@ -38,6 +38,28 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
     const [isPending, startTransition] = useTransition()
     const { toast } = useToast()
 
+    // Process data for calendar modifiers
+    // We treat the incoming date string (UTC) as the source of truth for YYYY-MM-DD
+    function getDateString(dateStr: string | Date) {
+        if (dateStr instanceof Date) return format(dateStr, 'yyyy-MM-dd')
+        return dateStr.toString().split('T')[0]
+    }
+
+    const feriadosSet = new Set(
+        initialData
+            .filter(i => i.tipo === 'FERIADO')
+            .map(i => getDateString(i.data))
+    )
+
+    const recessosSet = new Set(
+        initialData
+            .filter(i => i.tipo === 'RECESSO')
+            .map(i => getDateString(i.data))
+    )
+
+    const feriadoMatcher = (day: Date) => feriadosSet.has(format(day, 'yyyy-MM-dd'))
+    const recessoMatcher = (day: Date) => recessosSet.has(format(day, 'yyyy-MM-dd'))
+
     async function handleAdd() {
         if (!date || !descricao) return
 
@@ -67,29 +89,54 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
                     <CardDescription>Selecione dias que não contam para estágio.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        className="rounded-md border mx-auto"
-                    />
-                    <Input
-                        placeholder="Descrição (ex: Natal)"
-                        value={descricao}
-                        onChange={e => setDescricao(e.target.value)}
-                    />
-                    <Select value={tipo} onValueChange={(v) => setTipo(v as TipoFeriado)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="FERIADO">Feriado</SelectItem>
-                            <SelectItem value="RECESSO">Recesso</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Button onClick={handleAdd} className="w-full" disabled={!date || !descricao || isPending}>
-                        {isPending ? "Salvando..." : "Adicionar ao Calendário"}
-                    </Button>
+                    <div className="flex justify-center">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={setDate}
+                            className="rounded-md border shadow p-3"
+                            modifiers={{
+                                feriado: feriadoMatcher,
+                                recesso: recessoMatcher
+                            }}
+                            modifiersClassNames={{
+                                feriado: "bg-red-100 text-red-900 font-semibold hover:bg-red-200",
+                                recesso: "bg-yellow-100 text-yellow-900 font-semibold hover:bg-yellow-200"
+                            }}
+                        />
+                    </div>
+                    <div className="flex gap-4 text-xs justify-center pt-2">
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-100 border border-red-200 rounded-full"></div>
+                            <span>Feriado</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-yellow-100 border border-yellow-200 rounded-full"></div>
+                            <span>Recesso</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t">
+                        <Input
+                            placeholder="Descrição (ex: Natal)"
+                            value={descricao}
+                            onChange={e => setDescricao(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                            <Select value={tipo} onValueChange={(v) => setTipo(v as TipoFeriado)}>
+                                <SelectTrigger className="w-[140px]">
+                                    <SelectValue placeholder="Tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="FERIADO">Feriado</SelectItem>
+                                    <SelectItem value="RECESSO">Recesso</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button onClick={handleAdd} className="flex-1" disabled={!date || !descricao || isPending}>
+                                {isPending ? "Salvando..." : "Adicionar"}
+                            </Button>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -99,18 +146,21 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
                     <CardDescription>Lista de feriados e recessos.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        {initialData.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        {initialData.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()).map((item) => (
+                            <div key={item.id} className={`flex items-center justify-between p-3 border rounded-lg ${item.tipo === 'FERIADO' ? 'bg-red-50 border-red-100' : 'bg-yellow-50 border-yellow-100'
+                                }`}>
                                 <div>
                                     <div className="font-medium flex items-center gap-2">
-                                        <CalendarIcon className="h-4 w-4 text-primary" />
-                                        {format(new Date(item.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                                        <CalendarIcon className={`h-4 w-4 ${item.tipo === 'FERIADO' ? 'text-red-500' : 'text-yellow-600'}`} />
+                                        {/* Use UTC handling for display to match DB storage */}
+                                        {new Date(item.data).toLocaleDateString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: 'long', year: 'numeric' })}
                                     </div>
-                                    <p className="text-sm text-muted-foreground">{item.descricao} ({item.tipo})</p>
+                                    <p className="text-sm text-foreground/80 font-medium">{item.descricao} <span className="text-xs font-normal opacity-70">({item.tipo})</span></p>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => handleRemove(item.id)} disabled={isPending}>
-                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                <Button variant="ghost" size="icon" onClick={() => handleRemove(item.id)} disabled={isPending}
+                                    className="hover:bg-white/50 text-muted-foreground hover:text-red-600">
+                                    <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>
                         ))}
