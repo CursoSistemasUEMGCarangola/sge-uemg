@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { EditStageDialog } from "./edit-stage-dialog"
 import { Badge } from "@/components/ui/badge"
+import { SYSTEM_ACTIONS, SystemActionKey } from "@/config/system-actions"
 
 export default async function AdminEtapasPage() {
     const etapas = await prisma.etapaDefinicao.findMany({
@@ -50,12 +51,16 @@ export default async function AdminEtapasPage() {
                                         {etapa.prazoDias} dias
                                     </TableCell>
                                     <TableCell>
-                                        {etapa.systemAction ? (
+                                        {etapa.systemAction && SYSTEM_ACTIONS[etapa.systemAction as SystemActionKey] ? (
+                                            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200 font-normal">
+                                                {SYSTEM_ACTIONS[etapa.systemAction as SystemActionKey].label}
+                                            </Badge>
+                                        ) : etapa.systemAction ? (
                                             <Badge variant="secondary" className="font-mono text-xs">
                                                 {etapa.systemAction}
                                             </Badge>
                                         ) : (
-                                            <span className="text-muted-foreground text-xs">-</span>
+                                            <span className="text-muted-foreground text-xs text-center block">-</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">

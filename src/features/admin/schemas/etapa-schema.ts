@@ -5,6 +5,7 @@ export const etapaSchema = z.object({
     numeroEtapa: z.coerce.number().min(1, "Número obrigatório"),
     descricao: z.string().min(3, "Descrição muito curta"),
     orientacaoTextual: z.string().min(10, "Orientação deve ter pelo menos 10 caracteres"),
+    systemAction: z.string().optional().nullable(),
 })
 
 export type EtapaFormData = z.infer<typeof etapaSchema>

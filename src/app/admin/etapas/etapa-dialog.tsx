@@ -18,6 +18,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { etapaSchema, EtapaFormData } from "@/features/admin/schemas/etapa-schema"
 import { upsertEtapa } from "@/features/admin/actions/etapa-actions"
 import { useToast } from "@/hooks/use-toast"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { SYSTEM_ACTIONS } from "@/config/system-actions"
 
 interface EtapaDialogProps {
     etapa?: any // Using any to avoid importing Prisma type on client (simplify)
@@ -35,6 +43,7 @@ export function EtapaDialog({ etapa, mode }: EtapaDialogProps) {
             numeroEtapa: etapa?.numeroEtapa || undefined,
             descricao: etapa?.descricao || "",
             orientacaoTextual: etapa?.orientacaoTextual || "",
+            systemAction: etapa?.systemAction || "none",
         }
     })
 
@@ -94,6 +103,29 @@ export function EtapaDialog({ etapa, mode }: EtapaDialogProps) {
                         {form.formState.errors.orientacaoTextual && (
                             <p className="text-xs text-red-500">{form.formState.errors.orientacaoTextual.message}</p>
                         )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="systemAction">Ação de Sistema</Label>
+                        <Select
+                            onValueChange={(value) => form.setValue("systemAction", value === "none" ? null : value)}
+                            defaultValue={form.getValues("systemAction") || "none"}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma ação..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Nenhuma (Padrão)</SelectItem>
+                                {Object.entries(SYSTEM_ACTIONS).map(([key, config]) => (
+                                    <SelectItem key={key} value={key}>
+                                        {config.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Define qual funcionalidade especial será habilitada para o aluno nesta etapa.
+                        </p>
                     </div>
 
                     <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>

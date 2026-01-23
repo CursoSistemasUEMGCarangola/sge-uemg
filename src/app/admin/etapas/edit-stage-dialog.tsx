@@ -11,6 +11,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { SYSTEM_ACTIONS } from "@/config/system-actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -115,16 +123,25 @@ export function EditStageDialog({ etapa }: EditStageDialogProps) {
                                 required
                             />
                         </div>
+
+
                         <div className="grid gap-2">
-                            <Label htmlFor="systemAction">Ação de Sistema (Link/Formulário)</Label>
-                            <Input
-                                id="systemAction"
-                                name="systemAction"
-                                defaultValue={etapa.systemAction || ""}
-                                placeholder="Ex: GENERATE_DOC_CAPA"
-                            />
+                            <Label htmlFor="systemAction">Ação de Sistema</Label>
+                            <Select name="systemAction" defaultValue={etapa.systemAction || "none"}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma ação..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Nenhuma (Padrão)</SelectItem>
+                                    {Object.entries(SYSTEM_ACTIONS).map(([key, config]) => (
+                                        <SelectItem key={key} value={key}>
+                                            {config.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <p className="text-xs text-muted-foreground">
-                                Identificador para habilitar botões específicos no painel do aluno.
+                                Define qual funcionalidade especial será habilitada para o aluno nesta etapa.
                             </p>
                         </div>
                     </div>

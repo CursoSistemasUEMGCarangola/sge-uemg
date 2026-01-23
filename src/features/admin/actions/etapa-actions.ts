@@ -22,7 +22,8 @@ export async function upsertEtapa(data: EtapaFormData) {
                 data: {
                     numeroEtapa: data.numeroEtapa,
                     descricao: data.descricao,
-                    orientacaoTextual: data.orientacaoTextual
+                    orientacaoTextual: data.orientacaoTextual,
+                    systemAction: data.systemAction
                 }
             })
         } else {
@@ -31,7 +32,8 @@ export async function upsertEtapa(data: EtapaFormData) {
                 data: {
                     numeroEtapa: data.numeroEtapa,
                     descricao: data.descricao,
-                    orientacaoTextual: data.orientacaoTextual
+                    orientacaoTextual: data.orientacaoTextual,
+                    systemAction: data.systemAction
                 }
             })
         }

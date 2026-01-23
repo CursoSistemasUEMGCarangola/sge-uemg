@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Stepper } from "@/components/ui/stepper"
-import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft, FileClock } from "lucide-react"
+import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft, FileClock, MessageSquareWarning } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
@@ -13,6 +13,8 @@ import { ApproveDialog } from "../approve-dialog"
 import { RejectDialog } from "../reject-dialog"
 
 import { ContractActions } from "./contract-actions"
+import { CompleteStageButton } from "./complete-stage-button"
+import { NotifyProblemDialog } from "./notify-problem-dialog"
 
 export default async function EstagioDetailsPage({ params }: { params: { id: string } }) {
     const id = parseInt(params.id)
@@ -118,6 +120,38 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                         </CardContent>
                     </Card>
 
+                    {/* Notification History Card */}
+                    {contrato.acompanhamentos.some((a: any) => a.observacoes) && (
+                        <Card className="border-amber-200 bg-amber-50/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <MessageSquareWarning className="h-5 w-5 text-amber-600" />
+                                    Histórico de Notificações
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {contrato.acompanhamentos
+                                    .filter((a: any) => a.observacoes)
+                                    .map((a: any) => (
+                                        <div key={a.id} className="bg-white p-3 rounded-md border border-amber-100 shadow-sm text-sm">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="font-bold text-amber-800">
+                                                    Etapa {a.etapaDef.numeroEtapa}: {a.etapaDef.descricao}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {a.updatedAt ? format(new Date(a.updatedAt), "dd/MM/yyyy") : "-"}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-700 italic">
+                                                "{a.observacoes}"
+                                            </p>
+                                        </div>
+                                    ))
+                                }
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Action Card */}
                     {contrato.statusAprovacao === 'PENDENTE' ? (
                         <Card className="border-yellow-200 bg-yellow-50">
@@ -208,8 +242,18 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                                 )}
 
                                 {!isEmAnalise && (
-                                    <div className="text-center text-sm text-muted-foreground py-4">
-                                        Aguardando envio do aluno.
+                                    <div className="space-y-4 py-4">
+                                        <div className="text-center text-sm text-muted-foreground">
+                                            Etapa em andamento pelo aluno.
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <CompleteStageButton acompanhamentoId={firstPending.id} />
+                                            <NotifyProblemDialog
+                                                contratoId={contrato.id}
+                                                etapaId={firstPending.etapaDef.id}
+                                                etapaNome={firstPending.etapaDef.descricao}
+                                            />
+                                        </div>
                                     </div>
                                 )}
 

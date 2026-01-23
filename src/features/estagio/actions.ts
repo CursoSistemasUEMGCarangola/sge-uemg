@@ -166,11 +166,15 @@ export async function rejectStage(contratoId: number, etapaId: number, feedback:
         }
     })
 
-    // Also update main contract status to indicate issues?
+    // NOTE: We do NOT update the main contract status to PENDENTE anymore.
+    // The contract remains ATIVO (Active) so the flow is not interrupted/hidden.
+    // The student is blocked by the sequential check on the specific rejected stage.
+    /*
     await prisma.contratoEstagio.update({
         where: { id: contratoId },
-        data: { statusAprovacao: 'PENDENTE' } // Keep as pending but specific stage is rejected
+        data: { statusAprovacao: 'PENDENTE' }
     })
+    */
 
     revalidatePath(`/admin/estagios/${contratoId}`)
     return { success: true }

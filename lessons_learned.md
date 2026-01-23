@@ -170,3 +170,24 @@
 **Contexto:** O status "ATIVO" aparecia em múltiplas cores (azul, default, verde) dependendo da tela.
 **Solução:** Criação de uma variante `success` explícita no componente `Badge` (`bg-green-600`) e padronização global.
 **Prevenção:** Evitar classes de cores hardcoded (`bg-green-500`) nos componentes de negócio. Usar sempre variantes do Design System (`variant="success"`) para garantir consistência.
+
+### [2026-01-23] - [REACT-PDF] Erro `Component is not a constructor` no Next.js App Router
+
+**Contexto:** Ao tentar gerar PDF no server side (`route.tsx`), ocorria o erro `TypeError: a.Component is not a constructor`. Isso acontece por incompatibilidade da versão 4.x do `@react-pdf/renderer` com a forma como o Next.js empacota componentes de servidor.
+**Solução:**
+
+1. Downgrade para `@react-pdf/renderer@3.4.4`.
+2. Adição de configuração no `next.config.mjs`:
+
+   ```js
+   webpack: (config) => {
+       config.resolve.alias.canvas = false;
+       config.resolve.alias.encoding = false;
+       return config;
+   },
+   experimental: {
+       serverComponentsExternalPackages: ['@react-pdf/renderer'],
+   },
+   ```
+
+**Prevenção:** Ao usar bibliotecas que dependem de Node.js streams ou binários (como PDF generation) no App Router, sempre configure `serverComponentsExternalPackages` e verifique issues de compatibilidade de versão.

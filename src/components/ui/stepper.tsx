@@ -18,7 +18,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
 
                 {/* Active Progress Bar */}
                 <div
-                    className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded bg-primary transition-all duration-300"
+                    className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded bg-green-600 transition-all duration-300"
                     style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
                 ></div>
 
@@ -32,9 +32,9 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                                 className={cn(
                                     "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-background transition-colors",
                                     isCompleted
-                                        ? "border-primary bg-primary text-primary-foreground"
+                                        ? "border-green-600 bg-green-600 text-white"
                                         : isCurrent
-                                            ? "border-primary text-primary"
+                                            ? "border-red-600 text-red-600"
                                             : "border-muted text-muted-foreground"
                                 )}
                             >
@@ -46,7 +46,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                             </div>
                             <span className={cn(
                                 "absolute -bottom-8 w-max text-xs font-medium",
-                                isCurrent ? "text-primary" : "text-muted-foreground"
+                                isCurrent ? "text-red-600 font-bold" : "text-muted-foreground"
                             )}>
                                 {step.label}
                             </span>
