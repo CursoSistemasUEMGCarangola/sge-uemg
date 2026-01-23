@@ -18,14 +18,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             <CapaEstagioTemplate
                 curso={contrato.oferta.curso.curso?.nome || "CURSO NÃO DEFINIDO"}
                 unidade={contrato.oferta.curso.curso?.unidade?.nome || "CARANGOLA"}
-                estagioNome={contrato.oferta.curso.nome} // This is the Internship Name (e.g. Estágio I)
                 periodo={contrato.aluno.periodoAtual.toString()}
                 semestre={contrato.oferta.semestreLetivo}
                 alunoNome={contrato.aluno.profile.nomeCompleto}
                 alunoMatricula={contrato.aluno.matricula}
-                modalidade={contrato.modalidade}
+                modalidade={contrato.modalidade as string}
                 campoEstagio={contrato.campo.nomeFantasia} // or razaoSocial
-                tipoDocumentacao={contrato.tipoDocumentacao}
+                tipoDocumentacao={contrato.tipoDocumentacao as string}
                 dataInicio={contrato.dataInicioPrevista}
                 cargaHoraria={contrato.cargaHorariaDiaria}
                 atribuicoes={contrato.atribuicoes}

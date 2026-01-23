@@ -56,7 +56,7 @@ export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormP
     const tipoDocumentacaoOptions = informacoesGerais?.filter(item => item.categoria === 'TIPO_DOCUMENTACAO') || []
 
     const form = useForm<NovoEstagioFormData>({
-        resolver: zodResolver(novoEstagioSchema),
+        resolver: zodResolver(novoEstagioSchema) as any,
         defaultValues: {
             // @ts-ignore - idCurso might default to undefined but Zod expects number. 
             // We'll let user select.

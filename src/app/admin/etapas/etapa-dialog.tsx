@@ -37,7 +37,7 @@ export function EtapaDialog({ etapa, mode }: EtapaDialogProps) {
     const { toast } = useToast()
 
     const form = useForm<EtapaFormData>({
-        resolver: zodResolver(etapaSchema),
+        resolver: zodResolver(etapaSchema) as any,
         defaultValues: {
             id: etapa?.id,
             numeroEtapa: etapa?.numeroEtapa || undefined,

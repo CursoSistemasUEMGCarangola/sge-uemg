@@ -34,7 +34,8 @@ export default async function EditOfferPage({ params }: EditOfferPageProps) {
 
     const formattedProfessors = professors.map(p => ({
         id: p.id,
-        info: `${p.profile.nomeCompleto} (MASP: ${p.masp})`
+        info: `${p.profile.nomeCompleto} (MASP: ${p.masp})`,
+        cursoIds: p.cursoId ? [p.cursoId] : []
     }))
 
     return (
