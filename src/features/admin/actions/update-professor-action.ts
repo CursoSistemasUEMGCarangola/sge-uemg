@@ -33,7 +33,7 @@ export async function updateProfessorAction(prevState: any, formData: FormData) 
         }
     }
 
-    const { id, email, password, fullName, masp, telefone } = validatedFields.data
+    const { id, email, password, fullName, masp, telefone, cursoId } = validatedFields.data
 
     try {
         await prisma.$transaction(async (tx) => {
@@ -49,7 +49,8 @@ export async function updateProfessorAction(prevState: any, formData: FormData) 
             await tx.professor.update({
                 where: { profileId: id },
                 data: {
-                    masp
+                    masp,
+                    cursoId
                 }
             })
         })

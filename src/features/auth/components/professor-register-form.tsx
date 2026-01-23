@@ -1,5 +1,3 @@
-'use client'
-
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -15,6 +13,13 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { useState } from "react"
 import { Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -30,16 +35,25 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export function ProfessorRegisterForm() {
+interface ProfessorRegisterFormProps {
+    unidades: { id: number; nome: string }[]
+    cursos: { id: number; nome: string; unidadeId: number }[]
+}
+
+export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFormProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [serverError, setServerError] = useState<string | null>(null)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [selectedUnidade, setSelectedUnidade] = useState<string>("")
+
+    // Filter courses based on selected unit
+    const filteredCursos = cursos.filter(c => c.unidadeId === parseInt(selectedUnidade))
 
     // Masks
     const phoneMaskRef = useMask({ mask: '(__) _____-____', replacement: { _: /\d/ } })
 
     const form = useForm<RegisterProfessorFormData>({
-        resolver: zodResolver(registerProfessorSchema),
+        resolver: zodResolver(registerProfessorSchema) as any,
         defaultValues: {
             fullName: "",
             masp: "",
@@ -47,6 +61,7 @@ export function ProfessorRegisterForm() {
             email: "",
             confirmEmail: "",
             telefone: "",
+            cursoId: 0,
             password: "",
             confirmPassword: "",
         },
@@ -139,6 +154,63 @@ export function ProfessorRegisterForm() {
                                         <FormControl>
                                             <Input placeholder="Repita o MASP" {...field} />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Unidade e Curso Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Unidade Acadêmica (Filter only) */}
+                            {/* Unidade Acadêmica (Filter only) */}
+                            <div className="space-y-2">
+                                <Label>Unidade Acadêmica</Label>
+                                <Select
+                                    onValueChange={(value) => {
+                                        setSelectedUnidade(value)
+                                        form.setValue("cursoId", 0) // Reset course when unit changes
+                                    }}
+                                    value={selectedUnidade}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a unidade" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {unidades.map((unidade) => (
+                                            <SelectItem key={unidade.id} value={unidade.id.toString()}>
+                                                {unidade.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Curso */}
+                            <FormField
+                                control={form.control}
+                                name="cursoId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Curso</FormLabel>
+                                        <Select
+                                            onValueChange={(val) => field.onChange(parseInt(val))}
+                                            defaultValue={field.value?.toString()}
+                                            disabled={!selectedUnidade}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione o curso" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {filteredCursos.map((curso) => (
+                                                    <SelectItem key={curso.id} value={curso.id.toString()}>
+                                                        {curso.nome}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}

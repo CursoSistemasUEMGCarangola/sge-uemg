@@ -11,6 +11,12 @@ export type InternshipRow = {
     nome: string
     periodoVinculado: number
     cargaHorariaTotal: number
+    curso?: {
+        nome: string
+        unidade?: {
+            nome: string
+        }
+    } | null
 }
 
 export const columns: ColumnDef<InternshipRow>[] = [
@@ -27,6 +33,21 @@ export const columns: ColumnDef<InternshipRow>[] = [
                 </Button>
             )
         },
+    },
+    {
+        id: "curso",
+        header: "Curso / Unidade",
+        cell: ({ row }) => {
+            const curso = row.original.curso
+            if (!curso) return <span className="text-muted-foreground">-</span>
+
+            return (
+                <div className="flex flex-col">
+                    <span className="font-medium">{curso.nome}</span>
+                    <span className="text-xs text-muted-foreground">{curso.unidade?.nome}</span>
+                </div>
+            )
+        }
     },
     {
         accessorKey: "periodoVinculado",

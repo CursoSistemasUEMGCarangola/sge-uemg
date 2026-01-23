@@ -191,3 +191,21 @@
    ```
 
 **Prevenção:** Ao usar bibliotecas que dependem de Node.js streams ou binários (como PDF generation) no App Router, sempre configure `serverComponentsExternalPackages` e verifique issues de compatibilidade de versão.
+
+### [2026-01-23] - [REACT-PDF] Layout e Quebra de Linha
+
+**Contexto:** Labels longos ("MODALIDADE DO ESTÁGIO") quebravam linha em colunas estreitas (25%), desformatando o PDF.
+**Solução:** Ajuste fino de layout: aumentar largura da label para 30% e, crucialmente, reduzir a fonte apenas desses labels para 9pt.
+**Prevenção:** Em geração de PDF, não confie no "auto layout". Teste com os maiores valores possíveis e defina larguras fixas ou reduções de fonte preventivas.
+
+### [2026-01-23] - [UX] Prazos e Datas Nulas
+
+**Contexto:** O prazo de uma etapa não aparecia quando `dataLimite` era null no banco (estágios ativados em lote ou sem trigger específico).
+**Solução:** Implementação de "Fallback de Cálculo": se `dataLimite` for null, calcular em tempo de execução (`updatedAt` + `prazoDias`). Se ainda assim falhar, exibir "A definir" em vez de esconder o campo.
+**Prevenção:** Nunca confie que cronogramas futuros estarão populados no banco. Sempre tenha lógica de UI para lidar com datas indefinidas ou calculá-las on-the-fly.
+
+### [2026-01-23] - [UI] Consistência de Botões de Ação
+
+**Contexto:** Botões de ações críticas ("Preencher Plano") tinham estilo secundário (`outline`), passando despercebidos comparados a outros ("Emitir Capa").
+**Solução:** Padronização visual para usar sempre o estilo "Call to Action" (Primary, Large, Shadow) para a *próxima ação imediata* do aluno, independente de qual seja.
+**Prevenção:** A hierarquia visual deve seguir a prioridade da tarefa do usuário, não o tipo de documento. Se é a única coisa que ele pode fazer agora, deve ser o botão mais chamativo.

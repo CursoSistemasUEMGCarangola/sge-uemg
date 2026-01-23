@@ -116,9 +116,11 @@ const styles = StyleSheet.create({
 
 interface CapaEstagioTemplateProps {
     curso: string
+    unidade: string
     periodo: string
     semestre: string
     alunoNome: string
+    // ... (lines 122-135 omitted, keeping them same but need to be careful with context)
     alunoMatricula: string
     modalidade: string
     campoEstagio: string
@@ -135,6 +137,7 @@ interface CapaEstagioTemplateProps {
 
 export function CapaEstagioTemplate({
     curso,
+    unidade,
     periodo,
     semestre,
     alunoNome,
@@ -159,7 +162,7 @@ export function CapaEstagioTemplate({
                     {/* Placeholder for Logo - In real app, verify path or omit if image load fails. */}
                     {/* <Image src="/uemg.jpg" style={styles.logo} /> */}
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1a365d' }}>UNIVERSIDADE DO ESTADO DE MINAS GERAIS</Text>
-                    <Text style={{ fontSize: 10, color: '#666', marginTop: 4 }}>UNIDADE CARANGOLA</Text>
+                    <Text style={{ fontSize: 10, color: '#666', marginTop: 4 }}>UNIDADE {unidade.toUpperCase()}</Text>
                 </View>
 
                 {/* Main Table */}
@@ -194,30 +197,30 @@ export function CapaEstagioTemplate({
 
                     {/* Modalidade */}
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>MODALIDADE DO ESTÁGIO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>MODALIDADE DO ESTÁGIO:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{modalidade}</Text>
                         </View>
                     </View>
 
                     {/* Campo */}
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>CAMPO DE ESTÁGIO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>CAMPO DE ESTÁGIO:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{campoEstagio.toUpperCase()}</Text>
                         </View>
                     </View>
 
                     {/* Tipo Doc */}
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>TIPO DE DOCUMENTAÇÃO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>TIPO DE DOCUMENTAÇÃO:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             {/* Map Enum to Readable if needed */}
                             <Text>{tipoDocumentacao === 'TCE' ? 'TERMO DE COMPROMISSO DE ESTÁGIO (TCE)' : tipoDocumentacao}</Text>
                         </View>
@@ -225,16 +228,16 @@ export function CapaEstagioTemplate({
 
                     {/* Data and CH */}
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>DATA PREVISTA PARA INÍCIO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>DATA PREVISTA PARA INÍCIO:</Text>
                         </View>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000' }}>
+                        <View style={{ width: '20%', padding: 4, borderRight: '1px solid #000', justifyContent: 'center' }}>
                             <Text>{format(dataInicio, 'dd/MM/yyyy')}</Text>
                         </View>
-                        <View style={{ width: '15%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', alignItems: 'center' }}>
-                            <Text style={{ fontWeight: 'bold' }}>CH/DIA:</Text>
+                        <View style={{ width: '15%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>CH/DIA:</Text>
                         </View>
-                        <View style={{ width: '35%', padding: 4 }}>
+                        <View style={{ width: '35%', padding: 4, justifyContent: 'center' }}>
                             <Text>{cargaHoraria}</Text>
                         </View>
                     </View>
@@ -251,37 +254,37 @@ export function CapaEstagioTemplate({
 
                     {/* Supervisor Info */}
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>SUPERVISOR DE CAMPO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>SUPERVISOR DE CAMPO:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{supervisorNome}</Text>
                         </View>
                     </View>
 
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>CARGO DO SUPERVISOR:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>CARGO DO SUPERVISOR:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{supervisorCargo}</Text>
                         </View>
                     </View>
 
                     <View style={styles.row}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>ÁREA DE FORMAÇÃO:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>ÁREA DE FORMAÇÃO:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{supervisorFormacao}</Text>
                         </View>
                     </View>
 
                     <View style={[styles.row, { borderBottom: 'none' }]}>
-                        <View style={{ width: '25%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6' }}>
-                            <Text style={{ fontWeight: 'bold' }}>MAIOR TITULARIDADE:</Text>
+                        <View style={{ width: '30%', padding: 4, borderRight: '1px solid #000', backgroundColor: '#F3F4F6', justifyContent: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 9 }}>MAIOR TITULARIDADE:</Text>
                         </View>
-                        <View style={{ width: '75%', padding: 4 }}>
+                        <View style={{ width: '70%', padding: 4, justifyContent: 'center' }}>
                             <Text>{supervisorTitulacao}</Text>
                         </View>
                     </View>

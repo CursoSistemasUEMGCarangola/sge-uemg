@@ -32,6 +32,8 @@ model Aluno {
   periodoAtual Int    @map("periodo_atual")
 
   profile   Profile           @relation(fields: [profileId], references: [id])
+  cursoId   Int?              @map("id_curso")
+  curso     Curso?            @relation(fields: [cursoId], references: [id])
   contratos ContratoEstagio[]
 
   @@map("aluno")
@@ -44,6 +46,8 @@ model Professor {
   masp      String @unique
 
   profile Profile         @relation(fields: [profileId], references: [id])
+  cursoId Int?            @map("id_curso")
+  curso   Curso?          @relation(fields: [cursoId], references: [id])
   ofertas OfertaEstagio[]
 
   @@map("professor")
@@ -55,10 +59,37 @@ model CursoEstagio {
   nome              String
   periodoVinculado  Int    @map("periodo_vinculado")
   cargaHorariaTotal Int    @map("carga_horaria_total")
+  cursoId           Int?   @map("id_curso")
 
+  curso   Curso?          @relation(fields: [cursoId], references: [id])
   ofertas OfertaEstagio[]
 
   @@map("curso_estagio")
+  @@schema("public")
+}
+
+model UnidadeAcademica {
+  id   Int     @id @default(autoincrement()) @map("id_unidade")
+  nome String
+
+  cursos Curso[]
+
+  @@map("unidade_academica")
+  @@schema("public")
+}
+
+model Curso {
+  id             Int    @id @default(autoincrement()) @map("id_curso")
+  nome           String
+  unidadeId      Int    @map("id_unidade")
+
+  unidade UnidadeAcademica @relation(fields: [unidadeId], references: [id])
+  
+  alunos         Aluno[]
+  professores    Professor[]
+  cursosEstagio  CursoEstagio[]
+
+  @@map("curso")
   @@schema("public")
 }
 

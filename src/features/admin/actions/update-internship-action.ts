@@ -26,7 +26,7 @@ export async function updateInternshipAction(prevState: any, formData: FormData)
         }
     }
 
-    const { nome, periodoVinculado, cargaHorariaTotal } = validatedFields.data
+    const { nome, periodoVinculado, cargaHorariaTotal, cursoId } = validatedFields.data
 
     try {
         await prisma.cursoEstagio.update({
@@ -34,7 +34,8 @@ export async function updateInternshipAction(prevState: any, formData: FormData)
             data: {
                 nome,
                 periodoVinculado,
-                cargaHorariaTotal
+                cargaHorariaTotal,
+                cursoId
             }
         })
 

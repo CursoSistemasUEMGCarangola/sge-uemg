@@ -1,6 +1,12 @@
 import { AdminInternshipForm } from "@/features/admin/components/admin-internship-form"
+import { prisma } from "@/lib/prisma"
 
-export default function NovoEstagioPage() {
+export default async function NovoEstagioPage() {
+    const cursos = await prisma.curso.findMany({
+        orderBy: { nome: 'asc' },
+        include: { unidade: true }
+    })
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
@@ -10,7 +16,7 @@ export default function NovoEstagioPage() {
                 </p>
             </div>
 
-            <AdminInternshipForm />
+            <AdminInternshipForm cursos={cursos} />
         </div>
     )
 }

@@ -138,12 +138,21 @@ export default async function AlunoDashboard() {
                                 </CardContent>
                                 <CardFooter className="bg-muted/20 flex flex-col items-end gap-2 p-4 sm:flex-row sm:justify-end">
                                     {/* Deadline Display */}
-                                    {firstPending?.dataLimite && (
-                                        <div className={`text-sm mr-auto flex items-center gap-1 ${new Date() > new Date(firstPending.dataLimite) ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
-                                            <Clock className="h-4 w-4" />
-                                            Prazo: {new Date(firstPending.dataLimite).toLocaleDateString('pt-BR')}
-                                        </div>
-                                    )}
+                                    {firstPending && firstPending.etapaDef.prazoDias > 0 && (() => {
+                                        let deadline = firstPending.dataLimite ? new Date(firstPending.dataLimite) : null;
+                                        if (!deadline && firstPending.updatedAt) {
+                                            const updated = new Date(firstPending.updatedAt);
+                                            updated.setDate(updated.getDate() + firstPending.etapaDef.prazoDias);
+                                            deadline = updated;
+                                        }
+
+                                        return (
+                                            <div className={`text-sm mr-auto flex items-center gap-1 ${deadline && new Date() > deadline ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                                                <Clock className="h-4 w-4" />
+                                                Prazo para concluir esta etapa: {deadline ? deadline.toLocaleDateString('pt-BR') : 'A definir'}
+                                            </div>
+                                        );
+                                    })()}
 
                                     {/* Sequential Access Logic: Action Button visible only if:
                                         1. It's the current pending stage
@@ -181,12 +190,14 @@ export default async function AlunoDashboard() {
 
                                         if (firstPending.etapaDef.systemAction === 'FILL_ACTIVITY_PLAN' || firstPending.etapaDef.numeroEtapa === 4) {
                                             return (
-                                                <Link href={`/aluno/diario/${contrato.id}`}>
-                                                    <Button variant="outline" size="sm">
-                                                        <BookOpen className="mr-2 h-4 w-4" />
-                                                        Plano de Atividades do Estágio
-                                                    </Button>
-                                                </Link>
+                                                <div className="w-full flex justify-end sm:flex-1">
+                                                    <Link href={`/aluno/diario/${contrato.id}`} className="w-full sm:w-auto">
+                                                        <Button size="lg" className="w-full sm:min-w-[250px] text-lg font-bold shadow-lg" variant="default">
+                                                            <BookOpen className="mr-2 h-5 w-5" />
+                                                            Preencher Plano de Atividades
+                                                        </Button>
+                                                    </Link>
+                                                </div>
                                             )
                                         }
 

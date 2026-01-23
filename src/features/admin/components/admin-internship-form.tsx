@@ -21,6 +21,13 @@ import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface AdminInternshipFormProps {
     initialData?: {
@@ -28,10 +35,12 @@ interface AdminInternshipFormProps {
         nome: string
         periodoVinculado: number
         cargaHorariaTotal: number
+        cursoId?: number | null
     }
+    cursos?: { id: number; nome: string; unidade?: { nome: string } }[]
 }
 
-export function AdminInternshipForm({ initialData }: AdminInternshipFormProps) {
+export function AdminInternshipForm({ initialData, cursos = [] }: AdminInternshipFormProps) {
     const [isPending, startTransition] = useTransition()
     const [serverError, setServerError] = useState<string | null>(null)
     const router = useRouter()
@@ -43,6 +52,7 @@ export function AdminInternshipForm({ initialData }: AdminInternshipFormProps) {
             nome: initialData?.nome || "",
             periodoVinculado: initialData?.periodoVinculado || 0,
             cargaHorariaTotal: initialData?.cargaHorariaTotal || 0,
+            cursoId: initialData?.cursoId || 0,
         },
     })
 
@@ -106,6 +116,35 @@ export function AdminInternshipForm({ initialData }: AdminInternshipFormProps) {
                                     <FormControl>
                                         <Input placeholder="Nome do estágio" {...field} />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Curso Select */}
+                        <FormField
+                            control={form.control}
+                            name="cursoId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Curso Vinculado</FormLabel>
+                                    <Select
+                                        onValueChange={(val) => field.onChange(parseInt(val))}
+                                        defaultValue={field.value?.toString()}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione o curso" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cursos.map((curso) => (
+                                                <SelectItem key={curso.id} value={curso.id.toString()}>
+                                                    {curso.nome} {curso.unidade ? `- ${curso.unidade.nome}` : ''}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

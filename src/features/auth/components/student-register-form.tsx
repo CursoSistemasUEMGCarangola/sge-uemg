@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import {
     Form,
     FormControl,
@@ -36,13 +37,24 @@ import {
 // Schema inference from server action file to keep synced
 type RegisterFormValues = z.infer<typeof registerStudentSchema>
 
-export function StudentRegisterForm() {
+
+// Props interface
+interface StudentRegisterFormProps {
+    unidades: { id: number; nome: string }[]
+    cursos: { id: number; nome: string; unidadeId: number }[]
+}
+
+export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormProps) {
     const [isPending, startTransition] = useTransition()
     const [serverError, setServerError] = useState<string | null>(null)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [selectedUnidade, setSelectedUnidade] = useState<string>("")
+
+    // Filter courses based on selected unit
+    const filteredCursos = cursos.filter(c => c.unidadeId === parseInt(selectedUnidade))
 
     const form = useForm<RegisterFormValues>({
-        resolver: zodResolver(registerStudentSchema),
+        resolver: zodResolver(registerStudentSchema) as any,
         defaultValues: {
             fullName: "",
             matricula: "",
@@ -51,6 +63,7 @@ export function StudentRegisterForm() {
             confirmEmail: "",
             telefone: "",
             periodo: "",
+            cursoId: 0, // Initial value
             password: "",
             confirmPassword: "",
             termsAccepted: false,
@@ -196,6 +209,51 @@ export function StudentRegisterForm() {
                                         <FormControl>
                                             <Input type="email" placeholder="Repita o email" {...field} />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Unidade Acadêmica */}
+                            {/* Unidade Acadêmica */}
+                            <div className="space-y-2">
+                                <Label>Unidade Acadêmica</Label>
+                                <Select onValueChange={setSelectedUnidade} value={selectedUnidade}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a unidade" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {unidades.map((u) => (
+                                            <SelectItem key={u.id} value={u.id.toString()}>{u.nome}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Curso */}
+                            <FormField
+                                control={form.control}
+                                name="cursoId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Curso</FormLabel>
+                                        <Select
+                                            onValueChange={(val) => field.onChange(parseInt(val))}
+                                            disabled={!selectedUnidade}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione o curso" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {filteredCursos.map((c) => (
+                                                    <SelectItem key={c.id} value={c.id.toString()}>{c.nome}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}

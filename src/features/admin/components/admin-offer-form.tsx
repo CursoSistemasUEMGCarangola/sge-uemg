@@ -23,9 +23,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+import { useEffect, useMemo } from "react"
+
 interface AdminOfferFormProps {
-    internships: { id: number; nome: string }[]
-    professors: { id: number; info: string }[]
+    internships: { id: number; nome: string; cursoId?: number | null }[]
+    professors: { id: number; info: string; cursoIds: number[] }[]
     initialData?: {
         id: number
         cursoEstagioId: number
@@ -54,6 +56,27 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
             dataFim: initialData?.dataFim ? new Date(initialData.dataFim).toISOString().split('T')[0] : "",
         },
     })
+
+    const selectedEstagioId = form.watch('cursoEstagioId')
+
+    const filteredProfessors = useMemo(() => {
+        if (!selectedEstagioId) return []
+        const estagio = internships.find(i => i.id === selectedEstagioId)
+        if (!estagio || !estagio.cursoId) return []
+
+        return professors.filter(p => p.cursoIds.includes(estagio.cursoId!))
+    }, [selectedEstagioId, internships, professors])
+
+    // Reset professor when stage changes if current professor is invalid
+    useEffect(() => {
+        const currentProfessorId = form.getValues('professorOrientadorId')
+        if (currentProfessorId && filteredProfessors.length > 0) {
+            const isValid = filteredProfessors.some(p => p.id === currentProfessorId)
+            if (!isValid) {
+                form.setValue('professorOrientadorId', 0)
+            }
+        }
+    }, [selectedEstagioId, filteredProfessors, form])
 
     async function onSubmit(data: any) {
         setServerError(null)
@@ -153,11 +176,18 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {professors.map((item) => (
-                                                <SelectItem key={item.id} value={item.id.toString()}>
-                                                    {item.info}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectContent>
+                                                {filteredProfessors.map((item) => (
+                                                    <SelectItem key={item.id} value={item.id.toString()}>
+                                                        {item.info}
+                                                    </SelectItem>
+                                                ))}
+                                                {filteredProfessors.length === 0 && (
+                                                    <div className="p-2 text-sm text-muted-foreground text-center">
+                                                        Nenhum professor encontrado para este curso.
+                                                    </div>
+                                                )}
+                                            </SelectContent>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -170,7 +200,7 @@ export function AdminOfferForm({ internships, professors, initialData }: AdminOf
                             name="semestreLetivo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Semestre Letivo (ex: 2024/1)</FormLabel>
+                                    <FormLabel>Semestre Letivo</FormLabel>
                                     <FormControl>
                                         <Input placeholder="ex.: 2026-1" {...field} />
                                     </FormControl>

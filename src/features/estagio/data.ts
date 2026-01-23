@@ -85,7 +85,15 @@ export async function getContratoById(id: number) {
             campo: true,
             oferta: {
                 include: {
-                    curso: true,
+                    curso: {
+                        include: {
+                            curso: {
+                                include: {
+                                    unidade: true
+                                }
+                            }
+                        }
+                    },
                     professor: {
                         include: { profile: true }
                     }
@@ -152,7 +160,15 @@ export async function getAdminDashboardData() {
             campo: true,
             oferta: {
                 include: {
-                    curso: true
+                    curso: {
+                        include: {
+                            curso: {
+                                include: {
+                                    unidade: true
+                                }
+                            }
+                        }
+                    }
                 }
             },
             acompanhamentos: {
@@ -173,7 +189,15 @@ export async function getAdminDashboardData() {
                 ativo: true
             },
             include: {
-                curso: true
+                curso: {
+                    include: {
+                        curso: {
+                            include: {
+                                unidade: true
+                            }
+                        }
+                    }
+                }
             }
         })
     }

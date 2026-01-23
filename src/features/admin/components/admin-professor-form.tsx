@@ -23,8 +23,15 @@ import { AlertCircle, Loader2, ArrowLeft, Eye, EyeOff, Wand2 } from "lucide-reac
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 
-type RegisterFormValues = z.infer<typeof adminProfessorSchema>
 
 interface AdminProfessorFormProps {
     initialData?: {
@@ -33,17 +40,33 @@ interface AdminProfessorFormProps {
         masp: string
         email: string
         telefone: string
+        cursoId?: number
     }
+    unidades?: { id: number; nome: string }[]
+    cursos?: { id: number; nome: string; unidadeId: number }[]
 }
 
-export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
+export function AdminProfessorForm({ initialData, unidades = [], cursos = [] }: AdminProfessorFormProps) {
     const [isPending, startTransition] = useTransition()
     const [serverError, setServerError] = useState<string | null>(null)
     const router = useRouter()
     const isEditing = !!initialData
 
+    const [selectedUnidade, setSelectedUnidade] = useState<string>("")
+    // If editing, try to find unit from initial course
+    const initialCourse = cursos.find(c => c.id === initialData?.cursoId)
+    // Initialize unit only once
+    const [initializedUnit, setInitializedUnit] = useState(false)
+
+    if (!initializedUnit && initialCourse) {
+        setSelectedUnidade(initialCourse.unidadeId.toString())
+        setInitializedUnit(true)
+    }
+
+    const filteredCursos = cursos.filter(c => c.unidadeId === parseInt(selectedUnidade))
+
     const form = useForm<any>({
-        // @ts-ignore - Dynamic schema resolution causes type mismatch with rigid generic
+        // @ts-ignore - Dynamic schema resolution
         resolver: zodResolver(isEditing ? adminProfessorUpdateSchema : adminProfessorSchema),
         defaultValues: {
             id: initialData?.id || "",
@@ -51,6 +74,7 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
             masp: initialData?.masp || "",
             email: initialData?.email || "",
             telefone: initialData?.telefone || "",
+            cursoId: initialData?.cursoId || 0,
             password: "",
         },
     })
@@ -166,6 +190,62 @@ export function AdminProfessorForm({ initialData }: AdminProfessorFormProps) {
                                                 }}
                                             />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Unidade e Curso Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Unidade Acadêmica (Filter only) */}
+                            <div className="space-y-2">
+                                <Label>Unidade Acadêmica</Label>
+                                <Select
+                                    onValueChange={(value) => {
+                                        setSelectedUnidade(value)
+                                        form.setValue("cursoId", 0) // Reset course when unit changes
+                                    }}
+                                    value={selectedUnidade}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a unidade" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {unidades.map((unidade) => (
+                                            <SelectItem key={unidade.id} value={unidade.id.toString()}>
+                                                {unidade.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Curso */}
+                            <FormField
+                                control={form.control}
+                                name="cursoId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Curso</FormLabel>
+                                        <Select
+                                            onValueChange={(val) => field.onChange(parseInt(val))}
+                                            defaultValue={field.value?.toString()}
+                                            disabled={!selectedUnidade}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione o curso" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {filteredCursos.map((curso) => (
+                                                    <SelectItem key={curso.id} value={curso.id.toString()}>
+                                                        {curso.nome}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}

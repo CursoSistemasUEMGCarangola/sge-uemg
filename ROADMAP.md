@@ -67,8 +67,8 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 **Objetivo:** Implementar a lógica específica das etapas restantes (Planos de Estágio, Relatórios).
 
-- [ ] **Etapas Intermediárias:** Relatórios de atividades e avaliação.
-- [ ] **Upload de Metadados:** Campos para registrar que documentos físicos foram entregues (Protocolo).
+- [x] **Etapas Intermediárias:** Relatórios de atividades e avaliação.
+- [x] **Upload de Metadados:** Campos para registrar que documentos físicos foram entregues (Protocolo via Link).
 - [ ] **Validações de Negócio:** Regras de datas (ex: Data final > Data inicial).
 
 **DoD:** Ciclo completo de 8 etapas funcional no banco de dados, do início ao fim do estágio.
@@ -92,7 +92,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 **Objetivo:** Refinamentos finais, UX e preparação para produção.
 
-- [ ] **UX Review:** Loading skeletons, transições suaves.
+- [x] **UX Review:** Loading skeletons, transições suaves, empty states.
 - [ ] **Error Handling:** Página 404/500 customizada.
 - [ ] **Final RLS Audit:** Garantir que nenhum aluno acesse dados de outro.
 - [ ] **Documentation:** README atualizado e guia de uso básico.
@@ -135,7 +135,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 - [x] **Stage Configuration:** Admin gerencia `EtapaDefinicao` (Prazos, Descrições, Ações de Sistema).
 - [x] **Sequential Logic:** Aprovar Etapa N desbloqueia automaticamente Etapa N+1 com prazo calculado.
 - [x] **Deadline UI:** Exibir prazos claros para o aluno e alertas de atraso para o professor.
-- [x] **Conditional Actions:** Botões na dashboard do aluno (ex: "Enviar Link", "Preencher Plano") aparecem apenas quando a etapa exige.
+- [x] **Conditional Actions:** Botões na dashboard do aluno (ex: "Enviar Link", "Preencher Plano") aparecem apenas quando a etapa exige (System Actions).
 - [x] **Manual Recovery:** Scripts SQL robustos para recuperação de desastre (`full_wipe_and_seed.sql`).
 - [x] **Calendar UI:** Visualização aprimorada de feriados e recessos no calendário administrativo.
 

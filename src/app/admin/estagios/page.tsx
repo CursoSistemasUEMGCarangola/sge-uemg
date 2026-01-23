@@ -7,7 +7,14 @@ import { columns } from "./columns"
 
 export default async function AdminEstagiosPage() {
     const estagios = await prisma.cursoEstagio.findMany({
-        orderBy: { nome: 'asc' }
+        orderBy: { nome: 'asc' },
+        include: {
+            curso: {
+                include: {
+                    unidade: true
+                }
+            }
+        }
     })
 
     return (

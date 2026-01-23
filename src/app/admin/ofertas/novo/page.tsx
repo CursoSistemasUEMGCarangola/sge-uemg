@@ -3,17 +3,28 @@ import { prisma } from "@/lib/prisma"
 
 export default async function NewOfferPage() {
     const internships = await prisma.cursoEstagio.findMany({
-        orderBy: { nome: 'asc' }
+        orderBy: { nome: 'asc' },
+        include: { curso: true }
     })
 
     const professors = await prisma.professor.findMany({
-        include: { profile: true },
+        include: {
+            profile: true,
+            curso: true
+        },
         orderBy: { profile: { nomeCompleto: 'asc' } }
     })
 
     const formattedProfessors = professors.map(p => ({
         id: p.id,
-        info: `${p.profile.nomeCompleto} (MASP: ${p.masp})`
+        info: `${p.profile.nomeCompleto} (MASP: ${p.masp})`,
+        cursoIds: p.curso ? [p.curso.id] : []
+    }))
+
+    const formattedInternships = internships.map(i => ({
+        id: i.id,
+        nome: i.nome,
+        cursoId: i.cursoId
     }))
 
     return (
@@ -26,7 +37,7 @@ export default async function NewOfferPage() {
             </div>
 
             <AdminOfferForm
-                internships={internships}
+                internships={formattedInternships}
                 professors={formattedProfessors}
             />
         </div>

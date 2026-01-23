@@ -60,6 +60,9 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-lg font-bold">
                                             {oferta.curso.nome}
+                                            <span className="block text-sm font-normal text-muted-foreground">
+                                                {oferta.curso.curso?.nome} - {oferta.curso.curso?.unidade?.nome}
+                                            </span>
                                         </CardTitle>
                                         <CardDescription className="flex flex-col gap-1">
                                             <span>Semestre: {oferta.semestreLetivo}</span>
@@ -138,9 +141,9 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                         {contrato.aluno.matricula}
                                     </td>
                                     <td className="px-4 py-3 max-w-[200px] truncate" title={`${contrato.oferta?.curso?.nome} - ${contrato.campo.nomeFantasia}`}>
-                                        <div className="font-medium text-foreground">{contrato.oferta?.curso?.nome || "Não definido"}</div>
+                                        <div className="font-medium text-foreground">{contrato.oferta?.curso?.nome}</div>
                                         <div className="text-xs text-muted-foreground truncate flex flex-col">
-                                            <span>{contrato.oferta?.curso?.periodoVinculado}º Período</span>
+                                            <span>{contrato.oferta?.curso?.curso?.nome} - {contrato.oferta?.curso?.curso?.unidade?.nome}</span>
                                             <span className="font-semibold">{contrato.tipoDocumentacao}</span>
                                         </div>
                                     </td>
@@ -170,7 +173,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                         })()}
                                     </td>
                                     <td className="px-4 py-3 text-right">
-                                        <Link href={`/admin/estagios/${contrato.id}`}>
+                                        <Link href={`/admin/estagios/contrato/${contrato.id}`}>
                                             <Button size="sm" variant="outline" className="h-8">
                                                 Acessar
                                             </Button>

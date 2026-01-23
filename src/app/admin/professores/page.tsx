@@ -15,7 +15,12 @@ import { DeleteUserButton } from "@/features/admin/components/delete-user-button
 export default async function AdminProfessoresPage() {
     const professores = await prisma.professor.findMany({
         include: {
-            profile: true
+            profile: true,
+            curso: {
+                include: {
+                    unidade: true
+                }
+            }
         },
         orderBy: {
             profile: {
@@ -45,7 +50,8 @@ export default async function AdminProfessoresPage() {
                         <TableRow>
                             <TableHead>Nome</TableHead>
                             <TableHead>MASP</TableHead>
-                            <TableHead>Email</TableHead>
+                            <TableHead>Unidade</TableHead>
+                            <TableHead>Curso</TableHead>
                             <TableHead>Telefone</TableHead>
                             <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
@@ -55,7 +61,8 @@ export default async function AdminProfessoresPage() {
                             <TableRow key={prof.id}>
                                 <TableCell className="font-medium">{prof.profile.nomeCompleto}</TableCell>
                                 <TableCell>{prof.masp}</TableCell>
-                                <TableCell>{prof.profile.email}</TableCell>
+                                <TableCell>{prof.curso?.unidade?.nome || '-'}</TableCell>
+                                <TableCell>{prof.curso?.nome || '-'}</TableCell>
                                 <TableCell>{prof.profile.telefone || '-'}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">

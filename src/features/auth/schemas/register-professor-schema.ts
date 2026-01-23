@@ -8,6 +8,7 @@ export const registerProfessorSchema = z.object({
     confirmMasp: z.string().min(1, "Confirmação de MASP é obrigatória"),
     email: z.string().email("Email inválido"),
     confirmEmail: z.string().email("Confirmação de email inválida"),
+    cursoId: z.coerce.number().min(1, "Selecione o curso"),
     telefone: z.string().min(14, "Telefone incompleto"),
     password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
     confirmPassword: z.string().min(6, "Confirmação de senha é obrigatória"),

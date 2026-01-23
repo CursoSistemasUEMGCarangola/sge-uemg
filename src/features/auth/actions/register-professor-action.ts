@@ -1,8 +1,17 @@
 'use server'
 
+import { z } from "zod"
 import { createClient } from '@supabase/supabase-js' // Use admin client
 import { registerProfessorSchema } from '../schemas/register-professor-schema'
 import { prisma } from '@/lib/prisma'
+
+export type RegisterProfessorState = {
+    success?: boolean
+    error?: string
+    fieldErrors?: {
+        [key: string]: string[]
+    }
+}
 
 // Initialize Supabase Admin Client to bypass email confirmation
 const adminClient = createClient(
@@ -16,16 +25,10 @@ const adminClient = createClient(
     }
 )
 
-export async function registerProfessorAction(prevState: any, formData: FormData) {
+export async function registerProfessorAction(prevState: any, formData: FormData): Promise<RegisterProfessorState> {
     const rawData = Object.fromEntries(formData.entries())
 
-    // SECURITY: Registration Disabled
-    return {
-        success: false,
-        error: "O cadastro de professores foi desativado por segurança. Contate o administrador."
-    }
 
-    /*
     const validatedFields = registerProfessorSchema.safeParse(rawData)
 
     if (!validatedFields.success) {
@@ -36,7 +39,7 @@ export async function registerProfessorAction(prevState: any, formData: FormData
         }
     }
 
-    const { email, password, fullName, masp, telefone } = validatedFields.data
+    const { email, password, fullName, masp, telefone, cursoId } = validatedFields.data
 
     try {
         // 1. Check if user already exists in Public Schema (Prisma)
@@ -110,7 +113,8 @@ export async function registerProfessorAction(prevState: any, formData: FormData
             await tx.professor.create({
                 data: {
                     profileId: profile.id,
-                    masp: masp
+                    masp: masp,
+                    cursoId: cursoId
                 }
             })
         })
@@ -124,5 +128,4 @@ export async function registerProfessorAction(prevState: any, formData: FormData
             error: `Erro interno: ${error instanceof Error ? error.message : String(error)}`
         }
     }
-    */
 }

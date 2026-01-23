@@ -16,7 +16,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     try {
         const stream = await renderToStream(
             <CapaEstagioTemplate
-                curso={contrato.oferta.curso.nome}
+                curso={contrato.oferta.curso.curso?.nome || "CURSO NÃO DEFINIDO"}
+                unidade={contrato.oferta.curso.curso?.unidade?.nome || "CARANGOLA"}
+                estagioNome={contrato.oferta.curso.nome} // This is the Internship Name (e.g. Estágio I)
                 periodo={contrato.aluno.periodoAtual.toString()}
                 semestre={contrato.oferta.semestreLetivo}
                 alunoNome={contrato.aluno.profile.nomeCompleto}
