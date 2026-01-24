@@ -204,3 +204,9 @@ export async function getAdminDashboardData() {
 
     return { contratos, ofertas }
 }
+
+export async function getFeriados() {
+    return await prisma.feriadoRecesso.findMany({
+        orderBy: { data: 'asc' }
+    })
+}

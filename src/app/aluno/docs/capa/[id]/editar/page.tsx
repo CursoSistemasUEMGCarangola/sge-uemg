@@ -21,6 +21,28 @@ export default async function CapaEditPage({ params }: { params: { id: string } 
         return <div className="p-8 text-center text-red-500">Acesso negado.</div>
     }
 
+    // Find the Generate Capa stage
+    const etapaCapa = contrato.acompanhamentos.find(a =>
+        a.etapaDef.systemAction === 'GENERATE_DOC_CAPA' || a.etapaDef.numeroEtapa === 1
+    )
+
+    if (etapaCapa) {
+        // 1. Check if Completed
+        if (etapaCapa.status === 'ATIVO') {
+            // Redirect to dashboard if already completed
+            redirect('/aluno')
+        }
+
+        // 2. Check if Locked (Previous stage must be active)
+        const currentIndex = contrato.acompanhamentos.findIndex(a => a.id === etapaCapa.id)
+        if (currentIndex > 0) {
+            const prevStage = contrato.acompanhamentos[currentIndex - 1]
+            if (prevStage.status !== 'ATIVO') {
+                redirect('/aluno')
+            }
+        }
+    }
+
     const informacoesGerais = await getInformacoesGerais()
 
     return (

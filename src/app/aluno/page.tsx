@@ -55,8 +55,10 @@ export default async function AlunoDashboard() {
                     {contratos.map((contrato) => {
                         // Determine current step index (1-based because Stepper expects IDs)
                         // Logic: Find first PENDING step. If all approved, check status.
-                        const firstPending = contrato.acompanhamentos.find(a => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
-                        const currentStepId = firstPending ? firstPending.etapaDef.numeroEtapa : 8
+                        const sortedAcompanhamentos = [...contrato.acompanhamentos].sort((a, b) => a.etapaDef.numeroEtapa - b.etapaDef.numeroEtapa)
+                        const firstPending = sortedAcompanhamentos.find(a => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
+                        const totalSteps = sortedAcompanhamentos.length
+                        const currentStepId = firstPending ? firstPending.etapaDef.numeroEtapa : (totalSteps + 1)
 
                         return (
                             <Card key={contrato.id} className="overflow-hidden">
@@ -195,6 +197,19 @@ export default async function AlunoDashboard() {
                                                         <Button size="lg" className="w-full sm:min-w-[250px] text-lg font-bold shadow-lg" variant="default">
                                                             <BookOpen className="mr-2 h-5 w-5" />
                                                             Preencher Plano de Atividades
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            )
+                                        }
+
+                                        if (firstPending.etapaDef.systemAction === 'FILL_FINAL_REPORT') {
+                                            return (
+                                                <div className="w-full flex justify-end sm:flex-1">
+                                                    <Link href={`/aluno/relatorio-final/${contrato.id}`} className="w-full sm:w-auto">
+                                                        <Button size="lg" className="w-full sm:min-w-[250px] text-lg font-bold shadow-lg bg-green-600 hover:bg-green-700" variant="default">
+                                                            <FileText className="mr-2 h-5 w-5" />
+                                                            Preencher Relatório Final
                                                         </Button>
                                                     </Link>
                                                 </div>

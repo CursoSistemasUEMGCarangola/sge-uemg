@@ -209,3 +209,27 @@
 **Contexto:** Botões de ações críticas ("Preencher Plano") tinham estilo secundário (`outline`), passando despercebidos comparados a outros ("Emitir Capa").
 **Solução:** Padronização visual para usar sempre o estilo "Call to Action" (Primary, Large, Shadow) para a *próxima ação imediata* do aluno, independente de qual seja.
 **Prevenção:** A hierarquia visual deve seguir a prioridade da tarefa do usuário, não o tipo de documento. Se é a única coisa que ele pode fazer agora, deve ser o botão mais chamativo.
+
+### [2026-01-24] - [UX/LOGIC] Lógica de Stepper e Status "Concluído"
+
+**Contexto:** O componente Stepper usava um valor hardcoded (8) para determinar se todas as etapas estavam concluídas. Isso causava falha visual (último step não ficava verde) quando o número real de etapas diferia.
+**Solução:** Implementação de lógica dinâmica: `Current Step = First Pending Step ID` OU `Total Steps + 1` se tudo aprovado.
+**Prevenção:** Em componentes de progresso sequencial, nunca assuma um número fixo de passos. Calcule sempre `Total + 1` como o estado de "Checkmate/Vitória".
+
+### [2026-01-24] - [CSS/MATH] Overflow em Barra de Progresso
+
+**Contexto:** Ao definir o passo atual como `Total + 1`, o cálculo de largura da barra de progresso `(Current / Total) * 100` resultava em >100%, quebrando o layout visual.
+**Solução:** Uso de `Math.min(100, ...)` e `clamp` para garantir que a barra nunca exceda 100%.
+**Prevenção:** Qualquer cálculo de porcentagem para UI deve ter limites superiores e inferiores explícitos (clamp).
+
+### [2026-01-24] - [LOGIC] Reversão de Status (Undo)
+
+**Contexto:** Professores precisavam reverter uma etapa concluída ("ATIVO") para correções ("EM_ANALISE"). Apenas mudar o status não era suficiente, pois campos como `dataConclusao` e `observacoes` antigos persistiam.
+**Solução:** Criação de Action específica `revertStage` que limpa os metadados (`dataConclusao: null`) ao voltar o status, garantindo um estado limpo para nova avaliação.
+**Prevenção:** "Desfazer" uma ação de negócio geralmente exige mais do que apenas reverter uma flag; é preciso limpar os efeitos colaterais daquela ação (datas, assinaturas).
+
+### [2026-01-24] - [DB/OPS] Limpeza Real de Produção (TRUNCATE vs DELETE)
+
+**Contexto:** Para testes finais, foi necessário limpar o banco. O uso de `DELETE` ou scripts parciais deixava IDs inflacionados (ex: Aluno ID 50), o que é feio para uma entrega final.
+**Solução:** Uso de `TRUNCATE TABLE ... RESTART IDENTITY CASCADE`. O `RESTART IDENTITY` é crucial para resetar as sequences auto-incrementais para 1.
+**Prevenção:** Em scripts de "Clean Slate" para produção/homologação, sempre use `RESTART IDENTITY` para dar a sensação de sistema novo em folha.

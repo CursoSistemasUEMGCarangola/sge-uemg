@@ -208,9 +208,26 @@ export async function logAtividade(contratoId: number, data: Date, horas: number
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
 
+    // Fetch Contract to get Limits
+    const contrato = await prisma.contratoEstagio.findUnique({
+        where: { id: contratoId },
+        include: {
+            acompanhamentos: {
+                orderBy: { idEtapaDef: 'asc' },
+                include: { etapaDef: true }
+            },
+            oferta: { include: { curso: true } }
+        }
+    })
+
+    if (!contrato) return { error: "Contrato não encontrado." }
+
     // 1. Validate Hours
-    if (horas < 1 || horas > 6) {
-        return { error: "Carga horária diária deve ser entre 1 e 6 horas." }
+    if (horas < 1) {
+        return { error: "Carga horária mínima é de 1 hora." }
+    }
+    if (horas > contrato.cargaHorariaDiaria) {
+        return { error: `Carga horária diária não pode exceder ${contrato.cargaHorariaDiaria} horas (conforme contrato).` }
     }
 
     // 2. Validate Weekend
@@ -227,19 +244,55 @@ export async function logAtividade(contratoId: number, data: Date, horas: number
         return { error: `Data inválida: ${feriado.descricao} (${feriado.tipo})` }
     }
 
-    // 4. Check for duplicates
-    // Actually, we might allow multiple entries per day as long as total hours <= 6?
-    // Rule says "carga horária diária a ser cumprida... exatamente 1h...6h".
-    // Let's assume one entry per day for simplicity or sum hours.
-    // The business rule implies "activities realized at EACH DAY".
-    // Let's check if entry already exists
+    // 4. Validate Start Date
+    // Current Rule: Cannot be before Contract 'dataInicioPrevista'.
+    // Logic changed from 'Stage Release Date' to 'Contract Start Date' based on user feedback.
+    const minDate = new Date(contrato.dataInicioPrevista)
+    minDate.setHours(0, 0, 0, 0)
+
+    const checkDate = new Date(data)
+    checkDate.setHours(0, 0, 0, 0)
+
+    if (checkDate < minDate) {
+        return { error: `Data inválida. A atividade não pode ser anterior ao início do contrato (${minDate.toLocaleDateString('pt-BR')}).` }
+    }
+
+    // 5. Validate Max Date (Offer End Date)
+    if (contrato.oferta.dataFim) {
+        const maxDate = new Date(contrato.oferta.dataFim)
+        maxDate.setHours(0, 0, 0, 0)
+        if (checkDate > maxDate) {
+            return { error: `Data inválida. A atividade não pode ser posterior ao fim da oferta de estágio (${maxDate.toLocaleDateString('pt-BR')}).` }
+        }
+    }
+
+    // 6. Validate Total Hours
+    const cargaHorariaTotal = contrato.oferta.curso.cargaHorariaTotal
+
+    const allActivities = await prisma.diarioAtividade.findMany({
+        where: { idContrato: contratoId }
+    })
+    const currentTotal = allActivities.reduce((acc, curr) => acc + curr.horasRealizadas, 0)
+
+    if (currentTotal >= cargaHorariaTotal) {
+        return { error: `Carga horária total do estágio já foi atingida (${cargaHorariaTotal}h). Não é permitido incluir novas atividades.` }
+    }
+
+    let finalHoras = horas
+    if (currentTotal + horas > cargaHorariaTotal) {
+        finalHoras = cargaHorariaTotal - currentTotal
+        // Only proceed if finalHoras >= 1 (min load check might fail if remaining < 1, but usually min daily is 1. If remaining is 0, we caught it above).
+        if (finalHoras < 1) {
+            return { error: "Carga horária restante é menor que 1h." }
+        }
+    }
+
+    // 7. Check for duplicates
     const existing = await prisma.diarioAtividade.findFirst({
         where: { idContrato: contratoId, dataAtividade: data }
     })
 
     if (existing) {
-        // Update? Or Block? Let's Block for now to keep simple, or Update.
-        // Let's allow updating description/hours? No, simpler to return error "Already logged".
         return { error: "Já existe atividade lançada para esta data." }
     }
 
@@ -247,7 +300,7 @@ export async function logAtividade(contratoId: number, data: Date, horas: number
         data: {
             idContrato: contratoId,
             dataAtividade: data,
-            horasRealizadas: horas,
+            horasRealizadas: finalHoras,
             descricaoAtividades: descricao
         }
     })
@@ -292,6 +345,20 @@ export async function submitRelatorioAtividades(contratoId: number, etapaId: num
     })
 
     revalidatePath('/aluno')
+    return { success: true }
+}
+
+// Save draft without submitting
+export async function saveRelatorioAvaliacao(contratoId: number, texto: string) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    await prisma.contratoEstagio.update({
+        where: { id: contratoId },
+        data: { textoRelatorioAvaliacao: texto }
+    })
+
+    revalidatePath(`/aluno/relatorio-final/${contratoId}`)
     return { success: true }
 }
 
@@ -460,4 +527,44 @@ export async function updateEstagioAction(
         console.error("Erro ao atualizar estágio:", error)
         return { error: "Erro ao atualizar dados." }
     }
+}
+
+export async function revertStage(contratoId: number) {
+    const role = await getCurrentUserRole()
+    if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+        throw new Error("Unauthorized")
+    }
+
+    // 1. Find the latest ATIVO stage (highest number)
+    // We can find all stages and sort in JS
+    const stages = await prisma.acompanhamentoEtapa.findMany({
+        where: {
+            idContrato: contratoId,
+            status: 'ATIVO'
+        },
+        include: { etapaDef: true },
+        orderBy: { etapaDef: { numeroEtapa: 'desc' } }
+    })
+
+    if (stages.length === 0) {
+        return { error: "Nenhuma etapa concluída encontrada para reverter." }
+    }
+
+    const stageToRevert = stages[0] // The one with highest numeroEtapa
+
+    // 2. Update status to EM_ANALISE
+    // This makes it the "Current" pending stage again.
+    // The previous "Pending" stage (N+1) will remain Pending, but logically locked by UI because N is not Active.
+    await prisma.acompanhamentoEtapa.update({
+        where: { id: stageToRevert.id },
+        data: {
+            status: 'EM_ANALISE',
+            dataConclusao: null,
+            observacoes: null // Clear feedback? Or keep it? keeping null implies "New Review needed"
+            // If we revert, presumably the previous approval was a mistake, so clearing observations is probably best.
+        }
+    })
+
+    revalidatePath(`/admin/estagios/${contratoId}`)
+    return { success: true }
 }

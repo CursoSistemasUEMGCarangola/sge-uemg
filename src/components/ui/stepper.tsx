@@ -19,7 +19,9 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                 {/* Active Progress Bar */}
                 <div
                     className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded bg-green-600 transition-all duration-300"
-                    style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+                    style={{
+                        width: `${Math.min(100, ((currentStep - 1) / (steps.length - 1)) * 100)}%`
+                    }}
                 ></div>
 
                 {steps.map((step) => {

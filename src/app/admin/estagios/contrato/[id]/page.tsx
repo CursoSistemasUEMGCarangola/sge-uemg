@@ -15,6 +15,7 @@ import { RejectDialog } from "../../reject-dialog"
 import { ContractActions } from "../../[id]/contract-actions"
 import { CompleteStageButton } from "../../[id]/complete-stage-button"
 import { NotifyProblemDialog } from "../../[id]/notify-problem-dialog"
+import { RevertStageButton } from "@/app/admin/estagios/revert-stage-button"
 
 export default async function EstagioDetailsPage({ params }: { params: { id: string } }) {
     const id = parseInt(params.id)
@@ -24,13 +25,21 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
     if (!contrato) return notFound()
 
     // Current Step Logic
-    const firstPending = contrato.acompanhamentos.find(a => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
-    const currentStepId = firstPending ? firstPending.etapaDef.numeroEtapa : 8
+    const sortedAcompanhamentos = [...contrato.acompanhamentos].sort((a, b) => a.etapaDef.numeroEtapa - b.etapaDef.numeroEtapa)
+    const firstPending = sortedAcompanhamentos.find(a => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
+    const totalSteps = sortedAcompanhamentos.length
+
+    // If there is a pending stage, use its number.
+    // If NOT (all approved), current step is Total + 1 to mark all as completed.
+    const currentStepId = firstPending ? firstPending.etapaDef.numeroEtapa : (totalSteps + 1)
     const isEmAnalise = firstPending?.status === 'EM_ANALISE'
 
     // Fetch Diary Entries (for Step 4 display)
     const diaryEntries = await getDiarioAtividades(id)
     const totalHoras = diaryEntries.reduce((acc, curr) => acc + curr.horasRealizadas, 0)
+
+    // Check if there are any completed stages to revert
+    const hasCompletedStages = contrato.acompanhamentos.some((a: any) => a.status === 'ATIVO')
 
     return (
         <div className="space-y-6">
@@ -49,6 +58,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
+                    <RevertStageButton contratoId={contrato.id} disabled={!hasCompletedStages} />
                     <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>
                         {contrato.statusAprovacao}
                     </Badge>
