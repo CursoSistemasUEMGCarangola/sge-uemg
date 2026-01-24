@@ -233,3 +233,9 @@
 **Contexto:** Para testes finais, foi necessário limpar o banco. O uso de `DELETE` ou scripts parciais deixava IDs inflacionados (ex: Aluno ID 50), o que é feio para uma entrega final.
 **Solução:** Uso de `TRUNCATE TABLE ... RESTART IDENTITY CASCADE`. O `RESTART IDENTITY` é crucial para resetar as sequences auto-incrementais para 1.
 **Prevenção:** Em scripts de "Clean Slate" para produção/homologação, sempre use `RESTART IDENTITY` para dar a sensação de sistema novo em folha.
+
+### [2026-01-24] - [SECURITY] Cadastro de Professores
+
+**Contexto:** O formulário de cadastro de novos professores não deve ser público. O cadastro indiscriminado poderia permitir que alunos se passassem por professores.
+**Solução:** Remoção/Omissão da rota pública de cadastro de professores (`/auth/cadastro/professor`). A criação de contas de orientadores deve ser feita exclusivamente via Admin ou scripts de seed, garantindo controle institucional.
+**Prevenção:** Em sistemas acadêmicos, a role "Professor" é de alta confiança. Nunca exponha self-service registration para roles administrativas ou de supervisão sem validação manual.
