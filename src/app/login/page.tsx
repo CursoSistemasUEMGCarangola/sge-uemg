@@ -103,6 +103,15 @@ export default function LoginPage() {
                                 PRIMEIRO ACESSO
                             </Link>
                         </Button>
+
+                        <div className="text-center">
+                            <Link
+                                href="/auth/recover"
+                                className="text-sm text-muted-foreground hover:text-primary hover:underline transition-all"
+                            >
+                                Esqueci minha senha
+                            </Link>
+                        </div>
                     </form>
                 </CardContent>
                 <CardFooter className="text-center text-sm text-muted-foreground justify-center">
