@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useFormState } from 'react-dom'
 import { login } from './actions'
 import { Button } from '@/components/ui/button'
@@ -8,23 +9,45 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label'
 import { LockKeyhole, User, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useToast } from '@/hooks/use-toast'
 
 // Initial state for the form action
 const initialState = {
     error: null as string | null,
+    timestamp: 0 // Adding timestamp to force state update even if error string is same
 }
 
 export default function LoginPage() {
+    const { toast } = useToast()
+
     // Basic wrapper to handle form state with the server action
     async function handleLogin(prevState: any, formData: FormData) {
         const result = await login(formData)
         if (result?.error) {
-            return { error: result.error }
+            return { error: result.error, timestamp: Date.now() }
         }
-        return { error: null }
+        return { error: null, timestamp: Date.now() }
     }
 
     const [state, formAction] = useFormState(handleLogin, initialState)
+
+    useEffect(() => {
+        if (state?.error) {
+            let message = "Ocorreu um erro ao tentar entrar."
+
+            if (state.error.includes("Invalid login credentials")) {
+                message = "Credenciais inválidas. Verifique seu e-mail e senha."
+            } else if (state.error.includes("Email not confirmed")) {
+                message = "E-mail não confirmado. Verifique sua caixa de entrada."
+            }
+
+            toast({
+                variant: "destructive",
+                title: "Erro de Acesso",
+                description: message,
+            })
+        }
+    }, [state, toast])
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#305B7D] p-4">
@@ -74,11 +97,7 @@ export default function LoginPage() {
                                 />
                             </div>
                         </div>
-                        {state?.error && (
-                            <div className="text-sm text-red-500 font-medium text-center">
-                                {state.error}
-                            </div>
-                        )}
+
                         <Button type="submit" className="w-full bg-[#E31837] hover:bg-[#b0132b]">
                             Entrar
                         </Button>
