@@ -239,3 +239,22 @@
 **Contexto:** O formulário de cadastro de novos professores não deve ser público. O cadastro indiscriminado poderia permitir que alunos se passassem por professores.
 **Solução:** Remoção/Omissão da rota pública de cadastro de professores (`/auth/cadastro/professor`). A criação de contas de orientadores deve ser feita exclusivamente via Admin ou scripts de seed, garantindo controle institucional.
 **Prevenção:** Em sistemas acadêmicos, a role "Professor" é de alta confiança. Nunca exponha self-service registration para roles administrativas ou de supervisão sem validação manual.
+
+### [2026-02-02] - [UI/CALENDAR] Timezone Shift em Componentes de Data
+
+**Contexto:** Ao passar datas do banco (UTC) para o componente de calendário (React DayPicker + date-fns), o locale do navegador aplicava offset (-3h), fazendo com que feriados aparecessem no dia anterior (ex: 25/12 virava 24/12).
+**Solução:**
+
+1. Tratamento da data como string ISO fixa (`date.toISOString().split('T')[0]`) para comparação, ignorando o objeto Date local do JS.
+2. Adição de `locale={ptBR}` explícito no componente Calendar.
+**Prevenção:** Em calendários, nunca use `date.toString()` ou `format()` do date-fns diretamente em objetos Date vindos do banco sem antes normalizar ou forçar UTC, especialmente em checks de igualdade de dia.
+
+### [2026-02-02] - [UX/AUTH] Feedback de Erro de Login Persistente
+
+**Contexto:** A mensagem de erro "Invalid login credentials" retornada pelo Supabase era exibida estaticamente. Se o usuário errasse novamente, ele não recebia feedback visual de nova tentativa, pois a mensagem já estava lá.
+**Solução:**
+
+1. Substituição do div de erro por `useToast`.
+2. Adição de timestamp ao state do form action para forçar re-render do `useEffect` mesmo se a mensagem de erro for idêntica.
+3. Tradução das mensagens de erro do backend no frontend antes de exibir.
+**Prevenção:** Para feedback de ações repetitivas (como login), use notificações efêmeras (Toasts) ou garanta que o estado de erro seja "limpo" ou "atualizado" visualmente a cada tentativa.
