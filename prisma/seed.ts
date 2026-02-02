@@ -54,7 +54,8 @@ async function main() {
         {
             numeroEtapa: 6,
             descricao: "Entrega do Relatório Final",
-            orientacaoTextual: "Ao fim do estágio, preencha, imprima e protocole o Relatório de Avaliação."
+            orientacaoTextual: "Ao fim do estágio, preencha, imprima e protocole o Relatório de Avaliação.",
+            systemAction: "FILL_FINAL_REPORT"
         },
         {
             numeroEtapa: 7,
