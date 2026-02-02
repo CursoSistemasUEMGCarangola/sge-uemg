@@ -41,7 +41,8 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
     // Process data for calendar modifiers
     // We treat the incoming date string (UTC) as the source of truth for YYYY-MM-DD
     function getDateString(dateStr: string | Date) {
-        if (dateStr instanceof Date) return format(dateStr, 'yyyy-MM-dd')
+        // Fix: Use UTC methods to avoid timezone shift when processing DB dates
+        if (dateStr instanceof Date) return dateStr.toISOString().split('T')[0]
         return dateStr.toString().split('T')[0]
     }
 
@@ -57,8 +58,7 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
             .map(i => getDateString(i.data))
     )
 
-    const feriadoMatcher = (day: Date) => feriadosSet.has(format(day, 'yyyy-MM-dd'))
-    const recessoMatcher = (day: Date) => recessosSet.has(format(day, 'yyyy-MM-dd'))
+
 
     async function handleAdd() {
         if (!date || !descricao) return
@@ -92,12 +92,13 @@ export function CalendarManager({ initialData }: { initialData: any[] }) {
                     <div className="flex justify-center">
                         <Calendar
                             mode="single"
+                            locale={ptBR}
                             selected={date}
                             onSelect={setDate}
                             className="rounded-md border shadow p-3"
                             modifiers={{
-                                feriado: feriadoMatcher,
-                                recesso: recessoMatcher
+                                feriado: (day) => feriadosSet.has(day.toISOString().split('T')[0]),
+                                recesso: (day) => recessosSet.has(day.toISOString().split('T')[0])
                             }}
                             modifiersClassNames={{
                                 feriado: "bg-red-100 text-red-900 font-semibold hover:bg-red-200",
