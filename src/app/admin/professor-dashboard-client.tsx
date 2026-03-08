@@ -126,61 +126,79 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                 <th className="px-4 py-3">Aluno</th>
                                 <th className="px-4 py-3">Matrícula</th>
                                 <th className="px-4 py-3">Estágio / Curso</th>
-                                <th className="px-4 py-3 text-center">Etapas</th>
+                                <th className="px-4 py-3 text-center">Etapa Atual</th>
                                 <th className="px-4 py-3 text-center">Status</th>
                                 <th className="px-4 py-3 text-right">Ação</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {filteredContratos.map((contrato) => (
-                                <tr key={contrato.id} className="hover:bg-muted/10 transition-colors">
-                                    <td className="px-4 py-3 font-medium text-foreground">
-                                        {contrato.aluno.profile.nomeCompleto}
-                                    </td>
-                                    <td className="px-4 py-3 font-mono text-muted-foreground">
-                                        {contrato.aluno.matricula}
-                                    </td>
-                                    <td className="px-4 py-3 max-w-[200px] truncate" title={`${contrato.oferta?.curso?.nome} - ${contrato.campo.nomeFantasia}`}>
-                                        <div className="font-medium text-foreground">{contrato.oferta?.curso?.nome}</div>
-                                        <div className="text-xs text-muted-foreground truncate flex flex-col">
-                                            <span>{contrato.oferta?.curso?.curso?.nome} - {contrato.oferta?.curso?.curso?.unidade?.nome}</span>
-                                            <span className="font-semibold">{contrato.tipoDocumentacao}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
-                                            {contrato.acompanhamentos.length}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                        {(() => {
-                                            // Find current pending step to check deadline
-                                            const currentStep = contrato.acompanhamentos.find((a: any) => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
-                                            const isLate = currentStep?.dataLimite && new Date() > new Date(currentStep.dataLimite)
+                            {filteredContratos.map((contrato) => {
+                                const currentStepDef = contrato.acompanhamentos.find((a: any) => 
+                                    a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
+                                )
+                                const currentStepLabel = currentStepDef 
+                                    ? `Etapa ${currentStepDef.etapaDef.numeroEtapa}` 
+                                    : "Concluído"
+                                const currentStepStatus = currentStepDef ? currentStepDef.status : "CONCLUIDO"
 
-                                            return (
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : contrato.statusAprovacao === 'REJEITADO' ? 'destructive' : 'secondary'}>
-                                                        {contrato.statusAprovacao}
+                                return (
+                                    <tr key={contrato.id} className="hover:bg-muted/10 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-foreground">
+                                            {contrato.aluno.profile.nomeCompleto}
+                                        </td>
+                                        <td className="px-4 py-3 font-mono text-muted-foreground">
+                                            {contrato.aluno.matricula}
+                                        </td>
+                                        <td className="px-4 py-3 max-w-[200px] truncate" title={`${contrato.oferta?.curso?.nome} - ${contrato.campo.nomeFantasia}`}>
+                                            <div className="font-medium text-foreground">{contrato.oferta?.curso?.nome}</div>
+                                            <div className="text-xs text-muted-foreground truncate flex flex-col">
+                                                <span>{contrato.oferta?.curso?.curso?.nome} - {contrato.oferta?.curso?.curso?.unidade?.nome}</span>
+                                                <span className="font-semibold">{contrato.tipoDocumentacao}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-xs font-semibold text-foreground">
+                                                    {currentStepLabel}
+                                                </span>
+                                                {currentStepDef && currentStepStatus !== 'PENDENTE' && (
+                                                    <Badge variant={
+                                                        currentStepStatus === 'EM_ANALISE' ? 'secondary' :
+                                                            currentStepStatus === 'REJEITADO' ? 'destructive' : 'outline'
+                                                    } className="text-[10px] px-1.5 h-4 w-fit">
+                                                        {currentStepStatus}
                                                     </Badge>
-                                                    {isLate && contrato.statusAprovacao === 'ATIVO' && (
-                                                        <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded border border-red-200">
-                                                            ATRASADO
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )
-                                        })()}
-                                    </td>
-                                    <td className="px-4 py-3 text-right">
-                                        <Link href={`/admin/estagios/contrato/${contrato.id}`}>
-                                            <Button size="sm" variant="outline" className="h-8">
-                                                Acessar
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            {(() => {
+                                                const isLate = currentStepDef?.dataLimite && new Date() > new Date(currentStepDef.dataLimite)
+
+                                                return (
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : contrato.statusAprovacao === 'REJEITADO' ? 'destructive' : 'secondary'}>
+                                                            {contrato.statusAprovacao}
+                                                        </Badge>
+                                                        {isLate && contrato.statusAprovacao === 'ATIVO' && (
+                                                            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded border border-red-200">
+                                                                ATRASADO
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })()}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            <Link href={`/admin/estagios/contrato/${contrato.id}`}>
+                                                <Button size="sm" variant="outline" className="h-8">
+                                                    Acessar
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

@@ -31,16 +31,19 @@ export function ContratoTable({ contratos }: ContratoTableProps) {
                         <TableHead>Estagiário</TableHead>
                         <TableHead>Empresa</TableHead>
                         <TableHead>Etapa Atual</TableHead>
-                        <TableHead>Status Etapa</TableHead>
                         <TableHead>Status Final</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {contratos.map((contrato) => {
-                        const firstPending = contrato.acompanhamentos.find((a: any) => a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO')
-                        const currentStep = firstPending ? firstPending.etapaDef.descricao : "Concluído"
-                        const currentStatus = firstPending ? firstPending.status : "Concluído"
+                        const firstPending = contrato.acompanhamentos.find((a: any) =>
+                            a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
+                        )
+                        const currentStep = firstPending
+                            ? `Etapa ${firstPending.etapaDef.numeroEtapa}`
+                            : "Concluído"
+                        const currentStatus = firstPending ? firstPending.status : "CONCLUIDO"
 
                         return (
                             <TableRow key={contrato.id}>
@@ -49,14 +52,18 @@ export function ContratoTable({ contratos }: ContratoTableProps) {
                                     <div className="text-xs text-muted-foreground">{contrato.aluno.matricula}</div>
                                 </TableCell>
                                 <TableCell>{contrato.campo.nomeFantasia}</TableCell>
-                                <TableCell>{currentStep}</TableCell>
                                 <TableCell>
-                                    <Badge variant={
-                                        currentStatus === 'EM_ANALISE' ? 'secondary' :
-                                            currentStatus === 'REJEITADO' ? 'destructive' : 'outline'
-                                    }>
-                                        {currentStatus}
-                                    </Badge>
+                                    <div className="flex flex-col gap-1 items-start">
+                                        <span className="text-sm font-medium">{currentStep}</span>
+                                        {firstPending && currentStatus !== 'PENDENTE' && (
+                                            <Badge variant={
+                                                currentStatus === 'EM_ANALISE' ? 'secondary' :
+                                                    currentStatus === 'REJEITADO' ? 'destructive' : 'outline'
+                                            } className="w-fit text-[10px] px-2 h-5">
+                                                {currentStatus}
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>

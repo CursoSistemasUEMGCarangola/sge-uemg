@@ -19,28 +19,17 @@ import { adminStudentSchema } from "@/features/admin/schemas/admin-student-schem
 import { createStudentAction } from "@/features/admin/actions/create-student-action"
 import { adminStudentUpdateSchema } from "@/features/admin/schemas/admin-student-update-schema"
 import { updateStudentAction } from "@/features/admin/actions/update-student-action"
-import { useState, useTransition } from "react"
-import { AlertCircle, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react"
+import { useState, useTransition, useEffect } from "react"
+import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useToast } from "../../../hooks/use-toast"
 
-type RegisterFormValues = z.infer<typeof adminStudentSchema>
-
-interface AdminStudentFormProps {
-    initialData?: {
-        id: string
-        fullName: string
-        matricula: string
-        email: string
-        telefone: string
-        periodo: string
-    }
-}
-
-export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
+export function AdminStudentForm({ initialData }: any) {
     const [isPending, startTransition] = useTransition()
     const [serverError, setServerError] = useState<string | null>(null)
+    const { toast } = useToast()
     const router = useRouter()
     const isEditing = !!initialData
 
@@ -48,6 +37,7 @@ export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
         // @ts-ignore - Dynamic schema resolution causes type mismatch with rigid generic
         resolver: zodResolver(isEditing ? adminStudentUpdateSchema : adminStudentSchema),
         defaultValues: {
+            id: initialData?.id || "",
             fullName: initialData?.fullName || "",
             matricula: initialData?.matricula || "",
             email: initialData?.email || "",
@@ -57,6 +47,14 @@ export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
         },
     })
 
+    const { formState: { errors } } = form
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            console.warn("ADMIN_FORM_VALIDATION_ERRORS:", errors)
+        }
+    }, [errors])
+
     const formatPhone = (value: string) => {
         return value
             .replace(/\D/g, '')
@@ -65,21 +63,27 @@ export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
             .replace(/(-\d{4})\d+?$/, '$1')
     }
 
-    async function onSubmit(data: RegisterFormValues) {
+    async function onSubmit(data: any) {
+        console.log("Submitting form with data:", data)
         setServerError(null)
         startTransition(async () => {
             const formData = new FormData()
-            if (isEditing && initialData) {
-                formData.append('id', initialData.id)
-            }
             Object.entries(data).forEach(([key, value]) => {
-                formData.append(key, value?.toString() || "")
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value.toString())
+                }
             })
 
             const action = isEditing ? updateStudentAction : createStudentAction
             const result = await action(null as any, formData)
 
             if (result?.success) {
+                toast({
+                    title: isEditing ? "Perfil Atualizado" : "Aluno Cadastrado",
+                    description: isEditing 
+                        ? "As alterações foram salvas com sucesso." 
+                        : "O aluno foi cadastrado e já pode acessar o sistema.",
+                })
                 // Redirect to list on success
                 router.push('/admin/alunos')
                 router.refresh()
@@ -87,7 +91,7 @@ export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
                 setServerError(result.error || "Erro desconhecido.")
                 if (result.fieldErrors) {
                     Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-                        form.setError(field as any, { message: messages[0] })
+                        form.setError(field as any, { message: (messages as string[])[0] })
                     })
                 }
             }
@@ -114,7 +118,21 @@ export function AdminStudentForm({ initialData }: AdminStudentFormProps) {
                 )}
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form 
+                        onSubmit={form.handleSubmit(onSubmit, (err) => {
+                            console.error("FORM_SUBMIT_FAILED_VALIDATION:", err)
+                        })} 
+                        className="space-y-6"
+                    >
+                        {isEditing && (
+                            <FormField
+                                control={form.control}
+                                name="id"
+                                render={({ field }) => (
+                                    <input type="hidden" {...field} />
+                                )}
+                            />
+                        )}
 
                         <FormField
                             control={form.control}

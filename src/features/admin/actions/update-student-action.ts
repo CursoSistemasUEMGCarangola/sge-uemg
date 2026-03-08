@@ -1,28 +1,19 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { adminStudentUpdateSchema } from '../schemas/admin-student-update-schema'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserRole } from '@/lib/auth'
 
-const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-)
-
 export async function updateStudentAction(prevState: any, formData: FormData) {
+    const rawData = Object.fromEntries(formData.entries())
+    console.log("updateStudentAction called with payload:", { ...rawData, password: '[REDACTED]' })
+    
     const role = await getCurrentUserRole()
     if (role !== 'ADMIN') {
         return { success: false, error: "Acesso negado." }
     }
 
-    const rawData = Object.fromEntries(formData.entries())
     const validatedFields = adminStudentUpdateSchema.safeParse(rawData)
 
     if (!validatedFields.success) {
@@ -36,6 +27,8 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
     const { id, email, password, fullName, matricula, telefone, periodo } = validatedFields.data
 
     try {
+        const adminClient = createAdminClient()
+
         // 1. Update DB Records
         await prisma.$transaction(async (tx) => {
             await tx.profile.update({
@@ -61,6 +54,7 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
             email,
             user_metadata: { full_name: fullName }
         }
+        
         if (password && password.length >= 6) {
             updateData.password = password
         }
@@ -72,18 +66,16 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
 
         if (authError) {
             console.error("Auth Update Error:", authError)
-            // Warning: DB updated but Auth might not be synced if error. 
-            // Ideally should be consistent, but Auth API is external.
-            return { success: true, warning: "Dados salvos, mas houve erro ao atualizar login: " + authError.message }
+            return { 
+                success: false, 
+                error: "Dados do perfil salvos no banco, mas houve falha ao atualizar o login no Supabase: " + authError.message 
+            }
         }
 
         return { success: true }
 
-    } catch (error) {
-        console.error("Update Student Error:", error)
-        return {
-            success: false,
-            error: `Erro interno: ${error instanceof Error ? error.message : String(error)}`
-        }
+    } catch (error: any) {
+        console.error("CRITICAL: Update Student Action failed:", error)
+        return { success: false, error: error.message || "Erro interno ao atualizar aluno." }
     }
 }

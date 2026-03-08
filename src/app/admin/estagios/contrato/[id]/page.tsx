@@ -38,8 +38,8 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
     const diaryEntries = await getDiarioAtividades(id)
     const totalHoras = diaryEntries.reduce((acc, curr) => acc + curr.horasRealizadas, 0)
 
-    // Check if there are any completed stages to revert
     const hasCompletedStages = contrato.acompanhamentos.some((a: any) => a.status === 'ATIVO')
+    const canRevert = hasCompletedStages || (firstPending && firstPending.status !== 'ATIVO')
 
     return (
         <div className="space-y-6">
@@ -58,7 +58,6 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                    <RevertStageButton contratoId={contrato.id} disabled={!hasCompletedStages} />
                     <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>
                         {contrato.statusAprovacao}
                     </Badge>
@@ -258,6 +257,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <CompleteStageButton acompanhamentoId={firstPending.id} />
+                                            <RevertStageButton contratoId={contrato.id} disabled={!canRevert} />
                                             <NotifyProblemDialog
                                                 contratoId={contrato.id}
                                                 etapaId={firstPending.etapaDef.id}
@@ -268,17 +268,20 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                                 )}
 
                                 {isEmAnalise && (
-                                    <div className="flex gap-4 pt-4">
-                                        <ApproveDialog
-                                            contratoId={contrato.id}
-                                            etapaId={firstPending.etapaDef.id} // Note: This passes the ID of Def, ensure action expects this
-                                            etapaNome={firstPending.etapaDef.descricao}
-                                        />
-                                        <RejectDialog
-                                            contratoId={contrato.id}
-                                            etapaId={firstPending.etapaDef.id}
-                                            etapaNome={firstPending.etapaDef.descricao}
-                                        />
+                                    <div className="space-y-4 pt-4">
+                                        <div className="flex gap-4">
+                                            <ApproveDialog
+                                                contratoId={contrato.id}
+                                                etapaId={firstPending.etapaDef.id} // Note: This passes the ID of Def, ensure action expects this
+                                                etapaNome={firstPending.etapaDef.descricao}
+                                            />
+                                            <RejectDialog
+                                                contratoId={contrato.id}
+                                                etapaId={firstPending.etapaDef.id}
+                                                etapaNome={firstPending.etapaDef.descricao}
+                                            />
+                                        </div>
+                                        <RevertStageButton contratoId={contrato.id} disabled={!canRevert} className="w-full" />
                                     </div>
                                 )}
                             </CardContent>
@@ -288,7 +291,8 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                             <CardContent className="py-6 flex flex-col items-center text-center text-green-800">
                                 <CheckCircle className="h-12 w-12 mb-4 text-green-600" />
                                 <h3 className="text-xl font-bold">Estágio Concluído!</h3>
-                                <p>Todas as etapas foram aprovadas.</p>
+                                <p className="mb-4">Todas as etapas foram aprovadas.</p>
+                                <RevertStageButton contratoId={contrato.id} disabled={!hasCompletedStages} />
                             </CardContent>
                         </Card>
                     )}

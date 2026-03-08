@@ -33,7 +33,7 @@ export default async function CapaEditPage({ params }: { params: { id: string } 
             redirect('/aluno')
         }
 
-        // 2. Check if Locked (Previous stage must be active)
+        // 2. Check if Locked (Previous stage must be active) - only if it's not the first stage
         const currentIndex = contrato.acompanhamentos.findIndex(a => a.id === etapaCapa.id)
         if (currentIndex > 0) {
             const prevStage = contrato.acompanhamentos[currentIndex - 1]
@@ -44,12 +44,14 @@ export default async function CapaEditPage({ params }: { params: { id: string } 
     }
 
     const informacoesGerais = await getInformacoesGerais()
+    const canEdit = !etapaCapa || etapaCapa.status === 'PENDENTE' || etapaCapa.status === 'REJEITADO'
 
     return (
         <div className="container py-8">
             <CapaForm
                 contrato={contrato}
                 informacoesGerais={informacoesGerais}
+                canEdit={canEdit}
             />
         </div>
     )

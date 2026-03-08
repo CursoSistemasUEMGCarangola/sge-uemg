@@ -258,3 +258,23 @@
 2. Adição de timestamp ao state do form action para forçar re-render do `useEffect` mesmo se a mensagem de erro for idêntica.
 3. Tradução das mensagens de erro do backend no frontend antes de exibir.
 **Prevenção:** Para feedback de ações repetitivas (como login), use notificações efêmeras (Toasts) ou garanta que o estado de erro seja "limpo" ou "atualizado" visualmente a cada tentativa.
+
+---
+
+### [2026-03-07] - [LOGIC] Reset de Etapa Inicial (Stage 1)
+
+**Contexto:** O sistema permitia retroceder apenas etapas concluídas. Para a Etapa 1, se o aluno cometia um erro, o professor não conseguia "resetar" o status para Pendente pois não havia etapa anterior.
+**Solução:** Ajuste na `revertStage` para identificar se não há etapas ATIVAS e, nesse caso, permitir o "reset" da primeira etapa encontrada (que esteja em análise ou rejeitada), limpando seus metadados.
+**Prevenção:** Em fluxos sequenciais, o estado "Zero" (primeira etapa) deve ser tratável como um caso especial de reversão/reset.
+
+### [2026-03-07] - [PRISMA] Atualização Multi-Entidade em Correções
+
+**Contexto:** A correção da Capa do Estágio envolvia campos de tabelas diferentes (`CampoEstagio` e `ContratoEstagio`). A primeira implementação atualizava apenas dados do supervisor.
+**Solução:** Expansão da Server Action `updateEstagioAction` para aceitar todos os campos editáveis e executar um `prisma.$transaction` atualizando as duas tabelas simultaneamente, garantindo a integridade dos dados da empresa e do contrato (modalidade, carga horária).
+**Prevenção:** Sempre verificar se um formulário de "Edição de Dados" abrange todas as entidades relacionadas que o usuário espera alterar.
+
+### [2026-03-07] - [UX] Contraste em Botões com Bordas Coloridas (Amber)
+
+**Contexto:** Botões `variant="outline"` com cores customizadas (texto âmbar) perdiam contraste no hover, pois o texto permanecia âmbar e o fundo ficava uma cor muito clara, ou o usuário perdia a percepção de clique.
+**Solução:** Forçar `hover:bg-amber-600 hover:text-white` em botões de alerta/notificação para garantir contraste máximo e feedback visual claro de que o botão está selecionado.
+**Prevenção:** Testar acessibilidade e contraste de hover em todos os botões que não seguem as variantes padrão do Shadcn.

@@ -4,24 +4,92 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { updateEstagioAction } from "@/features/estagio/actions"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, ArrowLeft, Printer } from "lucide-react"
+import { FileText, ArrowLeft, Printer, Loader2, Save } from "lucide-react"
+
+const capaSchema = z.object({
+    supervisor: z.object({
+        nome: z.string().min(3, "Nome muito curto"),
+        cargo: z.string().min(2, "Cargo obrigatório"),
+        formacao: z.string().min(2, "Formação obrigatória"),
+        titulacao: z.string().min(2, "Titulação obrigatória"),
+        telefone: z.string().min(1, "Telefone obrigatório"),
+        email: z.string().email("E-mail inválido"),
+    }),
+    atribuicoes: z.string().min(10, "Detalhe melhor as atribuições"),
+    // New fields
+    razaoSocial: z.string().min(2, "Razão Social obrigatória"),
+    nomeFantasia: z.string().min(2, "Nome Fantasia obrigatório"),
+    telefoneEmpresa: z.string().min(1, "Telefone da empresa obrigatório"),
+    emailEmpresa: z.string().email("Email da empresa inválido"),
+    modalidade: z.string().min(1, "Modalidade obrigatória"),
+    cargaHorariaDiaria: z.number().min(1, "Carga horária deve ser maior que 0").max(6, "Máximo de 6 horas diárias"),
+    dataInicioPrevista: z.string().min(1, "Data de início obrigatória"),
+})
+
+type CapaFormValues = z.infer<typeof capaSchema>
 
 interface CapaFormProps {
     contrato: any
     informacoesGerais?: any[]
+    canEdit?: boolean
 }
 
-export function CapaForm({ contrato }: CapaFormProps) {
+export function CapaForm({ contrato, canEdit = false }: CapaFormProps) {
     const router = useRouter()
+    const { toast } = useToast()
+    const [isSaving, setIsSaving] = useState(false)
+
+    const form = useForm<CapaFormValues>({
+        resolver: zodResolver(capaSchema),
+        defaultValues: {
+            supervisor: {
+                nome: contrato.campo.supervisorNome || "",
+                cargo: contrato.campo.supervisorCargo || "",
+                formacao: contrato.campo.supervisorAreaFormacao || "",
+                titulacao: contrato.campo.supervisorTitulacao || "",
+                telefone: contrato.campo.supervisorTelefone || "",
+                email: contrato.campo.supervisorEmail || "",
+            },
+            atribuicoes: contrato.atribuicoes || "",
+            razaoSocial: contrato.campo.razaoSocial || "",
+            nomeFantasia: contrato.campo.nomeFantasia || "",
+            telefoneEmpresa: contrato.campo.telefoneContato || "",
+            emailEmpresa: contrato.campo.emailContato || "",
+            modalidade: contrato.modalidade || "",
+            cargaHorariaDiaria: contrato.cargaHorariaDiaria || 0,
+            dataInicioPrevista: contrato.dataInicioPrevista ? new Date(contrato.dataInicioPrevista).toISOString().split('T')[0] : "",
+        }
+    })
 
     const handleGeneratePDF = () => {
         window.open(`/aluno/docs/capa/${contrato.id}/pdf`, '_blank')
+    }
+
+    async function onSubmit(data: CapaFormValues) {
+        setIsSaving(true)
+        try {
+            const res = await updateEstagioAction(contrato.id, data)
+            if (res.success) {
+                toast({ title: "Sucesso", description: "Dados atualizados com sucesso!" })
+                router.refresh()
+            } else {
+                toast({ title: "Erro", description: res.error || "Falha ao salvar", variant: "destructive" })
+            }
+        } catch (error) {
+            toast({ title: "Erro", description: "Erro inesperado.", variant: "destructive" })
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     // Helper to format date
@@ -37,7 +105,10 @@ export function CapaForm({ contrato }: CapaFormProps) {
                     <div>
                         <CardTitle className="text-2xl font-bold">Capa do Estágio</CardTitle>
                         <CardDescription className="text-base mt-2">
-                            Confira as informações que constarão no seu documento de capa.
+                            {canEdit 
+                                ? "Confira e ajuste as informações abaixo antes de gerar o PDF."
+                                : "Confira as informações que constarão no seu documento de capa."
+                            }
                         </CardDescription>
                     </div>
                     <Button
@@ -53,7 +124,7 @@ export function CapaForm({ contrato }: CapaFormProps) {
                 </div>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
-                <div className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
                     {/* SECTION 1: DADOS DO ALUNO */}
                     <div className="space-y-4">
@@ -98,19 +169,39 @@ export function CapaForm({ contrato }: CapaFormProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label>Razão Social</Label>
-                                <Input value={contrato.campo.razaoSocial} disabled className="font-medium bg-muted/50" />
+                                <Input 
+                                    {...form.register("razaoSocial")}
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "font-medium bg-muted/50" : "font-medium bg-white"} 
+                                />
+                                {form.formState.errors.razaoSocial && <p className="text-xs text-red-500">{form.formState.errors.razaoSocial.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Nome Fantasia</Label>
-                                <Input value={contrato.campo.nomeFantasia} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("nomeFantasia")}
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.nomeFantasia && <p className="text-xs text-red-500">{form.formState.errors.nomeFantasia.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Telefone da Empresa</Label>
-                                <Input value={contrato.campo.telefoneContato || '-'} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("telefoneEmpresa")}
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.telefoneEmpresa && <p className="text-xs text-red-500">{form.formState.errors.telefoneEmpresa.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Email da Empresa</Label>
-                                <Input value={contrato.campo.emailContato || '-'} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("emailEmpresa")}
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.emailEmpresa && <p className="text-xs text-red-500">{form.formState.errors.emailEmpresa.message}</p>}
                             </div>
                         </div>
 
@@ -119,27 +210,58 @@ export function CapaForm({ contrato }: CapaFormProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label>Nome do Supervisor</Label>
-                                    <Input value={contrato.campo.supervisorNome} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.nome")} 
+                                        disabled={!canEdit}
+                                        placeholder="Nome completo do supervisor na empresa"
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.nome && <p className="text-xs text-red-500">{form.formState.errors.supervisor.nome.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Cargo</Label>
-                                    <Input value={contrato.campo.supervisorCargo} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.cargo")} 
+                                        disabled={!canEdit}
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.cargo && <p className="text-xs text-red-500">{form.formState.errors.supervisor.cargo.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Formação Acadêmica</Label>
-                                    <Input value={contrato.campo.supervisorAreaFormacao} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.formacao")} 
+                                        disabled={!canEdit}
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.formacao && <p className="text-xs text-red-500">{form.formState.errors.supervisor.formacao.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Titulação</Label>
-                                    <Input value={contrato.campo.supervisorTitulacao} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.titulacao")} 
+                                        disabled={!canEdit}
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.titulacao && <p className="text-xs text-red-500">{form.formState.errors.supervisor.titulacao.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Email do Supervisor</Label>
-                                    <Input value={contrato.campo.supervisorEmail} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.email")} 
+                                        disabled={!canEdit}
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.email && <p className="text-xs text-red-500">{form.formState.errors.supervisor.email.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Telefone do Supervisor</Label>
-                                    <Input value={contrato.campo.supervisorTelefone} disabled className="bg-white" />
+                                    <Input 
+                                        {...form.register("supervisor.telefone")} 
+                                        disabled={!canEdit}
+                                        className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                    />
+                                    {form.formState.errors.supervisor?.telefone && <p className="text-xs text-red-500">{form.formState.errors.supervisor.telefone.message}</p>}
                                 </div>
                             </div>
                         </div>
@@ -154,29 +276,47 @@ export function CapaForm({ contrato }: CapaFormProps) {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <Label>Modalidade</Label>
-                                <Input value={contrato.modalidade} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("modalidade")}
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.modalidade && <p className="text-xs text-red-500">{form.formState.errors.modalidade.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Carga Horária Diária</Label>
-                                <Input value={`${contrato.cargaHorariaDiaria} horas`} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("cargaHorariaDiaria", { valueAsNumber: true })}
+                                    type="number"
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.cargaHorariaDiaria && <p className="text-xs text-red-500">{form.formState.errors.cargaHorariaDiaria.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Data de Início Prevista</Label>
-                                <Input value={formatDate(contrato.dataInicioPrevista)} disabled className="bg-muted/50" />
+                                <Input 
+                                    {...form.register("dataInicioPrevista")}
+                                    type="date"
+                                    disabled={!canEdit} 
+                                    className={!canEdit ? "bg-muted/50" : "bg-white"} 
+                                />
+                                {form.formState.errors.dataInicioPrevista && <p className="text-xs text-red-500">{form.formState.errors.dataInicioPrevista.message}</p>}
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label>Atribuições / Plano de Atividades</Label>
                             <Textarea
-                                value={contrato.atribuicoes}
-                                disabled
-                                className="min-h-[100px] bg-muted/50 resize-none text-foreground"
+                                {...form.register("atribuicoes")}
+                                disabled={!canEdit}
+                                className={`min-h-[150px] resize-none text-foreground ${!canEdit ? "bg-muted/50" : "bg-white"}`}
                             />
+                            {form.formState.errors.atribuicoes && <p className="text-xs text-red-500">{form.formState.errors.atribuicoes.message}</p>}
                         </div>
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="flex justify-between pt-6 border-t">
+                    <div className="flex justify-between pt-6 border-t items-center">
                         <Button
                             type="button"
                             variant="outline"
@@ -185,8 +325,28 @@ export function CapaForm({ contrato }: CapaFormProps) {
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
                         </Button>
+
+                        {canEdit && (
+                            <Button 
+                                type="submit" 
+                                className="bg-primary px-8 hover:brightness-110 transition-all font-bold min-w-[200px]"
+                                disabled={isSaving}
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Salvando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Salvar Alterações
+                                    </>
+                                )}
+                            </Button>
+                        )}
                     </div>
-                </div>
+                </form>
             </CardContent>
         </Card>
     )

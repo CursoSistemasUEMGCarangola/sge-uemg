@@ -482,6 +482,14 @@ export async function updateEstagioAction(
             email: string;
         };
         atribuicoes: string;
+        // New fields
+        razaoSocial: string;
+        nomeFantasia: string;
+        telefoneEmpresa: string;
+        emailEmpresa: string;
+        modalidade: string;
+        cargaHorariaDiaria: number;
+        dataInicioPrevista: string;
     }
 ) {
     const role = await getCurrentUserRole()
@@ -502,6 +510,10 @@ export async function updateEstagioAction(
             await tx.campoEstagio.update({
                 where: { id: contrato.idCampo },
                 data: {
+                    razaoSocial: data.razaoSocial,
+                    nomeFantasia: data.nomeFantasia,
+                    telefoneContato: data.telefoneEmpresa,
+                    emailContato: data.emailEmpresa,
                     supervisorNome: data.supervisor.nome,
                     supervisorCargo: data.supervisor.cargo,
                     supervisorAreaFormacao: data.supervisor.formacao,
@@ -511,10 +523,13 @@ export async function updateEstagioAction(
                 }
             })
 
-            // Update Atribuicoes
+            // Update Contrato
             await tx.contratoEstagio.update({
                 where: { id: contratoId },
                 data: {
+                    modalidade: data.modalidade,
+                    cargaHorariaDiaria: data.cargaHorariaDiaria,
+                    dataInicioPrevista: new Date(data.dataInicioPrevista),
                     atribuicoes: data.atribuicoes
                 }
             })
@@ -536,8 +551,7 @@ export async function revertStage(contratoId: number) {
     }
 
     // 1. Find the latest ATIVO stage (highest number)
-    // We can find all stages and sort in JS
-    const stages = await prisma.acompanhamentoEtapa.findMany({
+    const stagesAtivos = await prisma.acompanhamentoEtapa.findMany({
         where: {
             idContrato: contratoId,
             status: 'ATIVO'
@@ -546,25 +560,39 @@ export async function revertStage(contratoId: number) {
         orderBy: { etapaDef: { numeroEtapa: 'desc' } }
     })
 
-    if (stages.length === 0) {
-        return { error: "Nenhuma etapa concluída encontrada para reverter." }
+    let stageToRevert = stagesAtivos[0]
+
+    // 2. If no active stages, check if we can "reset" the very first stage if it's under review
+    if (!stageToRevert) {
+        const firstStage = await prisma.acompanhamentoEtapa.findFirst({
+            where: { idContrato: contratoId },
+            include: { etapaDef: true },
+            orderBy: { etapaDef: { numeroEtapa: 'asc' } }
+        })
+
+        if (firstStage && firstStage.status !== 'ATIVO') {
+            stageToRevert = firstStage
+        }
     }
 
-    const stageToRevert = stages[0] // The one with highest numeroEtapa
 
-    // 2. Update status to EM_ANALISE
+    if (!stageToRevert) {
+        return { error: "Nenhuma etapa encontrada para retroceder ou resetar." }
+    }
+
+    // 3. Update status to PENDENTE
     // This makes it the "Current" pending stage again.
-    // The previous "Pending" stage (N+1) will remain Pending, but logically locked by UI because N is not Active.
     await prisma.acompanhamentoEtapa.update({
         where: { id: stageToRevert.id },
         data: {
-            status: 'EM_ANALISE',
+            status: 'PENDENTE',
             dataConclusao: null,
-            observacoes: null // Clear feedback? Or keep it? keeping null implies "New Review needed"
-            // If we revert, presumably the previous approval was a mistake, so clearing observations is probably best.
+            observacoes: null,
+            linkDocumento: null // Clear link so student can re-submit
         }
     })
 
     revalidatePath(`/admin/estagios/${contratoId}`)
+    revalidatePath(`/admin/estagios/contrato/${contratoId}`)
     return { success: true }
 }

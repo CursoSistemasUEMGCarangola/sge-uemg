@@ -57,7 +57,7 @@ export function CompleteStageButton({ acompanhamentoId, disabled }: CompleteStag
             className="w-full bg-green-600 hover:bg-green-700 text-white"
         >
             <CheckCircle2 className="mr-2 h-4 w-4" />
-            {isLoading ? "Processando..." : "Concluir Etapa e Liberar Avanço"}
+            {isLoading ? "Processando..." : "Concluir Etapa e Avançar o Estágio"}
         </Button>
     )
 }

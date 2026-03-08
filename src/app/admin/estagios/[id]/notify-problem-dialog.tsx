@@ -50,7 +50,11 @@ export function NotifyProblemDialog({ contratoId, etapaId, etapaNome }: NotifyPr
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="text-amber-700 border-amber-200 hover:bg-amber-50">
+                <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-amber-700 border-amber-300 hover:bg-amber-600 hover:text-white transition-colors"
+                >
                     <MessageSquareWarning className="mr-2 h-4 w-4" />
                     Notificar Problema
                 </Button>

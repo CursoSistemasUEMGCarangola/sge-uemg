@@ -1,6 +1,6 @@
 # ROADMAP: SGE - SISTEMA DE GESTÃO DE ESTÁGIOS
 
-> **Status:** Planejamento
+> **Status:** Manutenção & Evolução (Fase 10)
 > **Baseado em:** `PROJECT_DNA.md` v1.0
 
 Este documento define a estratégia de entrega incremental do SGE. Cada fase desbloqueia valor tangível e valida riscos técnicos antecipadamente.
@@ -140,6 +140,8 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 - [x] **Calendar UI:** Visualização aprimorada de feriados e recessos no calendário administrativo.
 - [x] **Final Report:** Fluxo completo de Relatório Final com geração de PDF e assinaturas.
 - [x] **Stage Reversion:** Capacidade de reverter etapas concluídas para correção.
+- [x] **Stage 1 Reset:** Lógica para reiniciar o fluxo da primeira etapa mesmo sem etapas anteriores concluídas.
+- [x] **Full Correction UI:** Desbloqueio total de campos da capa (Empresa/Estágio) para ajustes durante a Etapa 1.
 
 **DoD:** Sistema guia o aluno passo-a-passo, gerenciando prazos e bloqueando avanços indevidos, com recuperação simples em caso de falha de dados.
 
@@ -147,8 +149,8 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 ## PROJECT STATUS: CONCLUDED
 
-**Data de Conclusão:** 24/01/2026
-**Versão Final:** 1.0.0
+**Versão Final (v1.0.0):** 24/01/2026
+**Evolução (v1.1.0):** 07/03/2026 - Novo fluxo de correção da Etapa 1 e melhorias de UI.
 
 O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais planejados. O sistema está pronto para implantação em ambiente de homologação/produção.
 
