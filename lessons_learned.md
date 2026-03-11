@@ -278,3 +278,9 @@
 **Contexto:** Botões `variant="outline"` com cores customizadas (texto âmbar) perdiam contraste no hover, pois o texto permanecia âmbar e o fundo ficava uma cor muito clara, ou o usuário perdia a percepção de clique.
 **Solução:** Forçar `hover:bg-amber-600 hover:text-white` em botões de alerta/notificação para garantir contraste máximo e feedback visual claro de que o botão está selecionado.
 **Prevenção:** Testar acessibilidade e contraste de hover em todos os botões que não seguem as variantes padrão do Shadcn.
+
+### [2026-03-11] - [LOGIC/DOMAIN] Cálculo de Prazos em Fluxos Sequenciais
+
+**Contexto:** O cálculo de prazo das etapas (ex. "Plano de Atividades") estava incoerente. O sistema somava o `prazoDias` à data `updatedAt` do próprio registro da etapa pendente. Como o `updatedAt` muda a cada alteração ou geração do placeholder, o prazo "deslizava" e não correspondia à realidade.
+**Solução:** Refatoração do motor de cálculo de datas limite no frontend (Dashboard, Relatórios) para ancorar o início do prazo na `dataConclusao` da etapa imediatamente anterior (ou `dataInicioPrevista` do contrato, se for a Etapa 1).
+**Prevenção:** Em sistemas de *workflow* baseados em pré-requisitos, nunca utilize campos transientes como `updatedAt` do próprio alvo para calcular SLAs ou prazos bloqueantes. Sempre adote eventos imutáveis consolidados (data finalização da trava anterior) como fita de largada do cronômetro.
