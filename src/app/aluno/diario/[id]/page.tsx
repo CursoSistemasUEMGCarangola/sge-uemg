@@ -73,10 +73,10 @@ export default async function DiarioPage({ params }: { params: { id: string } })
     if (etapaRelatorio) {
         if (etapaRelatorio.dataLimite) {
             dataLimite = toLocalDate(new Date(etapaRelatorio.dataLimite))
-        } else if (etapaRelatorio.updatedAt && etapaRelatorio.etapaDef.prazoDias > 0) {
-            const updated = new Date(etapaRelatorio.updatedAt)
+        } else if (etapaRelatorio.etapaDef.prazoDias > 0 && minDate) {
+            const updated = new Date(minDate)
             updated.setDate(updated.getDate() + etapaRelatorio.etapaDef.prazoDias)
-            dataLimite = toLocalDate(updated)
+            dataLimite = updated
         }
     }
 

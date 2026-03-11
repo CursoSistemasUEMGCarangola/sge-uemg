@@ -59,10 +59,20 @@ export default async function RelatorioFinalPage({ params }: { params: { id: str
     if (etapaRelatorio) {
         if (etapaRelatorio.dataLimite) {
             dataLimite = toLocalDate(new Date(etapaRelatorio.dataLimite))
-        } else if (etapaRelatorio.updatedAt && etapaRelatorio.etapaDef.prazoDias > 0) {
-            const updated = new Date(etapaRelatorio.updatedAt)
+        } else if (etapaRelatorio.etapaDef.prazoDias > 0) {
+            const currentIndex = contrato.acompanhamentos.findIndex(a => a.id === etapaRelatorio.id)
+            let baseDate: Date;
+            if (currentIndex > 0) {
+                const prevStage = contrato.acompanhamentos[currentIndex - 1]
+                baseDate = prevStage.dataConclusao 
+                    ? new Date(prevStage.dataConclusao) 
+                    : new Date(contrato.dataInicioPrevista)
+            } else {
+                baseDate = new Date(contrato.dataInicioPrevista)
+            }
+            const updated = toLocalDate(baseDate)
             updated.setDate(updated.getDate() + etapaRelatorio.etapaDef.prazoDias)
-            dataLimite = toLocalDate(updated)
+            dataLimite = updated
         }
     }
 

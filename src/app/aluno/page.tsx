@@ -142,10 +142,25 @@ export default async function AlunoDashboard() {
                                     {/* Deadline Display */}
                                     {firstPending && firstPending.etapaDef.prazoDias > 0 && (() => {
                                         let deadline = firstPending.dataLimite ? new Date(firstPending.dataLimite) : null;
-                                        if (!deadline && firstPending.updatedAt) {
-                                            const updated = new Date(firstPending.updatedAt);
-                                            updated.setDate(updated.getDate() + firstPending.etapaDef.prazoDias);
-                                            deadline = updated;
+                                        
+                                        if (!deadline) {
+                                            const currentIndex = sortedAcompanhamentos.findIndex(a => a.id === firstPending.id)
+                                            let baseDate: Date;
+                                            if (currentIndex > 0) {
+                                                const prevStage = sortedAcompanhamentos[currentIndex - 1]
+                                                baseDate = prevStage.dataConclusao 
+                                                    ? new Date(prevStage.dataConclusao) 
+                                                    : new Date(contrato.dataInicioPrevista)
+                                            } else {
+                                                baseDate = new Date(contrato.dataInicioPrevista)
+                                            }
+                                            
+                                            const toLocalDate = (date: Date) => {
+                                                return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+                                            }
+                                            
+                                            deadline = toLocalDate(baseDate);
+                                            deadline.setDate(deadline.getDate() + firstPending.etapaDef.prazoDias);
                                         }
 
                                         return (
