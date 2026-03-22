@@ -596,3 +596,117 @@ export async function revertStage(contratoId: number) {
     revalidatePath(`/admin/estagios/contrato/${contratoId}`)
     return { success: true }
 }
+
+export async function aprimorarTextoComIA(texto: string) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    if (!texto || texto.trim().length === 0) {
+        return { error: "O texto não pode estar vazio." }
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        return { error: "Chave da API do OpenRouter não configurada no servidor." }
+    }
+
+    const promptText = `Aprimore o texto a seguir, que será utilizado como avaliação de conformidade com as atividades desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. O texto retornado DEVE estar obrigatoriamente em conformidade com o Português do Brasil. Não retorne texto em inglês: ${texto}`;
+
+    try {
+        const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: "openrouter/auto",
+                messages: [
+                    {
+                        role: "user",
+                        content: promptText
+                    }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("OpenRouter API Error:", response.status, errorData);
+            if (response.status === 429) {
+                return { error: "Cota de uso da IA excedida (Erro 429). Tente novamente mais tarde e verifique os limites de uso da chave." }
+            }
+            return { error: "Erro ao comunicar com a IA." }
+        }
+
+        const data = await response.json();
+        const aprimorado = data?.choices?.[0]?.message?.content;
+
+        if (!aprimorado) {
+            return { error: "Resposta inesperada da IA." }
+        }
+
+        return { success: true, text: aprimorado }
+
+    } catch (error) {
+        console.error("Fetch Exception:", error);
+        return { error: "Falha na conexão com a IA." }
+    }
+}
+
+export async function aprimorarAtividadesComIA(texto: string) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    if (!texto || texto.trim().length === 0) {
+        return { error: "O texto não pode estar vazio." }
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        return { error: "Chave da API do OpenRouter não configurada no servidor." }
+    }
+
+    const promptText = `Aprimore o texto a seguir, que será utilizado como apresentação das atividades que serão desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. O texto retornado DEVE estar obrigatoriamente em conformidade com o Português do Brasil. Não retorne texto em inglês: ${texto}`;
+
+    try {
+        const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: "openrouter/auto",
+                messages: [
+                    {
+                        role: "user",
+                        content: promptText
+                    }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("OpenRouter API Error:", response.status, errorData);
+            if (response.status === 429) {
+                return { error: "Cota de uso da IA excedida (Erro 429). Tente novamente mais tarde e verifique os limites de uso da chave." }
+            }
+            return { error: "Erro ao comunicar com a IA." }
+        }
+
+        const data = await response.json();
+        const aprimorado = data?.choices?.[0]?.message?.content;
+
+        if (!aprimorado) {
+            return { error: "Resposta inesperada da IA." }
+        }
+
+        return { success: true, text: aprimorado }
+
+    } catch (error) {
+        console.error("Fetch Exception:", error);
+        return { error: "Falha na conexão com a IA." }
+    }
+}

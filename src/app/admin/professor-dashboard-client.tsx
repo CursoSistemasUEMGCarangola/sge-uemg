@@ -17,9 +17,13 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
     const [selectedOfertaId, setSelectedOfertaId] = useState<number | null>(null)
 
     // Filter contracts based on selection
-    const filteredContratos = selectedOfertaId
+    const filteredContratos = (selectedOfertaId
         ? initialContratos.filter(c => c.oferta?.id === selectedOfertaId)
-        : initialContratos
+        : [...initialContratos]).sort((a, b) => {
+            const nameA = a.aluno?.profile?.nomeCompleto || "";
+            const nameB = b.aluno?.profile?.nomeCompleto || "";
+            return nameA.localeCompare(nameB);
+        });
 
     // Calculate stats based on filtered contracts
     const pendentes = filteredContratos.filter(c => c.statusAprovacao === 'PENDENTE').length

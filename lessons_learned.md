@@ -284,3 +284,15 @@
 **Contexto:** O cálculo de prazo das etapas (ex. "Plano de Atividades") estava incoerente. O sistema somava o `prazoDias` à data `updatedAt` do próprio registro da etapa pendente. Como o `updatedAt` muda a cada alteração ou geração do placeholder, o prazo "deslizava" e não correspondia à realidade.
 **Solução:** Refatoração do motor de cálculo de datas limite no frontend (Dashboard, Relatórios) para ancorar o início do prazo na `dataConclusao` da etapa imediatamente anterior (ou `dataInicioPrevista` do contrato, se for a Etapa 1).
 **Prevenção:** Em sistemas de *workflow* baseados em pré-requisitos, nunca utilize campos transientes como `updatedAt` do próprio alvo para calcular SLAs ou prazos bloqueantes. Sempre adote eventos imutáveis consolidados (data finalização da trava anterior) como fita de largada do cronômetro.
+
+### [2026-03-22] - [AI/INTEGRATION] OpenRouter Model Routing e Erros 400
+
+**Contexto:** Ao tentar usar IA gratuita via OpenRouter, a definição de um modelo preview específico (`gemini-2.0-flash-lite...`) retornava Erro 400 (Invalid Model ID), indicando indisponibilidade genérica para a chave/plano atual.
+**Solução:** Configurar o parâmetro dinâmico `model: "openrouter/auto"` na payload da requisição. Isso permite que a infraestrutura selecione automaticamente o melhor modelo gratuito (como o Mistral 7B) garantidamente disponível para a conta. Inserida também uma trava no prompt ("DEVE estar em Português do Brasil") para inibir respostas em inglês que costumam ser padrão.
+**Prevenção:** Em integrações com agregadores de IA cujo foco seja o "free tier", utilize configurações "auto" para evitar quebra silenciosa de modelos depreciados ou preview. Forçe o idioma local explicitamente no system prompt.
+
+### [2026-03-22] - [NEXTJS/HMR] Erro de RPC Catch em Novas Server Actions
+
+**Contexto:** Ao criar uma nova Server Action (`aprimorarAtividadesComIA`) com o servidor Next.js (`npm run dev`) ativamente rodando, o Client Component lançou um erro silencioso para o bloco `catch` ("Erro na conexão com a IA") logo na primeira tentativa.
+**Solução:** O erro aconteceu porque o bundler gerou um novo ID para a RPC Server Action no backend, porém na árvore local daquele momento o cliente desconhecia esse ID. Bastou realizar um Hard Refresh (F5) para ressincronizar os índices Client-Server.
+**Prevenção:** Ao invocar uma Server Action recém-escrita num botão React (Client), lembre-se de recarregar a visualização no seu navegador antes para mapear o bundle dinamicamente gerado.

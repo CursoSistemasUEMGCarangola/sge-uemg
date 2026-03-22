@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { saveRelatorioAvaliacao } from "@/features/estagio/actions"
-import { Loader2, FileText } from "lucide-react"
+import { saveRelatorioAvaliacao, aprimorarTextoComIA } from "@/features/estagio/actions"
+import { Loader2, FileText, Sparkles } from "lucide-react"
 
 interface RelatorioFinalClientProps {
     contratoId: number
@@ -21,7 +21,30 @@ interface RelatorioFinalClientProps {
 export function RelatorioFinalClient({ contratoId, etapaId, initialText, canEdit }: RelatorioFinalClientProps) {
     const [text, setText] = useState(initialText)
     const [isPending, startTransition] = useTransition()
+    const [isImproving, setIsImproving] = useState(false)
     const { toast } = useToast()
+
+    const handleAprimorar = async () => {
+        if (!text || text.length < 10) {
+            toast({ title: "Digite um texto para ser aprimorado.", variant: "destructive" })
+            return
+        }
+
+        setIsImproving(true)
+        try {
+            const res = await aprimorarTextoComIA(text)
+            if (res.success && res.text) {
+                setText(res.text)
+                toast({ title: "Texto aprimorado com sucesso!" })
+            } else {
+                toast({ title: res.error || "Erro ao aprimorar texto", variant: "destructive" })
+            }
+        } catch (error) {
+            toast({ title: "Erro na conexão com a IA", variant: "destructive" })
+        } finally {
+            setIsImproving(false)
+        }
+    }
 
     const handleGeneratePDF = () => {
         if (!text || text.length < 50) {
@@ -58,17 +81,27 @@ export function RelatorioFinalClient({ contratoId, etapaId, initialText, canEdit
                         onChange={(e) => setText(e.target.value)}
                         placeholder="Digite sua avaliação aqui..."
                         className="min-h-[400px] text-base p-4"
-                        disabled={!canEdit || isPending}
+                        disabled={!canEdit || isPending || isImproving}
                     />
 
-                    <div className="flex justify-end pt-4">
+                    <div className="flex justify-end gap-3 pt-4">
+                        <Button
+                            onClick={handleAprimorar}
+                            disabled={isPending || isImproving || text.length < 10 || !canEdit}
+                            variant="secondary"
+                            type="button"
+                            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200"
+                        >
+                            {isImproving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            SUGESTÃO DE PREENCHIMENTO COM IA
+                        </Button>
                         <Button
                             onClick={handleGeneratePDF}
-                            disabled={isPending || text.length < 50}
+                            disabled={isPending || isImproving || text.length < 50 || !canEdit}
                             size="lg"
                             className="bg-blue-600 hover:bg-blue-700"
                         >
-                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-5 w-5" />}
+                            {isPending && !isImproving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-5 w-5" />}
                             Gerar PDF do Relatório Final
                         </Button>
                     </div>

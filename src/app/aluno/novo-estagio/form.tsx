@@ -31,13 +31,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, CalendarIcon, BookOpen } from "lucide-react"
+import { Loader2, CalendarIcon, BookOpen, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 import { novoEstagioSchema, NovoEstagioFormData } from "@/features/estagio/schemas"
-import { createEstagio } from "@/features/estagio/actions"
+import { createEstagio, aprimorarAtividadesComIA } from "@/features/estagio/actions"
 
 interface NovoEstagioFormProps {
     informacoesGerais: any[]
@@ -49,6 +49,7 @@ export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormP
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+    const [isImproving, setIsImproving] = useState(false)
 
     // Filter dynamic options
     const titulacaoOptions = informacoesGerais?.filter(item => item.categoria === 'TITULACAO_SUPERVISOR') || []
@@ -84,6 +85,29 @@ export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormP
             }
         }
     })
+
+    const handleAprimorarAtividades = async () => {
+        const currentText = form.getValues("estagio.atribuicoes")
+        if (!currentText || currentText.length < 10) {
+            toast({ title: "Digite pelo menos algumas palavras para serem aprimoradas.", variant: "destructive" })
+            return
+        }
+
+        setIsImproving(true)
+        try {
+            const res = await aprimorarAtividadesComIA(currentText)
+            if (res.success && res.text) {
+                form.setValue("estagio.atribuicoes", res.text, { shouldValidate: true })
+                toast({ title: "Atividades aprimoradas com sucesso!" })
+            } else {
+                toast({ title: res.error || "Erro ao aprimorar atividades", variant: "destructive" })
+            }
+        } catch (error) {
+            toast({ title: "Erro na conexão com a IA", variant: "destructive" })
+        } finally {
+            setIsImproving(false)
+        }
+    }
 
     async function onSubmit(data: NovoEstagioFormData) {
         setIsSubmitting(true)
@@ -465,11 +489,25 @@ export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormP
                             name="estagio.atribuicoes"
                             render={({ field }) => (
                                 <FormItem className="col-span-1 md:col-span-2">
-                                    <FormLabel>Atribuições do Estagiário</FormLabel>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <FormLabel className="mb-0">Atribuições do Estagiário</FormLabel>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleAprimorarAtividades}
+                                            disabled={isSubmitting || isImproving || !field.value || field.value.length < 10}
+                                            className="h-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs"
+                                        >
+                                            {isImproving ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Sparkles className="mr-2 h-3 w-3" />}
+                                            SUGESTÃO DE PREENCHIMENTO COM IA
+                                        </Button>
+                                    </div>
                                     <FormControl>
                                         <Textarea
                                             placeholder="Descreva quais serão suas atribuições, quais atividades você desenvolverá em seu estágio"
-                                            className="min-h-[100px] placeholder:text-gray-400"
+                                            className="min-h-[180px] placeholder:text-gray-400"
+                                            disabled={isSubmitting || isImproving}
                                             {...field}
                                         />
                                     </FormControl>

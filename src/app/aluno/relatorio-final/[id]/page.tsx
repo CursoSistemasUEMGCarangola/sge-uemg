@@ -1,5 +1,5 @@
 
-import { getContratoById } from "@/features/estagio/data"
+import { getContratoById, getDiarioAtividades } from "@/features/estagio/data"
 import { redirect } from "next/navigation"
 import { getCurrentUserRole } from "@/lib/auth"
 import { RelatorioFinalClient } from "./client-page"
@@ -60,19 +60,27 @@ export default async function RelatorioFinalPage({ params }: { params: { id: str
         if (etapaRelatorio.dataLimite) {
             dataLimite = toLocalDate(new Date(etapaRelatorio.dataLimite))
         } else if (etapaRelatorio.etapaDef.prazoDias > 0) {
-            const currentIndex = contrato.acompanhamentos.findIndex(a => a.id === etapaRelatorio.id)
-            let baseDate: Date;
-            if (currentIndex > 0) {
-                const prevStage = contrato.acompanhamentos[currentIndex - 1]
-                baseDate = prevStage.dataConclusao 
-                    ? new Date(prevStage.dataConclusao) 
-                    : new Date(contrato.dataInicioPrevista)
+            const diarias = await getDiarioAtividades(id);
+            if (diarias.length > 0) {
+                const maxDate = new Date(Math.max(...diarias.map(d => new Date(d.dataAtividade).getTime())));
+                const updated = toLocalDate(maxDate);
+                updated.setDate(updated.getDate() + etapaRelatorio.etapaDef.prazoDias);
+                dataLimite = updated;
             } else {
-                baseDate = new Date(contrato.dataInicioPrevista)
+                const currentIndex = contrato.acompanhamentos.findIndex(a => a.id === etapaRelatorio.id)
+                let baseDate: Date;
+                if (currentIndex > 0) {
+                    const prevStage = contrato.acompanhamentos[currentIndex - 1]
+                    baseDate = prevStage.dataConclusao 
+                        ? new Date(prevStage.dataConclusao) 
+                        : new Date(contrato.dataInicioPrevista)
+                } else {
+                    baseDate = new Date(contrato.dataInicioPrevista)
+                }
+                const updated = toLocalDate(baseDate)
+                updated.setDate(updated.getDate() + etapaRelatorio.etapaDef.prazoDias)
+                dataLimite = updated
             }
-            const updated = toLocalDate(baseDate)
-            updated.setDate(updated.getDate() + etapaRelatorio.etapaDef.prazoDias)
-            dataLimite = updated
         }
     }
 
@@ -91,6 +99,15 @@ export default async function RelatorioFinalPage({ params }: { params: { id: str
                     Estágio em {contrato.campo.nomeFantasia} | {contrato.oferta.curso.nome}
                 </p>
             </div>
+
+            {contrato.atribuicoes && (
+                <div className="rounded-md border p-4 bg-muted/10">
+                    <h2 className="font-semibold text-foreground mb-2">Atribuições do Estágio</h2>
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {contrato.atribuicoes}
+                    </div>
+                </div>
+            )}
 
             <RelatorioFinalClient
                 contratoId={id}
