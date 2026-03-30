@@ -154,6 +154,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 **Evolução (v1.1.0):** 07/03/2026 - Novo fluxo de correção da Etapa 1 e melhorias de UI.
 **Correção (v1.1.1):** 11/03/2026 - Ajuste do motor de cálculo de prazos, agora ancorado na conclusão da etapa predecessora ao invés do updatedAt.
 **Nova Feature (v1.2.0):** 22/03/2026 - Integração de Assistente de Inteligência Artificial para edição de texto (Relatórios e Atribuições) e melhorias contínuas de UX.
+**Correção/Evolução (v1.2.1):** 30/03/2026 - Condicionais anti-edição de relatórios (Timezone Trap fix, ancoradas no fim diário SP) e expurgo da propriedade `dataLimite`. Melhorias vitais em UX Accessibilty para indicadores e badges informacionais de bloqueios.
 O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais planejados. O sistema está pronto para implantação em ambiente de homologação/produção.
 
 ### Próximos Passos (Maintenance & Growth)

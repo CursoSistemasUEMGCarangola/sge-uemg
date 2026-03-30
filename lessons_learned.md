@@ -296,3 +296,21 @@
 **Contexto:** Ao criar uma nova Server Action (`aprimorarAtividadesComIA`) com o servidor Next.js (`npm run dev`) ativamente rodando, o Client Component lançou um erro silencioso para o bloco `catch` ("Erro na conexão com a IA") logo na primeira tentativa.
 **Solução:** O erro aconteceu porque o bundler gerou um novo ID para a RPC Server Action no backend, porém na árvore local daquele momento o cliente desconhecia esse ID. Bastou realizar um Hard Refresh (F5) para ressincronizar os índices Client-Server.
 **Prevenção:** Ao invocar uma Server Action recém-escrita num botão React (Client), lembre-se de recarregar a visualização no seu navegador antes para mapear o bundle dinamicamente gerado.
+
+### [2026-03-30] - [LOGIC/DOMAIN] Cálculo de Prazos Dinâmico e Descarte do `dataLimite` Estático
+
+**Contexto:** Prazos de avaliação e preenchimento de relatórios estavam apresentando inconsistências (visuais e lógicas) caso atualizados via status ou triggers manuais, ancorando em propriedades temporais sujas. O metadado isolado `dataLimite` mascarava recomputos reais dependentes do fim da atividade extra.
+**Solução:** Abandono arquitetônico resoluto da propriedade `dataLimite` estática na camada Desktop Web; passamos a inferir ativamente (on-the-fly) a data somando a última `dataAtividade` (diário) do sistema e suas próprias heurísticas de tolerância da `EtapaDefinicao` (o "prazoDias" nominal).
+**Prevenção:** O padrão é claro. Prazos cuja nascente se referenciam ativamente no final da etapa alheia (desenvolvimento de relatórios via diário letivo) tornam sua estabilidade infinitamente mais barata de calcular em "Views"/"Componentes de React" via derivação matemática rápida, sem correr risco de desatualização de Estado Bancário em cascata.
+
+### [2026-03-30] - [JS/DATE] Condicionais de Bloqueio Protegidos Hibridamente (Timezone Trap / Vercel Edge)
+
+**Contexto:** A trava de relatórios operava `new Date() <= dataDaUltimaAtividade`, desengatando permissões pelo simples passar das horas em "UTC-0" dentro da infraestrutura Cloud. Logo, estudantes teriam preenchimentos autorizados antecipadamente à noite de Brasília.
+**Solução:** Utilização irrestrita da variável protetora `.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"})` para qualquer rotina de Server Component dependente de "Hoje vs Amanhã" antes do re-cast puro do objeto Date em milissegundos localizados.
+**Prevenção:** Não defina "Today" em Cloud Hosts se a condição de liberação temporal for imperativamente guiada aos residentes GMT-3 (Ex: dia oficial das atividades do Brasil vira 3 horas do outro em Edge Global). Declare sua âncora textual local explicitamente.
+
+### [2026-03-30] - [UX/UI] Interceptação Visual Falsa pelo Paradigma "Disabled Buttons"
+
+**Contexto:** Para transmitir proibições de formulários com base em datas ("Abre amanhã"), o botão principal de tela era envelopado na macro nativa `disabled={true}`, derrubando contrastes (Opacidade < 50%) para legibilidade catastrófica, mascarando um comunicado de valor informativo como falha de UI.
+**Solução:** Refatoração sem remorso. Seletividade de div/badges exclusivas de status (`bg-amber-100` e alerta texturado), separando categoricamente "Call to Action impossível temporariamente" de "Painel Dinâmico Informativo".
+**Prevenção:** Componentes Desabilitados do Core UI enviam um sinal subconsciente de inoperabilidade sem sentido prático. Se você deseja evidenciar o "Por que do bloqueio", afirme isso abertamente injetando Cores/Design que favoreçam o Contraste e a Informação.

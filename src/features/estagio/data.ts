@@ -46,6 +46,11 @@ export async function getStudentDashboardData(profileId: string) {
                 include: {
                     etapaDef: true
                 }
+            },
+            diarios: {
+                select: { dataAtividade: true },
+                orderBy: { dataAtividade: 'desc' },
+                take: 1
             }
         },
         orderBy: { createdAt: 'desc' }

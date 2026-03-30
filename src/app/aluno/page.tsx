@@ -141,27 +141,30 @@ export default async function AlunoDashboard() {
                                 <CardFooter className="bg-muted/20 flex flex-col items-end gap-2 p-4 sm:flex-row sm:justify-end">
                                     {/* Deadline Display */}
                                     {firstPending && firstPending.etapaDef.prazoDias > 0 && (() => {
-                                        let deadline = firstPending.dataLimite ? new Date(firstPending.dataLimite) : null;
+                                        const currentIndex = sortedAcompanhamentos.findIndex(a => a.id === firstPending.id)
+                                        let baseDate: Date;
                                         
-                                        if (!deadline) {
-                                            const currentIndex = sortedAcompanhamentos.findIndex(a => a.id === firstPending.id)
-                                            let baseDate: Date;
-                                            if (currentIndex > 0) {
-                                                const prevStage = sortedAcompanhamentos[currentIndex - 1]
-                                                baseDate = prevStage.dataConclusao 
-                                                    ? new Date(prevStage.dataConclusao) 
-                                                    : new Date(contrato.dataInicioPrevista)
-                                            } else {
-                                                baseDate = new Date(contrato.dataInicioPrevista)
-                                            }
-                                            
-                                            const toLocalDate = (date: Date) => {
-                                                return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-                                            }
-                                            
-                                            deadline = toLocalDate(baseDate);
-                                            deadline.setDate(deadline.getDate() + firstPending.etapaDef.prazoDias);
+                                        const isFinalReport = firstPending.etapaDef.systemAction === 'FILL_FINAL_REPORT';
+                                        let extraDays = 0;
+
+                                        if (isFinalReport && contrato.diarios && contrato.diarios.length > 0) {
+                                            baseDate = new Date(contrato.diarios[0].dataAtividade);
+                                            extraDays = 1; // "a partir do dia seguinte"
+                                        } else if (currentIndex > 0) {
+                                            const prevStage = sortedAcompanhamentos[currentIndex - 1]
+                                            baseDate = prevStage.dataConclusao 
+                                                ? new Date(prevStage.dataConclusao) 
+                                                : new Date(contrato.dataInicioPrevista)
+                                        } else {
+                                            baseDate = new Date(contrato.dataInicioPrevista)
                                         }
+                                        
+                                        const toLocalDate = (date: Date) => {
+                                            return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+                                        }
+                                        
+                                        const deadline = toLocalDate(baseDate);
+                                        deadline.setDate(deadline.getDate() + firstPending.etapaDef.prazoDias + extraDays);
 
                                         return (
                                             <div className={`text-sm mr-auto flex items-center gap-1 ${deadline && new Date() > deadline ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
@@ -219,6 +222,36 @@ export default async function AlunoDashboard() {
                                         }
 
                                         if (firstPending.etapaDef.systemAction === 'FILL_FINAL_REPORT') {
+                                            let isLockedByDate = false;
+                                            let dateToUnlock: Date | null = null;
+                                            
+                                            if (contrato.diarios && contrato.diarios.length > 0) {
+                                                const lastActivityDate = new Date(contrato.diarios[0].dataAtividade);
+                                                const toLocalDate = (date: Date) => new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+                                                const lastActLocal = toLocalDate(lastActivityDate);
+                                                
+                                                const nowBrazilStr = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+                                                const nowBrazil = new Date(nowBrazilStr);
+                                                const currentLocal = new Date(nowBrazil.getFullYear(), nowBrazil.getMonth(), nowBrazil.getDate());
+                                                
+                                                if (currentLocal <= lastActLocal) {
+                                                    isLockedByDate = true;
+                                                    dateToUnlock = new Date(lastActLocal);
+                                                    dateToUnlock.setDate(dateToUnlock.getDate() + 1);
+                                                }
+                                            }
+
+                                            if (isLockedByDate) {
+                                                return (
+                                                    <div className="w-full flex justify-end sm:flex-1">
+                                                        <div className="flex items-center gap-2 bg-amber-100/50 border border-amber-200 text-amber-800 px-4 py-2 rounded-md font-medium text-sm shadow-sm">
+                                                            <Clock className="h-4 w-4" />
+                                                            <span>Disponível em: <strong>{dateToUnlock?.toLocaleDateString('pt-BR')}</strong></span>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+
                                             return (
                                                 <div className="w-full flex justify-end sm:flex-1">
                                                     <Link href={`/aluno/relatorio-final/${contrato.id}`} className="w-full sm:w-auto">
