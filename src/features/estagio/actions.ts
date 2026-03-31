@@ -610,7 +610,7 @@ export async function aprimorarTextoComIA(texto: string) {
         return { error: "Chave da API do OpenRouter não configurada no servidor." }
     }
 
-    const promptText = `Aprimore o texto a seguir, que será utilizado como avaliação de conformidade com as atividades desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. O texto retornado DEVE estar obrigatoriamente em conformidade com o Português do Brasil. Não retorne texto em inglês: ${texto}`;
+    const promptText = `Aprimore o texto a seguir, que será utilizado como avaliação de conformidade com as atividades desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. Regras obrigatórias: 1) O idioma deve ser o Português do Brasil. 2) Retorne APENAS o texto aprimorado, nada além disso. 3) NÃO inclua saudações, introduções, conclusões ou explicações (como "Aqui está o texto..." ou "Com certeza!"). 4) NÃO utilize formatação Markdown (como asteriscos para negrito ou hashtags), retorne apenas texto puro. Texto original:\n\n${texto}`;
 
     try {
         const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
@@ -667,7 +667,7 @@ export async function aprimorarAtividadesComIA(texto: string) {
         return { error: "Chave da API do OpenRouter não configurada no servidor." }
     }
 
-    const promptText = `Aprimore o texto a seguir, que será utilizado como apresentação das atividades que serão desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. O texto retornado DEVE estar obrigatoriamente em conformidade com o Português do Brasil. Não retorne texto em inglês: ${texto}`;
+    const promptText = `Aprimore o texto a seguir, que será utilizado como apresentação das atividades que serão desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. Regras obrigatórias: 1) O idioma deve ser o Português do Brasil. 2) Retorne APENAS o texto aprimorado, nada além disso. 3) NÃO inclua saudações, introduções, conclusões ou explicações (como "Aqui está o texto..." ou "Com certeza!"). 4) NÃO utilize formatação Markdown (como asteriscos para negrito ou hashtags), retorne apenas texto puro. Texto original:\n\n${texto}`;
 
     try {
         const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {

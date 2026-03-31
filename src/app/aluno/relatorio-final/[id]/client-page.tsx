@@ -93,7 +93,7 @@ export function RelatorioFinalClient({ contratoId, etapaId, initialText, canEdit
                             className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200"
                         >
                             {isImproving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            SUGESTÃO DE PREENCHIMENTO COM IA
+                            SUGESTÃO DE APRIMORAMENTO COM IA
                         </Button>
                         <Button
                             onClick={handleGeneratePDF}

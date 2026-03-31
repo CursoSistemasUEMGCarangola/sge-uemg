@@ -500,7 +500,7 @@ export function NovoEstagioForm({ informacoesGerais, ofertas }: NovoEstagioFormP
                                             className="h-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs"
                                         >
                                             {isImproving ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Sparkles className="mr-2 h-3 w-3" />}
-                                            SUGESTÃO DE PREENCHIMENTO COM IA
+                                            SUGESTÃO DE APRIMORAMENTO COM IA
                                         </Button>
                                     </div>
                                     <FormControl>

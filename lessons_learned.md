@@ -314,3 +314,9 @@
 **Contexto:** Para transmitir proibições de formulários com base em datas ("Abre amanhã"), o botão principal de tela era envelopado na macro nativa `disabled={true}`, derrubando contrastes (Opacidade < 50%) para legibilidade catastrófica, mascarando um comunicado de valor informativo como falha de UI.
 **Solução:** Refatoração sem remorso. Seletividade de div/badges exclusivas de status (`bg-amber-100` e alerta texturado), separando categoricamente "Call to Action impossível temporariamente" de "Painel Dinâmico Informativo".
 **Prevenção:** Componentes Desabilitados do Core UI enviam um sinal subconsciente de inoperabilidade sem sentido prático. Se você deseja evidenciar o "Por que do bloqueio", afirme isso abertamente injetando Cores/Design que favoreçam o Contraste e a Informação.
+
+### [2026-03-31] - [AI/UX] Geração de Texto Puro para Inputs (Prompt Strictness)
+
+**Contexto:** Ao usar IA (OpenRouter) para aprimorar textos destinados a componentes `<textarea>` nativos, a IA por padrão retornava formatação Markdown (`**negrito**`) e frases conversacionais ("Com certeza! Abaixo o seu texto..."), corrompendo o valor final da string no formulário.
+**Solução:** Substituição de prompts declarativos simples por "System Prompts" altamente diretivos e numerados, bloqueando expressamente: (1) Saudações/Introduções, (2) Formatação Markdown (asteriscos, hashtags) e (3) Exigindo APENAS o texto aprimorado final.
+**Prevenção:** Para qualquer ferramenta de IA cujo output sirva como injeção direta em banco de dados ou painel não-RTE (Rich Text Editor), o prompt DEVE proibir conversação e formatação estruturada de texto imperativamente.
