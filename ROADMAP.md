@@ -1,6 +1,6 @@
 # ROADMAP: SGE - SISTEMA DE GESTÃO DE ESTÁGIOS
 
-> **Status:** Manutenção & Evolução (Fase 10)
+> **Status:** Manutenção & Evolução (Fase 10 - Database Operations & Backup)
 > **Baseado em:** `PROJECT_DNA.md` v1.0
 
 Este documento define a estratégia de entrega incremental do SGE. Cada fase desbloqueia valor tangível e valida riscos técnicos antecipadamente.
@@ -148,6 +148,19 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 
 ---
 
+## FASE 10: DATABASE OPERATIONS & BACKUP
+
+**Objetivo:** Ferramentas de migração e backup de banco de dados integradas ao sistema.
+
+- [x] **Database Dump:** Dump completo do banco via `pg_dump` (schema + data + roles) usando binários PostgreSQL standalone.
+- [x] **Database Migration:** Migração completa para novo projeto Supabase (schema público, dados e auth.users).
+- [x] **Admin Backup UI:** Recurso de backup via painel admin (Configurações → Backup) com export JSON de todas as tabelas + auth.users via Supabase Admin API.
+- [x] **Auth Migration:** Script SQL para recriar usuários em `auth.users` + `auth.identities` com UUIDs preservados.
+
+**DoD:** Admin consegue baixar backup completo do banco via interface web. Migração entre projetos Supabase documentada e replicável.
+
+---
+
 ## PROJECT STATUS: CONCLUDED
 
 **Versão Final (v1.0.0):** 24/01/2026
@@ -156,6 +169,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 **Nova Feature (v1.2.0):** 22/03/2026 - Integração de Assistente de Inteligência Artificial para edição de texto (Relatórios e Atribuições) e melhorias contínuas de UX.
 **Correção/Evolução (v1.2.1):** 30/03/2026 - Condicionais anti-edição de relatórios (Timezone Trap fix, ancoradas no fim diário SP) e expurgo da propriedade `dataLimite`. Melhorias vitais em UX Accessibilty para indicadores e badges informacionais de bloqueios.
 **Refinamento IA (v1.2.2):** 31/03/2026 - Otimização estrita de System Prompts para inibição de Markdown e fillers conversacionais em textareas, além da alteração na nomenclatura dos botões (Sugestão de Aprimoramento).
+**Migração & Backup (v1.3.0):** 03/05/2026 - Migração para novo projeto Supabase, recurso de backup administrativo via JSON (Prisma + Auth Admin API) e documentação de disaster recovery.
 O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais planejados. O sistema está pronto para implantação em ambiente de homologação/produção.
 
 ### Próximos Passos (Maintenance & Growth)
@@ -163,3 +177,4 @@ O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais plan
 1. **Monitoramento:** Acompanhar logs de erro em produção.
 2. **Feedback Loop:** Coletar feedback dos primeiros usuários reais (Alunos/Professores).
 3. **Novas Features:** Considerar integração com sistemas legados da UEMG se necessário.
+

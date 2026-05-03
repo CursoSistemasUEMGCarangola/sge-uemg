@@ -320,3 +320,24 @@
 **Contexto:** Ao usar IA (OpenRouter) para aprimorar textos destinados a componentes `<textarea>` nativos, a IA por padrão retornava formatação Markdown (`**negrito**`) e frases conversacionais ("Com certeza! Abaixo o seu texto..."), corrompendo o valor final da string no formulário.
 **Solução:** Substituição de prompts declarativos simples por "System Prompts" altamente diretivos e numerados, bloqueando expressamente: (1) Saudações/Introduções, (2) Formatação Markdown (asteriscos, hashtags) e (3) Exigindo APENAS o texto aprimorado final.
 **Prevenção:** Para qualquer ferramenta de IA cujo output sirva como injeção direta em banco de dados ou painel não-RTE (Rich Text Editor), o prompt DEVE proibir conversação e formatação estruturada de texto imperativamente.
+
+### [2026-05-03] - [DB/OPS] Migração Completa entre Projetos Supabase (Schema + Data + Auth)
+
+**Contexto:** Ao migrar o SGE para um novo projeto Supabase, o `supabase db dump` exigia Docker Desktop (indisponível). Usar `pg_dump` diretamente com a porta padrão 5432 (pooled) falhava. Após o dump, a restauração no novo banco revelou que: (1) o schema `public` tem dependências de tipos/enums que já existem no Supabase, (2) a tabela `profiles` tem FK para `auth.users` que impede inserção de dados, e (3) os usuários de `auth.users` não são migrados automaticamente.
+**Solução:**
+1. **Dump**: Usar `pg_dump --schema=public` pela porta `6543` (Session Pooler direto) ao invés de `5432`.
+2. **Schema**: Aplicar o dump com `psql -f` — erros de "type already exists" são inofensivos (enums padrão do Supabase).
+3. **Data**: Dropar FK `profiles_id_fkey` antes da importação, recriar depois com `NOT VALID` para permitir dados órfãos temporariamente.
+4. **Auth**: Criar manualmente os usuários em `auth.users` + `auth.identities` via SQL, usando os **mesmos UUIDs** dos profiles migrados e senha temporária via `crypt()`.
+**Prevenção:** Em migrações entre projetos Supabase, sempre trate o schema público e o auth como processos separados. Mantenha um script SQL de criação de usuários auth como parte do disaster recovery. A Admin API (`listUsers`) não exporta senhas — aceite que senhas precisam ser redefinidas.
+
+### [2026-05-03] - [FEATURE] Backup Administrativo via Prisma + Supabase Admin API
+
+**Contexto:** A necessidade de fazer dumps recorrentes do banco exigia ferramentas CLI (pg_dump, Docker, Supabase CLI) que nem sempre estão disponíveis. Solução: embutir a funcionalidade de backup diretamente no painel admin do sistema.
+**Solução:**
+1. **API Route** (`/api/backup`): Consulta todas as 16 tabelas via `Promise.all` com Prisma + `supabase.auth.admin.listUsers()` para incluir auth.users.
+2. **Segurança**: Verificação de role `ADMIN` via `getCurrentUserRole()` antes de permitir o export.
+3. **Output**: JSON com metadados (versão, data, contagem) + dados completos, retornado como download via `Content-Disposition: attachment`.
+4. **Limitação**: Senhas de auth.users não são exportáveis (segurança do GoTrue). Ao restaurar, é necessário redefinir senhas.
+**Prevenção:** Em ambientes serverless (Vercel), não é possível executar `pg_dump`. Prisma + Admin API é a alternativa viável para backup de dados aplicacionais. Para backup completo com senhas, use `pg_dump` localmente com acesso direto ao banco.
+

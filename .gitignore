@@ -13,6 +13,9 @@
 # Produção
 /build
 
+# Bancos de dados
+/sql
+
 # Misc
 .DS_Store
 *.pem
