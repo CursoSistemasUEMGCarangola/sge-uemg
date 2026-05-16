@@ -103,11 +103,11 @@ async function main() {
     const professorUuid = uuidv4()
     const professor = await prisma.professor.create({
         data: {
-            masp: "123456-7",
+            masp: "000000-0",
             profile: {
                 create: {
                     id: professorUuid,
-                    email: "professor@uemg.br",
+                    email: "professor.teste@example.com",
                     nomeCompleto: "Dr. Orientador Socrático",
                     role: Role.PROFESSOR
                 }
@@ -118,12 +118,12 @@ async function main() {
     const alunoUuid = uuidv4()
     const aluno = await prisma.aluno.create({
         data: {
-            matricula: "2026001",
+            matricula: "0000001",
             periodoAtual: 7,
             profile: {
                 create: {
                     id: alunoUuid,
-                    email: "aluno@uemg.br",
+                    email: "aluno.teste@example.com",
                     nomeCompleto: "João Estagiário da Silva",
                     role: Role.ALUNO
                 }

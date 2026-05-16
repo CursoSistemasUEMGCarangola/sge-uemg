@@ -64,6 +64,23 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
+
+  /* Modo de Vedação Eleitoral: sobrescreve variáveis de cor apenas no escopo da landing page */
+  .modo-eleitoral {
+    --primary: 0 0% 13%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 88%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 88%;
+    --accent-foreground: 0 0% 13%;
+    --border: 0 0% 82%;
+    --input: 0 0% 82%;
+    --ring: 0 0% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+  }
 }
  
 @layer base {

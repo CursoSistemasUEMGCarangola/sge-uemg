@@ -1,8 +1,9 @@
 import Link from "next/link"
 import Image from "next/image"
 import { createClient, getCurrentUserRole } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
-import { UserRoundCheck, GraduationCap, ArrowRight, Sun, Moon } from "lucide-react"
+import { UserRoundCheck, GraduationCap, ArrowRight } from "lucide-react"
 
 export default async function LandingPage() {
     const supabase = await createClient()
@@ -10,26 +11,38 @@ export default async function LandingPage() {
 
     const role = await getCurrentUserRole()
 
+    // Verifica o modo de vedação eleitoral
+    const modoEleitoralConfig = await prisma.systemConfig.findUnique({
+        where: { key: 'MODO_ELEITORAL' }
+    })
+    const modoEleitoral = modoEleitoralConfig?.value === 'true'
+
     return (
-        <div className="min-h-screen bg-background flex flex-col font-sans transition-colors duration-300">
+        <div className={`min-h-screen bg-background flex flex-col font-sans transition-colors duration-300${modoEleitoral ? ' modo-eleitoral' : ''}`}>
             {/* Header */}
             <header className="pt-6 pb-4 flex flex-col md:flex-row items-center justify-center gap-6 max-w-5xl mx-auto px-6">
-                <div className="shrink-0 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary overflow-hidden">
-                    <Image
-                        alt="UEMG Carangola"
-                        src="/uemg.jpg"
-                        width={160}
-                        height={160}
-                        className="object-cover w-full h-full"
-                        priority
-                    />
-                </div>
+                {/* Logo: exibida apenas fora do modo eleitoral */}
+                {!modoEleitoral && (
+                    <div className="shrink-0 w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary overflow-hidden">
+                        <Image
+                            alt="UEMG Carangola"
+                            src="/uemg.jpg"
+                            width={160}
+                            height={160}
+                            className="object-cover w-full h-full"
+                            priority
+                        />
+                    </div>
+                )}
                 <div className="text-center md:text-left">
                     <h1 className="text-3xl md:text-5xl font-bold text-primary">
                         Portal de Estágios
                     </h1>
                     <p className="text-muted-foreground mt-4 max-w-lg text-lg leading-relaxed">
-                        Gestão de estágios do curso de Sistemas de Informação da UEMG - Unidade Carangola.
+                        {modoEleitoral
+                            ? "Gestão de estágios do curso de Sistemas de Informação."
+                            : "Gestão de estágios do curso de Sistemas de Informação da UEMG - Unidade Carangola."
+                        }
                     </p>
                 </div>
             </header>
@@ -66,7 +79,7 @@ export default async function LandingPage() {
                             <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
                                 Acesse seus documentos, preencha os relatórios e acompanhe o status do seu estágio.
                             </p>
-                            <Button asChild className="w-full py-4 text-base font-semibold bg-secondary hover:bg-secondary/90 text-white gap-2 group-hover:shadow-md transition-all">
+                            <Button asChild className="w-full py-4 text-base font-semibold bg-secondary hover:bg-secondary/90 text-secondary-foreground gap-2 group-hover:shadow-md transition-all">
                                 <Link href={user ? "/aluno" : "/login"}>
                                     {user ? "Ir para o Painel" : "Acessar como Estudante"}
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -81,7 +94,10 @@ export default async function LandingPage() {
             <footer className="mt-6 py-6 border-t border-border">
                 <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-muted-foreground">
-                        © 2026 UEMG Carangola. Todos os direitos reservados.
+                        {modoEleitoral
+                            ? "© 2026 Todos os direitos reservados."
+                            : "© 2026 UEMG Carangola. Todos os direitos reservados."
+                        }
                     </p>
                     <div className="flex gap-6">
                         <Link href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">

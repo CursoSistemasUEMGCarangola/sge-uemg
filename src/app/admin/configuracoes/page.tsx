@@ -3,13 +3,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GeneralInfoList } from "@/features/admin/components/general-info-list"
 import { GeneralInfoForm } from "@/features/admin/components/general-info-form"
 import { BackupButton } from "@/features/admin/components/backup-button"
+import { ModoEleitoralToggle } from "@/features/admin/components/modo-eleitoral-toggle"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Database } from "lucide-react"
+import { Database, Vote } from "lucide-react"
 
 export default async function ConfiguracoesPage() {
-    const items = await prisma.informacoesGeraisEstagio.findMany({
-        orderBy: { descricao: 'asc' }
-    })
+    const [items, modoEleitoralConfig] = await Promise.all([
+        prisma.informacoesGeraisEstagio.findMany({ orderBy: { descricao: 'asc' } }),
+        prisma.systemConfig.findUnique({ where: { key: 'MODO_ELEITORAL' } }),
+    ])
+    const modoEleitoralAtivo = modoEleitoralConfig?.value === 'true'
 
     return (
         <div className="space-y-6">
@@ -24,6 +27,7 @@ export default async function ConfiguracoesPage() {
                     <TabsTrigger value="documentacao">Tipos de Documentação</TabsTrigger>
                     <TabsTrigger value="titulacao">Titulações do Supervisor de Campo</TabsTrigger>
                     <TabsTrigger value="backup">Backup</TabsTrigger>
+                    <TabsTrigger value="eleitoral">Vedação Eleitoral</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="modalidade">
@@ -102,6 +106,23 @@ export default async function ConfiguracoesPage() {
                                 </p>
                             </div>
                             <BackupButton />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="eleitoral">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Vote className="h-5 w-5 text-muted-foreground" />
+                                <CardTitle>Vedação Eleitoral</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Ative para descaracterizar a landing page durante o período de vedação eleitoral, conforme a legislação vigente.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ModoEleitoralToggle initialValue={modoEleitoralAtivo} />
                         </CardContent>
                     </Card>
                 </TabsContent>

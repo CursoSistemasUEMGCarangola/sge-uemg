@@ -38,3 +38,18 @@ export async function getFeriados() {
         orderBy: { data: 'asc' }
     })
 }
+
+export async function toggleModoEleitoralAction(ativar: boolean) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') throw new Error("Unauthorized")
+
+    await prisma.systemConfig.upsert({
+        where: { key: 'MODO_ELEITORAL' },
+        update: { value: ativar ? 'true' : 'false' },
+        create: { key: 'MODO_ELEITORAL', value: ativar ? 'true' : 'false' },
+    })
+
+    revalidatePath('/')
+    revalidatePath('/admin/configuracoes')
+    return { success: true }
+}
