@@ -58,7 +58,7 @@ export function DiarioClient({ contratoId, initialEntries, etapaId, canSubmit, m
 
         startTransition(async () => {
             const res = await logAtividade(contratoId, date, h, descricao)
-            if (res.error) {
+            if ('error' in res && res.error) {
                 toast({ title: "Erro", description: res.error, variant: "destructive" })
             } else {
                 toast({ title: "Atividade registrada", variant: "default" })

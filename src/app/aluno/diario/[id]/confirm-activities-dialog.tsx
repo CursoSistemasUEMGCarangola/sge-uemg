@@ -30,7 +30,7 @@ export function ConfirmActivitiesDialog({ contratoId, totalHoras, etapaId }: Con
         setLoading(true)
         try {
             const res = await submitRelatorioAtividades(contratoId, etapaId)
-            if (res.error) {
+            if ('error' in res && res.error) {
                 toast({ title: "Erro", description: res.error, variant: "destructive" })
             } else {
                 toast({ title: "Relatório Enviado", description: "O professor receberá uma notificação." })

@@ -4,6 +4,7 @@ import { z } from "zod"
 import { createClient } from '@supabase/supabase-js' // Use admin client
 import { registerProfessorSchema } from '../schemas/register-professor-schema'
 import { prisma } from '@/lib/prisma'
+import { getCurrentUserRole } from '@/lib/auth'
 
 export type RegisterProfessorState = {
     success?: boolean
@@ -26,6 +27,12 @@ const adminClient = createClient(
 )
 
 export async function registerProfessorAction(prevState: any, formData: FormData): Promise<RegisterProfessorState> {
+    // SEG-05b: Esta action só deve ser invocada por um ADMIN autenticado
+    const currentRole = await getCurrentUserRole()
+    if (currentRole !== 'ADMIN') {
+        return { success: false, error: "Acesso negado. Apenas administradores podem cadastrar professores." }
+    }
+
     const rawData = Object.fromEntries(formData.entries())
 
 
@@ -123,9 +130,10 @@ export async function registerProfessorAction(prevState: any, formData: FormData
 
     } catch (error) {
         console.error("Registration Error:", error)
+        // SEG-07b: Não expor detalhes internos ao cliente
         return {
             success: false,
-            error: `Erro interno: ${error instanceof Error ? error.message : String(error)}`
+            error: `Erro interno no servidor. Tente novamente mais tarde.`
         }
     }
 }

@@ -170,6 +170,7 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 **Correção/Evolução (v1.2.1):** 30/03/2026 - Condicionais anti-edição de relatórios (Timezone Trap fix, ancoradas no fim diário SP) e expurgo da propriedade `dataLimite`. Melhorias vitais em UX Accessibilty para indicadores e badges informacionais de bloqueios.
 **Refinamento IA (v1.2.2):** 31/03/2026 - Otimização estrita de System Prompts para inibição de Markdown e fillers conversacionais em textareas, além da alteração na nomenclatura dos botões (Sugestão de Aprimoramento).
 **Migração & Backup (v1.3.0):** 03/05/2026 - Migração para novo projeto Supabase, recurso de backup administrativo via JSON (Prisma + Auth Admin API) e documentação de disaster recovery.
+**Auditoria de Segurança (v1.4.0):** 25/05/2026 - Resolução de vulnerabilidades críticas. Implementação de Ownership Checks (Prevenção de IDOR) em Server Actions, proteção RBAC de borda no Middleware via `user_metadata`, autenticação em rotas de exportação de documentos e sanitização rigorosa de erros do Prisma (Prevenção de vazamento de logs/PII).
 O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais planejados. O sistema está pronto para implantação em ambiente de homologação/produção.
 
 ### Próximos Passos (Maintenance & Growth)

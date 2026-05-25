@@ -65,17 +65,24 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // 2. RBAC (Role Based Access Control)
-    // Prereq: We need to know the user's role. 
-    // Optimization: In a real scenario, we might store role in metadata or decode a JWT.
-    // For now, we will assume strict separation:
-    // - /admin/** -> Only PROFESSOR/ADMIN
-    // - /aluno/** -> Only ALUNO
+    // 2. SEG-09: RBAC de borda usando user_metadata (sem round-trip ao banco)
+    // Durante o registro de aluno, armazenamos role: 'ALUNO' em user_metadata.
+    // Isso permite bloquear alunas de rotas /admin/* no edge, antes mesmo do layout.
+    // Para PROFESSOR/ADMIN, a verificação completa permanece nos layouts (Server Components).
+    if (user) {
+        const userMetadataRole = user.user_metadata?.role as string | undefined
+        const pathname = request.nextUrl.pathname
 
-    // Note: Fetching Profile from DB in middleware is expensive. 
-    // We should ideally use user_metadata or Custom Claims.
-    // For this Phase 1 implementation, `getUser` is sufficient to check authentication.
-    // We will defer strict DB-based role check to the Layout or Page level (via Server Components) or add it here if performance allows (requires independent supabase client).
+        // Bloquear ALUNOs de acessar qualquer rota /admin/*
+        if (userMetadataRole === 'ALUNO' && pathname.startsWith('/admin')) {
+            return NextResponse.redirect(new URL('/aluno', request.url))
+        }
+
+        // Bloquear ALUNOs de acessar /api/backup
+        if (userMetadataRole === 'ALUNO' && pathname.startsWith('/api/backup')) {
+            return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 })
+        }
+    }
 
     return response
 }

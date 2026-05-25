@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 import { registerStudentSchema } from "../schemas/register-schema"
+import { isJanelaCadastroAberta } from "@/lib/system"
 
 export type RegisterStudentState = {
   success?: boolean
@@ -15,6 +16,15 @@ export type RegisterStudentState = {
 }
 
 export async function registerStudentAction(prevState: RegisterStudentState, formData: FormData): Promise<RegisterStudentState> {
+  // SEG-06: Verificar se a janela de cadastro está aberta antes de processar
+  const janelaAberta = await isJanelaCadastroAberta()
+  if (!janelaAberta) {
+    return {
+      success: false,
+      message: "O período de cadastro está encerrado. Entre em contato com a administração.",
+    }
+  }
+
   const rawData = Object.fromEntries(formData.entries())
 
   // Handle checkboxes and boolean conversions if necessary
@@ -175,9 +185,11 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
       return { success: false, message: "Dados duplicados encontrados no sistema." };
     }
 
+    // SEG-07a: Não expor detalhes internos (stack trace, mensagens do Prisma) ao cliente
+    console.error("Erro ao registrar aluno:", error)
     return {
       success: false,
-      message: "Erro interno no servidor ao registrar aluno: " + (error.message || "Erro desconhecido"),
+      message: "Erro interno no servidor. Tente novamente mais tarde.",
     }
   }
 

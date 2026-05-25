@@ -79,11 +79,11 @@ export function CapaForm({ contrato, canEdit = false }: CapaFormProps) {
         setIsSaving(true)
         try {
             const res = await updateEstagioAction(contrato.id, data)
-            if (res.success) {
+            if ('success' in res && res.success) {
                 toast({ title: "Sucesso", description: "Dados atualizados com sucesso!" })
                 router.refresh()
             } else {
-                toast({ title: "Erro", description: res.error || "Falha ao salvar", variant: "destructive" })
+                toast({ title: "Erro", description: ('error' in res ? res.error : "Falha ao salvar"), variant: "destructive" })
             }
         } catch (error) {
             toast({ title: "Erro", description: "Erro inesperado.", variant: "destructive" })

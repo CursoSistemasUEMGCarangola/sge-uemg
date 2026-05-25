@@ -55,7 +55,7 @@ export function RelatorioFinalClient({ contratoId, etapaId, initialText, canEdit
         startTransition(async () => {
             // 1. Save the text first
             const res = await saveRelatorioAvaliacao(contratoId, text)
-            if (res.success) {
+            if ('success' in res && res.success) {
                 // 2. Open PDF in new tab
                 window.open(`/aluno/relatorio-final/${contratoId}/pdf`, '_blank')
                 toast({ title: "Relatório salvo e PDF gerado!" })

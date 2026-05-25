@@ -341,3 +341,26 @@
 4. **Limitação**: Senhas de auth.users não são exportáveis (segurança do GoTrue). Ao restaurar, é necessário redefinir senhas.
 **Prevenção:** Em ambientes serverless (Vercel), não é possível executar `pg_dump`. Prisma + Admin API é a alternativa viável para backup de dados aplicacionais. Para backup completo com senhas, use `pg_dump` localmente com acesso direto ao banco.
 
+### [2026-05-25] - [SECURITY] IDOR e Ownership em Server Actions
+
+**Contexto:** Server Actions que recebem IDs (ex: `deleteAtividade(id)`) validavam apenas se o usuário tinha o perfil "ALUNO", mas não validavam se a atividade pertencia àquele aluno, permitindo edição forjada de dados de terceiros.
+**Solução:** Criação de um helper de segurança universal (`assertAlunoOwnsContract`) que é invocado no topo da Action. Ele cruza o `contratoId` alvo com o `auth.getUser().id` via query no Prisma antes de permitir a mutação.
+**Prevenção:** Em sistemas Multi-Tenant ou com dados isolados por usuário, Server Actions nunca devem confiar em IDs de payload sem validar *Ownership* no banco de dados.
+
+### [2026-05-25] - [SECURITY/NEXTJS] Edge RBAC via JWT User Metadata
+
+**Contexto:** O middleware do Next.js precisava proteger a rota `/admin`. Fazer uma query de banco (`supabase.from('profiles')`) no Edge era custoso e inviável. Proteger o acesso via React Layout permitia consumo de banda e recursos antes do bloqueio.
+**Solução:** Gravação da "role" (`ADMIN`, `PROFESSOR`, `ALUNO`) diretamente no `user_metadata` do Supabase Auth durante o cadastro. O JWT carrega essa metainformação, permitindo ao `middleware.ts` decodificar a sessão instantaneamente no Edge e bloquear a request antes de tocar na aplicação React.
+**Prevenção:** Para RBAC (Role-Based Access Control) hiper-rápido, evite rodadas ao banco. Salve papéis no token de autenticação e aplique as defesas na camada Middleware (Edge).
+
+### [2026-05-25] - [SECURITY/API] Proteção de Rotas de Exportação (PDFs)
+
+**Contexto:** Endpoints do tipo GET (`route.tsx`) para renderização de PDFs estavam desprotegidos e recebiam parâmetros abertos na URL (`/api/documents/[id]/route.tsx`), expondo PIIs de alunos a acessos anônimos externos.
+**Solução:** Injeção obrigatória de sessão (`supabase.auth.getUser()`) dentro do `route.tsx`, com validação estrita: somente Administradores, Professores vinculados e o próprio dono do contrato podem gerar a visualização.
+**Prevenção:** Não tratar Server Components e Route Handlers "simples" como visualizadores inofensivos. Se emite dados, é uma API e deve ter validação de sessão embutida, independente de qual UI o invoca.
+
+### [2026-05-25] - [SECURITY] Vazamento de Infraestrutura (Prisma/Stack traces)
+
+**Contexto:** Erros não tratados ou repassados genericamente (`catch (error) { return { error: error.message } }`) exibiam ao cliente as estruturas internas do Prisma e metadados de tabelas, facilitando a vida de atacantes ao mapear o schema de banco de dados.
+**Solução:** Omissão intencional e sanitização de mensagens do Prisma. Substituição do envio bruto de falhas por mensagens mascaradas amigáveis ao usuário (ex: `"Erro interno no servidor."`). Os detalhes do log com IDs e PIIs continuam ocorrendo apenas no servidor (ex: `console.error`) mas restritamente ocultos de retornos de Actions.
+**Prevenção:** Trate erros com sanitização na Borda Cliente/Servidor. A interface nunca deve conhecer a tecnologia de banco de dados usada nem suas exceções puras.

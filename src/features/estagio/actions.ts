@@ -8,6 +8,32 @@ import { getCurrentUserRole, createClient } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { isJanelaCadastroAberta } from "@/lib/system"
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SEG-01: Helper de segurança — verifica que o usuário autenticado é dono do contrato.
+// Retorna { error: string } se falhar, ou null se OK.
+// Todas as Server Actions de aluno que operam sobre um contratoId devem chamar isto.
+// ─────────────────────────────────────────────────────────────────────────────
+async function assertAlunoOwnsContract(contratoId: number): Promise<{ error: string } | null> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "Não autenticado." }
+
+    const aluno = await prisma.aluno.findUnique({
+        where: { profileId: user.id },
+        select: { id: true }
+    })
+    if (!aluno) return { error: "Perfil de aluno não encontrado." }
+
+    const contrato = await prisma.contratoEstagio.findUnique({
+        where: { id: contratoId },
+        select: { idAluno: true }
+    })
+    if (!contrato) return { error: "Contrato não encontrado." }
+    if (contrato.idAluno !== aluno.id) return { error: "Acesso negado: este contrato não pertence ao seu perfil." }
+
+    return null // OK
+}
+
 export async function createEstagio(data: NovoEstagioFormData) {
     console.log("SERVER ACTION: createEstagio START")
 
@@ -16,10 +42,8 @@ export async function createEstagio(data: NovoEstagioFormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        console.log("SERVER ACTION: User not authenticated")
         return { error: "Usuário não autenticado." }
     }
-    console.log("SERVER ACTION: User authenticated", user.id)
 
     const validation = novoEstagioSchema.safeParse(data)
     if (!validation.success) {
@@ -37,7 +61,6 @@ export async function createEstagio(data: NovoEstagioFormData) {
         })
 
         if (!aluno) {
-            console.log("SERVER ACTION: Student profile not found for user", user.id)
             return { error: "Perfil de aluno não encontrado." }
         }
         console.log("SERVER ACTION: Student found", { id: aluno.id, periodo: aluno.periodoAtual })
@@ -186,6 +209,10 @@ export async function submitEtapaLink(contratoId: number, etapaId: number, link:
         throw new Error("Unauthorized")
     }
 
+    // SEG-01: Verificar que o contrato pertence ao aluno autenticado
+    const ownerCheck = await assertAlunoOwnsContract(contratoId)
+    if (ownerCheck) return ownerCheck
+
     if (!link || !link.startsWith('http')) {
         return { error: "Link inválido. Certifique-se de incluir http:// ou https://" }
     }
@@ -221,6 +248,10 @@ export async function logAtividade(contratoId: number, data: Date, horas: number
     })
 
     if (!contrato) return { error: "Contrato não encontrado." }
+
+    // SEG-01: Verificar que o contrato pertence ao aluno autenticado
+    const ownerCheckLog = await assertAlunoOwnsContract(contratoId)
+    if (ownerCheckLog) return ownerCheckLog
 
     // 1. Validate Hours
     if (horas < 1) {
@@ -313,6 +344,16 @@ export async function deleteAtividade(id: number) {
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
 
+    // SEG-12 + SEG-01: Verificar que a atividade pertence a um contrato do aluno autenticado
+    const atividade = await prisma.diarioAtividade.findUnique({
+        where: { id },
+        select: { idContrato: true }
+    })
+    if (!atividade) return { error: "Atividade não encontrada." }
+
+    const ownerCheck = await assertAlunoOwnsContract(atividade.idContrato)
+    if (ownerCheck) return ownerCheck
+
     await prisma.diarioAtividade.delete({ where: { id } })
     revalidatePath('/aluno')
     return { success: true }
@@ -322,6 +363,10 @@ export async function deleteAtividade(id: number) {
 export async function submitRelatorioAtividades(contratoId: number, etapaId: number) {
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    // SEG-01: Verificar que o contrato pertence ao aluno autenticado
+    const ownerCheck = await assertAlunoOwnsContract(contratoId)
+    if (ownerCheck) return ownerCheck
 
     // 1. Check if there are activities
     const atividades = await prisma.diarioAtividade.count({
@@ -353,6 +398,10 @@ export async function saveRelatorioAvaliacao(contratoId: number, texto: string) 
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
 
+    // SEG-01: Verificar que o contrato pertence ao aluno autenticado
+    const ownerCheck = await assertAlunoOwnsContract(contratoId)
+    if (ownerCheck) return ownerCheck
+
     await prisma.contratoEstagio.update({
         where: { id: contratoId },
         data: { textoRelatorioAvaliacao: texto }
@@ -365,6 +414,10 @@ export async function saveRelatorioAvaliacao(contratoId: number, texto: string) 
 export async function submitRelatorio(contratoId: number, etapaId: number, texto: string) {
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') throw new Error("Unauthorized")
+
+    // SEG-01: Verificar que o contrato pertence ao aluno autenticado
+    const ownerCheck = await assertAlunoOwnsContract(contratoId)
+    if (ownerCheck) return ownerCheck
 
     if (!texto || texto.length < 50) {
         return { error: "O relatório deve ter pelo menos 50 caracteres." }
@@ -495,6 +548,12 @@ export async function updateEstagioAction(
     const role = await getCurrentUserRole()
     if (role !== "ALUNO" && role !== "ADMIN") {
         return { error: "Sem permissão." }
+    }
+
+    // SEG-01: Para ALUNOs, verificar que o contrato pertence ao usuário autenticado
+    if (role === 'ALUNO') {
+        const ownerCheck = await assertAlunoOwnsContract(contratoId)
+        if (ownerCheck) return ownerCheck
     }
 
     try {

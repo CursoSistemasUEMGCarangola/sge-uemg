@@ -13,8 +13,8 @@ export const registerStudentSchema = z.object({
     periodo: z.string().min(1, "Período é obrigatório"),
     cursoId: z.coerce.number().min(1, "Selecione o curso"),
     telefone: z.string().min(14, "Telefone incompleto"),
-    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-    confirmPassword: z.string().min(6, "Confirmação de senha é obrigatória"),
+    password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
+    confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
     termsAccepted: z.boolean().refine((val) => val === true, {
         message: "Você deve aceitar os termos de responsabilidade",
     }),

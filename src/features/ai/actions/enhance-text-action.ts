@@ -1,24 +1,28 @@
 'use server'
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getCurrentUserRole } from "@/lib/auth"
 
 const apiKey = process.env.GEMINI_API_KEY
 
 export async function enhanceTextAction(text: string) {
+    // SEG-04: Verificar autenticação antes de consumir a API de IA
+    const role = await getCurrentUserRole()
+    if (!role) {
+        return { success: false, error: "Não autenticado." }
+    }
+
     if (!apiKey) {
-        console.error("DEBUG: API Key is missing")
         return { success: false, error: "Chave de API do Gemini não configurada." }
     }
-    console.log("DEBUG: API Key present, length:", apiKey.length)
 
     if (!text || text.trim().length < 10) {
         return { success: false, error: "O texto é muito curto para ser aprimorado." }
     }
 
     try {
-        console.log("DEBUG: Calling Gemini with text:", text.substring(0, 20) + "...")
         const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview" })
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" })
 
         const prompt = `
         Você é um especialista em revisão de textos acadêmicos e profissionais para planos de estágio.
@@ -38,7 +42,6 @@ export async function enhanceTextAction(text: string) {
         const result = await model.generateContent(prompt)
         const response = await result.response
         const enhancedText = response.text()
-        console.log("DEBUG: Gemini response received:", enhancedText.substring(0, 20) + "...")
 
         return { success: true, text: enhancedText.trim() }
     } catch (error: any) {

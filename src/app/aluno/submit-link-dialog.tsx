@@ -47,7 +47,7 @@ export function SubmitLinkDialog({ contratoId, etapaId, etapaNumero, etapaNome, 
                 result = await submitEtapaLink(contratoId, etapaId, link)
             }
 
-            if (result?.error) {
+            if (result && 'error' in result && result.error) {
                 toast({ title: "Erro", description: result.error, variant: "destructive" })
             } else {
                 toast({ title: "Sucesso", description: isRelatorio ? "Relatório enviado." : "Link enviado para análise." })

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { getCurrentUserRole } from "@/lib/auth"
 
 const updateStageSchema = z.object({
     id: z.number(),
@@ -13,6 +14,10 @@ const updateStageSchema = z.object({
 })
 
 export async function updateStageAction(formData: FormData) {
+    // SEG-03: Verificar que apenas ADMIN pode alterar definições de etapas
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') return { error: 'Acesso negado. Apenas administradores podem editar etapas.' }
+
     const data = Object.fromEntries(formData.entries())
 
     const result = updateStageSchema.safeParse({
