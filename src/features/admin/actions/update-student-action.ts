@@ -7,7 +7,8 @@ import { getCurrentUserRole } from '@/lib/auth'
 
 export async function updateStudentAction(prevState: any, formData: FormData) {
     const rawData = Object.fromEntries(formData.entries())
-    console.log("updateStudentAction called with payload:", { ...rawData, password: '[REDACTED]' })
+    // LOG REMOVIDO PARA COMPLIANCE (Evitar vazamento de PII e e-mail no console)
+    // console.log("updateStudentAction called with payload:", { ...rawData, password: '[REDACTED]' })
     
     const role = await getCurrentUserRole()
     if (role !== 'ADMIN') {
@@ -75,7 +76,7 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
         return { success: true }
 
     } catch (error: any) {
-        console.error("CRITICAL: Update Student Action failed:", error)
-        return { success: false, error: error.message || "Erro interno ao atualizar aluno." }
+        console.error("Update Student Action failed.") // Sanitizado: erro omitido do log para não expor estrutura
+        return { success: false, error: "Erro interno ao atualizar aluno." }
     }
 }

@@ -7,7 +7,7 @@ import { documentoSchema, DocumentoFormData } from "../schemas/documento-schema"
 
 export async function upsertDocumento(data: DocumentoFormData) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN' && role !== 'PROFESSOR') throw new Error("Unauthorized")
+    if (role !== 'ADMIN' && role !== 'PROFESSOR') return { error: "Acesso não autorizado." }
 
     const validation = documentoSchema.safeParse(data)
     if (!validation.success) {
@@ -44,7 +44,7 @@ export async function upsertDocumento(data: DocumentoFormData) {
 
 export async function deleteDocumento(id: number) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN' && role !== 'PROFESSOR') throw new Error("Unauthorized")
+    if (role !== 'ADMIN') return { error: "Acesso negado. Apenas administradores podem excluir documentos modelo." }
 
     try {
         await prisma.documentoModelo.delete({

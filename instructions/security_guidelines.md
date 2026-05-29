@@ -48,3 +48,13 @@ Este documento atua como base de conhecimento de segurança para processos de de
 **Como Prevenir:**
 - A camada de infraestrutura (`next.config.mjs`) deve sempre exportar os Headers HTTP de segurança recomendados (ex: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, etc.).
 - A validação Zod (Schemas) deve sempre forçar o mínimo de 8 caracteres em senhas como conformidade básica à LGPD/NIST.
+
+## 8. Segurança de Supply Chain e Gerenciamento de Dependências
+**Vulnerabilidade:** Bibliotecas desatualizadas (como versões antigas do Next.js ou utilitários) permitindo vetores de ataque como DoS, SSRF e Cache Poisoning.
+**Como Prevenir:**
+- **Padrão Obrigatório:** Mantenha um cronograma rotineiro para executar `npm audit`. Para ecossistemas grandes como Next.js, fique sempre atento às releases `patch` que contêm Security Fixes essenciais, sem quebrar retrocompatibilidade.
+
+## 9. Proteção com Row Level Security (RLS) no Banco de Dados (Supabase)
+**Vulnerabilidade:** Dependência exclusiva da camada de aplicação (App Router) para controle de acesso, deixando as tabelas abertas na API pública REST do Supabase.
+**Como Prevenir:**
+- **Padrão Obrigatório:** Sempre habilite o Row Level Security (RLS) via SQL (`ALTER TABLE tabela ENABLE ROW LEVEL SECURITY;`) em todas as tabelas públicas, agindo como um *Default Deny* contra acessos não autenticados via cliente (roles `anon` ou `authenticated` sem política de acesso), mesmo que toda a lógica de negócio esteja rodando no lado do servidor com a chave `Service Role`.

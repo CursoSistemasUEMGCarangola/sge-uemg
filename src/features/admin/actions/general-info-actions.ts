@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getCurrentUserRole } from "@/lib/auth"
 import { z } from "zod"
 
 const generalInfoSchema = z.object({
@@ -12,6 +13,11 @@ const generalInfoSchema = z.object({
 })
 
 export async function createGeneralInfoAction(prevState: any, formData: FormData) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') {
+        return { success: false, error: "Acesso não autorizado.", message: null }
+    }
+
     const data = Object.fromEntries(formData.entries())
     const validated = generalInfoSchema.safeParse(data)
 
@@ -35,6 +41,11 @@ export async function createGeneralInfoAction(prevState: any, formData: FormData
 }
 
 export async function updateGeneralInfoAction(prevState: any, formData: FormData) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') {
+        return { success: false, error: "Acesso não autorizado.", message: null }
+    }
+
     const data = Object.fromEntries(formData.entries())
     const validated = generalInfoSchema.safeParse(data)
 
@@ -57,6 +68,11 @@ export async function updateGeneralInfoAction(prevState: any, formData: FormData
 }
 
 export async function deleteGeneralInfoAction(id: number) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') {
+        return { success: false, error: "Acesso não autorizado.", message: null }
+    }
+
     try {
         await prisma.informacoesGeraisEstagio.delete({
             where: { id }
@@ -69,6 +85,11 @@ export async function deleteGeneralInfoAction(id: number) {
 }
 
 export async function toggleGeneralInfoStatusAction(id: number, currentStatus: boolean) {
+    const role = await getCurrentUserRole()
+    if (role !== 'ADMIN') {
+        return { success: false, error: "Acesso não autorizado.", message: null }
+    }
+
     try {
         await prisma.informacoesGeraisEstagio.update({
             where: { id },

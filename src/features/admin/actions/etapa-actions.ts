@@ -7,7 +7,7 @@ import { etapaSchema, EtapaFormData } from "../schemas/etapa-schema"
 
 export async function upsertEtapa(data: EtapaFormData) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN') throw new Error("Unauthorized")
+    if (role !== 'ADMIN') return { error: "Acesso não autorizado." }
 
     const validation = etapaSchema.safeParse(data)
     if (!validation.success) {
@@ -48,7 +48,7 @@ export async function upsertEtapa(data: EtapaFormData) {
 
 export async function deleteEtapa(id: number) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN') throw new Error("Unauthorized")
+    if (role !== 'ADMIN') return { error: "Acesso não autorizado." }
 
     try {
         await prisma.etapaDefinicao.delete({

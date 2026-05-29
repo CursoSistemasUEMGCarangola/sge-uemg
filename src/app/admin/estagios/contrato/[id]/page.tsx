@@ -16,6 +16,7 @@ import { ContractActions } from "../../[id]/contract-actions"
 import { CompleteStageButton } from "../../[id]/complete-stage-button"
 import { NotifyProblemDialog } from "../../[id]/notify-problem-dialog"
 import { RevertStageButton } from "@/app/admin/estagios/revert-stage-button"
+import { SendAlertButton } from "../../components/send-alert-button"
 
 export default async function EstagioDetailsPage({ params }: { params: { id: string } }) {
     const id = parseInt(params.id)
@@ -58,6 +59,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     <Badge variant="outline">{contrato.aluno.matricula}</Badge>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
+                    <SendAlertButton type="single" targetId={contrato.id} variant="outline" />
                     <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>
                         {contrato.statusAprovacao}
                     </Badge>

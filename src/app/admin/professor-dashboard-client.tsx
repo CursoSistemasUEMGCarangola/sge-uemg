@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { FileClock, CheckCircle2, AlertCircle, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SendAlertButton } from "./estagios/components/send-alert-button"
 
 interface ProfessorDashboardClientProps {
     contratos: any[]
@@ -43,10 +44,13 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
             {/* Cards de Ofertas (Atribuições) */}
             {ofertas && ofertas.length > 0 && (
                 <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Briefcase className="h-5 w-5 text-muted-foreground" />
-                        Minhas Orientações
-                    </h2>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                            <Briefcase className="h-5 w-5 text-muted-foreground" />
+                            Minhas Orientações
+                        </h2>
+                        <SendAlertButton type="bulk" targetId={selectedOfertaId} />
+                    </div>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {ofertas.map((oferta: any) => {
                             const isSelected = selectedOfertaId === oferta.id
