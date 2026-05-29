@@ -364,3 +364,21 @@
 **Contexto:** Erros não tratados ou repassados genericamente (`catch (error) { return { error: error.message } }`) exibiam ao cliente as estruturas internas do Prisma e metadados de tabelas, facilitando a vida de atacantes ao mapear o schema de banco de dados.
 **Solução:** Omissão intencional e sanitização de mensagens do Prisma. Substituição do envio bruto de falhas por mensagens mascaradas amigáveis ao usuário (ex: `"Erro interno no servidor."`). Os detalhes do log com IDs e PIIs continuam ocorrendo apenas no servidor (ex: `console.error`) mas restritamente ocultos de retornos de Actions.
 **Prevenção:** Trate erros com sanitização na Borda Cliente/Servidor. A interface nunca deve conhecer a tecnologia de banco de dados usada nem suas exceções puras.
+
+### [2026-05-29] - [SECURITY/DB] Configuração Global de RLS (Row Level Security)
+
+**Contexto:** O banco do Supabase ficava publicamente exposto na camada da REST API via SDK, dependendo unicamente das defesas no frontend.
+**Solução/Lição Aprendida:** Implementar uma trava "Zero-Trust" executando um script SQL que habilita o RLS (Row Level Security) em todas as tabelas com policies intencionalmente vazias. Isso previne manipulações diretas via cliente anônimo ou tokens forjados, forçando com que todo o acesso ocorra estritamente de maneira server-side usando o Prisma com uma `service_role` ou chave segura (backend Next.js).
+**Prevenção:** Em modelos Backend-centric (Next.js App Router + Prisma), fechar 100% o RLS do Supabase é um passo fundamental para neutralizar acessos Client-Side maliciosos na porta de APIs autogeradas.
+
+### [2026-05-29] - [SECURITY] Auditoria de Supply Chain e CVEs (Next.js)
+
+**Contexto:** Ao iniciar o escaneamento de dependências, foram descobertas falhas estruturais associadas a versões antigas (ex: Next.js 14.1.0 propício a SSRF e Cache Poisoning).
+**Solução/Lição Aprendida:** O Next.js não deve ser congelado em uma versão "minor" sem verificação (ex: fixamos agora na 14.2.35). É crucial integrar rotinas de `npm audit` em novos projetos e não manter o framework base desatualizado sob pretexto de evitar quebras. A refatoração das dependências blindou rotas nativas sem precisar de código.
+**Prevenção:** Estabeleça revisões periódicas das bibliotecas críticas (Framework e ORM) para mitigar CVEs conhecidos antes do *Go-Live* de produção.
+
+### [2026-05-29] - [ARCHITECTURE/FEATURE] Automação de E-mails (Nodemailer) via Server Actions
+
+**Contexto:** Necessidade do orientador disparar acompanhamentos aos estagiários de forma ativa.
+**Solução/Lição Aprendida:** O fluxo de mensageria foi desacoplado. As variáveis do SMTP são validadas de forma estrita em um módulo de serviço (`src/lib/email.ts`) com templates puramente funcionais (`email-templates.ts`). As Server Actions invocam este serviço seja em batch lidando com iterações sequenciais, ou individualmente, sempre garantindo o retorno de um tipo coeso `EmailActionResult` para o frontend atualizar o estado das UI via Toasts.
+**Prevenção:** Separar lógica de injeção HTML de regras de negócio em Server Actions garante que os alertas por e-mail não virem gargalos no fluxo de aprovação de estágios.
