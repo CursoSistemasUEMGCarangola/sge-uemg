@@ -73,6 +73,12 @@ export default async function AlunoLayout({
                             Minha Conta
                         </Button>
                     </Link>
+                    <Link href="/aluno/manual">
+                        <Button variant="ghost" className="w-full justify-start gap-2">
+                            <FileText className="h-4 w-4" />
+                            Manuais
+                        </Button>
+                    </Link>
 
                     {hasActiveInternship && (
                         <Link href="/aluno/documentos">

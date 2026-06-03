@@ -122,6 +122,14 @@ export default async function AdminLayout({
                         </Button>
                     </Link>
 
+                    {/* Shared: Manuais */}
+                    <Link href="/admin/manual">
+                        <Button variant="ghost" className="w-full justify-start gap-2">
+                            <FileText className="h-4 w-4" />
+                            Manuais
+                        </Button>
+                    </Link>
+
                     {/* Admin Only */}
                     {role === 'ADMIN' && (
                         <>
