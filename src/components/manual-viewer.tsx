@@ -16,6 +16,7 @@ interface ManualViewerProps {
     estagiarioMd: string
     orientadorMd: string
     defaultTab?: "estagiario" | "orientador"
+    allowProfessorManual?: boolean
 }
 
 // Slugify helper for linking headings
@@ -172,16 +173,17 @@ function parseMarkdown(md: string) {
     return { html: html.join('\n'), toc }
 }
 
-export function ManualViewer({ estagiarioMd, orientadorMd, defaultTab = "estagiario" }: ManualViewerProps) {
-    const [activeTab, setActiveTab] = useState<"estagiario" | "orientador">(defaultTab)
+export function ManualViewer({ estagiarioMd, orientadorMd, defaultTab = "estagiario", allowProfessorManual = true }: ManualViewerProps) {
+    const initialTab = allowProfessorManual ? defaultTab : "estagiario"
+    const [activeTab, setActiveTab] = useState<"estagiario" | "orientador">(initialTab)
     const [showBackToTop, setShowBackToTop] = useState(false)
     const [search, setSearch] = useState("")
 
     const estagiario = parseMarkdown(estagiarioMd)
     const orientador = parseMarkdown(orientadorMd)
 
-    // Current parsed manual data
-    const currentManual = activeTab === "estagiario" ? estagiario : orientador
+    // Current parsed manual data - secure from access if not allowed
+    const currentManual = (activeTab === "estagiario" || !allowProfessorManual) ? estagiario : orientador
 
     // Filtered TOC based on search
     const filteredTOC = currentManual.toc.filter(item => 
@@ -215,19 +217,23 @@ export function ManualViewer({ estagiarioMd, orientadorMd, defaultTab = "estagia
 
             {/* Tab Controller */}
             <Tabs value={activeTab} onValueChange={(val) => {
-                setActiveTab(val as "estagiario" | "orientador")
-                setSearch("")
+                if (allowProfessorManual) {
+                    setActiveTab(val as "estagiario" | "orientador")
+                    setSearch("")
+                }
             }} className="w-full">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                    <TabsTrigger value="estagiario" className="gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        Estagiário
-                    </TabsTrigger>
-                    <TabsTrigger value="orientador" className="gap-2">
-                        <GraduationCap className="h-4 w-4" />
-                        Orientador
-                    </TabsTrigger>
-                </TabsList>
+                {allowProfessorManual && (
+                    <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+                        <TabsTrigger value="estagiario" className="gap-2">
+                            <BookOpen className="h-4 w-4" />
+                            Estagiário
+                        </TabsTrigger>
+                        <TabsTrigger value="orientador" className="gap-2">
+                            <GraduationCap className="h-4 w-4" />
+                            Orientador
+                        </TabsTrigger>
+                    </TabsList>
+                )}
 
                 <div className="grid gap-6 md:grid-cols-12 mt-6">
                     {/* Index / Sidebar (Left column on large screens) */}
@@ -236,7 +242,6 @@ export function ManualViewer({ estagiarioMd, orientadorMd, defaultTab = "estagia
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
                                     <span>Navegação</span>
-                                    <BadgeIcon count={filteredTOC.length} />
                                 </CardTitle>
                                 <CardDescription className="text-xs">Clique para rolar até a seção</CardDescription>
                             </CardHeader>
@@ -309,14 +314,5 @@ export function ManualViewer({ estagiarioMd, orientadorMd, defaultTab = "estagia
                 </Button>
             )}
         </div>
-    )
-}
-
-function BadgeIcon({ count }: { count: number }) {
-    if (count === 0) return null
-    return (
-        <span className="text-[10px] font-bold bg-muted px-1.5 py-0.5 rounded text-muted-foreground border">
-            {count}
-        </span>
     )
 }

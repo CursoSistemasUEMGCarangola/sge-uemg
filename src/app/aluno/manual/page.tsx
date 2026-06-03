@@ -32,6 +32,7 @@ export default async function AlunoManualPage() {
             estagiarioMd={estagiarioMd}
             orientadorMd={orientadorMd}
             defaultTab="estagiario"
+            allowProfessorManual={false}
         />
     )
 }
