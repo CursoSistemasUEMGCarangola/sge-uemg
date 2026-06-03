@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +29,6 @@ export async function GET(req: NextRequest) {
             SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL || 'missing',
         },
         supabaseCheck: null,
-        smtpConnectionCheck: null,
         emailSendCheck: null
     }
 
@@ -46,40 +45,26 @@ export async function GET(req: NextRequest) {
         diagInfo.supabaseCheck = { success: false, error: e.message || e }
     }
 
-    // 2. Check SMTP connection
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: process.env.SMTP_PORT === '465',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        })
-
-        await transporter.verify()
-        diagInfo.smtpConnectionCheck = { success: true, message: 'SMTP connection verified successfully!' }
-
-        // 3. Send test email if requested
-        if (emailParam) {
-            diagInfo.emailSendCheck = { status: 'starting', target: emailParam }
-            const fromName = process.env.SMTP_FROM_NAME || 'SGE UEMG'
-            const fromEmail = process.env.SMTP_FROM_EMAIL || 'gestagiosis@gmail.com'
-
-            const info = await transporter.sendMail({
-                from: `"${fromName}" <${fromEmail}>`,
+    // 2. Send test email using the actual project's sendEmail function
+    if (emailParam) {
+        try {
+            console.log(`[Diag] Disparando e-mail de teste para ${emailParam} via sendEmail...`);
+            const mailResult = await sendEmail({
                 to: emailParam,
-                subject: `SGE UEMG - Vercel Diagnostics Test`,
-                html: `<p>Olá,</p><p>Este é um e-mail de teste enviado diretamente do ambiente de produção (Vercel) usando Nodemailer.</p><p>Data/Hora: ${new Date().toISOString()}</p><p>Se você recebeu esta mensagem, o envio de e-mails via Nodemailer na Vercel está funcionando 100%!</p>`
-            })
+                subject: 'SGE UEMG - Vercel Diagnostics (Brevo HTTP API)',
+                html: `<p>Olá,</p><p>Este é o e-mail de teste de diagnóstico em produção usando o fluxo real de e-mails do SGE UEMG (Brevo HTTP API).</p><p>Data/Hora: ${new Date().toISOString()}</p>`
+            });
 
-            diagInfo.emailSendCheck = { success: true, messageId: info.messageId, response: info.response }
-        } else {
-            diagInfo.emailSendCheck = { message: 'Pass ?email=address to test sending an email' }
+            if (mailResult.success) {
+                diagInfo.emailSendCheck = { success: true, messageId: mailResult.messageId }
+            } else {
+                diagInfo.emailSendCheck = { success: false, error: mailResult.error }
+            }
+        } catch (e: any) {
+            diagInfo.emailSendCheck = { success: false, error: e.message || e, stack: e.stack }
         }
-    } catch (e: any) {
-        diagInfo.smtpConnectionCheck = { success: false, error: e.message || e, stack: e.stack }
+    } else {
+        diagInfo.emailSendCheck = { message: 'Passe ?email=endereco para testar o envio de e-mail.' }
     }
 
     return NextResponse.json(diagInfo)
