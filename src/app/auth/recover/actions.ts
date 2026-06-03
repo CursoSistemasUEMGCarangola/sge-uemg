@@ -3,11 +3,12 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getServerBaseUrl } from '@/server/url'
 import { sendEmail } from '@/lib/email'
+import { prisma } from '@/lib/prisma'
 
 export async function recoverPassword(formData: FormData) {
-    const email = formData.get('email') as string
+    const emailInput = formData.get('email') as string
 
-    if (!email) {
+    if (!emailInput) {
         return { error: 'O email é obrigatório.' }
     }
 
@@ -16,21 +17,38 @@ export async function recoverPassword(formData: FormData) {
     const callbackUrl = `${baseUrl}auth/reset`
 
     try {
-        // Gera o link de recuperação de senha pelo admin client (service role)
+        // Tenta encontrar o perfil do usuário pelo e-mail institucional ou e-mail alternativo
+        const profile = await prisma.profile.findFirst({
+            where: {
+                OR: [
+                    { email: emailInput.trim().toLowerCase() },
+                    { emailAlternativo: emailInput.trim().toLowerCase() }
+                ]
+            }
+        })
+
+        // Se o perfil não for encontrado, retornamos sucesso genérico por segurança (evita user enumeration)
+        if (!profile) {
+            console.warn(`Tentativa de recuperação para e-mail não cadastrado: ${emailInput}`)
+            return { success: true }
+        }
+
+        // Se o perfil existe mas não tem e-mail alternativo cadastrado (usuário antigo migrado)
+        if (!profile.emailAlternativo) {
+            console.warn(`Tentativa de recuperação para usuário sem e-mail alternativo: ${profile.email}`)
+            return { error: 'Sua conta não possui um e-mail alternativo cadastrado para recuperação de senha. Por favor, entre em contato com o suporte.' }
+        }
+
+        // Gera o link de recuperação de senha usando o e-mail primário/institucional (utilizado no Supabase Auth)
         const { data, error } = await adminDb.auth.admin.generateLink({
             type: 'recovery',
-            email: email,
+            email: profile.email,
             options: {
                 redirectTo: callbackUrl
             }
         })
 
         if (error) {
-            // Se o erro for que o usuário não existe, retornamos sucesso genérico por segurança (evita user enumeration)
-            if (error.status === 404 || error.message.includes('not found') || (error as any).code === 'user_not_found') {
-                console.warn(`Tentativa de recuperação para e-mail inexistente: ${email}`)
-                return { success: true, debugInfo: 'email_not_found' }
-            }
             console.error('Erro ao gerar link de recuperação:', error)
             return { error: 'Erro ao processar a recuperação de senha.' }
         }
@@ -58,7 +76,7 @@ export async function recoverPassword(formData: FormData) {
         `
 
         const mailResult = await sendEmail({
-            to: email,
+            to: profile.emailAlternativo,
             subject: 'Recuperação de Senha - SGE UEMG',
             html: emailHtml
         })

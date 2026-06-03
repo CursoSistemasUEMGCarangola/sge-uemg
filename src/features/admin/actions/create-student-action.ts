@@ -38,7 +38,7 @@ export async function createStudentAction(prevState: any, formData: FormData) {
         }
     }
 
-    const { email, password, fullName, matricula, telefone, periodo } = validatedFields.data
+    const { email, password, fullName, matricula, telefone, periodo, emailAlternativo } = validatedFields.data
 
     try {
         // 1. Check duplications
@@ -66,11 +66,13 @@ export async function createStudentAction(prevState: any, formData: FormData) {
                 update: {
                     nomeCompleto: fullName,
                     role: 'ALUNO',
+                    emailAlternativo: emailAlternativo,
                     telefone: telefone
                 },
                 create: {
                     id: authData.user!.id,
                     email,
+                    emailAlternativo: emailAlternativo,
                     nomeCompleto: fullName,
                     role: 'ALUNO',
                     telefone: telefone

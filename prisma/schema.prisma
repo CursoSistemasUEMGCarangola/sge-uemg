@@ -13,6 +13,7 @@ datasource db {
 model Profile {
   id           String   @id @db.Uuid
   email        String
+  emailAlternativo String @default("") @map("email_alternativo")
   nomeCompleto String   @map("nome_completo")
   telefone     String?
   role         Role     @default(ALUNO)

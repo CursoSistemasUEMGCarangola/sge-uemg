@@ -10,6 +10,8 @@ export const registerStudentSchema = z.object({
     confirmMatricula: z.string().min(1, "Confirmação de matrícula é obrigatória"),
     email: z.string().email("Email inválido"),
     confirmEmail: z.string().email("Confirmação de email inválida"),
+    emailAlternativo: z.string().email("Email alternativo inválido"),
+    confirmEmailAlternativo: z.string().email("Confirmação de email alternativo inválida"),
     periodo: z.string().min(1, "Período é obrigatório"),
     cursoId: z.coerce.number().min(1, "Selecione o curso"),
     telefone: z.string().min(14, "Telefone incompleto"),
@@ -24,6 +26,12 @@ export const registerStudentSchema = z.object({
 }).refine((data) => data.email === data.confirmEmail, {
     message: "Os emails não conferem",
     path: ["confirmEmail"],
+}).refine((data) => data.emailAlternativo === data.confirmEmailAlternativo, {
+    message: "Os emails alternativos não conferem",
+    path: ["confirmEmailAlternativo"],
+}).refine((data) => data.email !== data.emailAlternativo, {
+    message: "O e-mail alternativo deve ser diferente do e-mail institucional",
+    path: ["emailAlternativo"],
 }).refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não conferem",
     path: ["confirmPassword"],

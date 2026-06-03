@@ -33,7 +33,7 @@ export async function createProfessorAction(prevState: any, formData: FormData) 
         }
     }
 
-    const { email, password, fullName, masp, telefone, cursoId } = validatedFields.data
+    const { email, password, fullName, masp, telefone, cursoId, emailAlternativo } = validatedFields.data
 
     try {
         const existingProfile = await prisma.profile.findFirst({ where: { email } })
@@ -58,11 +58,13 @@ export async function createProfessorAction(prevState: any, formData: FormData) 
                 update: {
                     nomeCompleto: fullName,
                     role: 'PROFESSOR',
+                    emailAlternativo: emailAlternativo,
                     telefone: telefone
                 },
                 create: {
                     id: authData.user!.id,
                     email,
+                    emailAlternativo: emailAlternativo,
                     nomeCompleto: fullName,
                     role: 'PROFESSOR',
                     telefone: telefone

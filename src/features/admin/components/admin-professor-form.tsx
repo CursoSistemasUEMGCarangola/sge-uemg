@@ -39,6 +39,7 @@ interface AdminProfessorFormProps {
         fullName: string
         masp: string
         email: string
+        emailAlternativo?: string
         telefone: string
         cursoId?: number
     }
@@ -73,6 +74,7 @@ export function AdminProfessorForm({ initialData, unidades = [], cursos = [] }: 
             fullName: initialData?.fullName || "",
             masp: initialData?.masp || "",
             email: initialData?.email || "",
+            emailAlternativo: initialData?.emailAlternativo || "",
             telefone: initialData?.telefone || "",
             cursoId: initialData?.cursoId || 0,
             password: "",
@@ -84,6 +86,8 @@ export function AdminProfessorForm({ initialData, unidades = [], cursos = [] }: 
     const formatPhone = (value: string) => {
         return value
             .replace(/\D/g, "")
+            .replace(/^(\d{2})(\d)/g, "($1) $2")
+            .replace(/(\d)/g, "$1") // Clear any special symbols to format fresh
             .replace(/^(\d{2})(\d)/g, "($1) $2")
             .replace(/(\d)(\d{4})$/, "$1-$2")
             .slice(0, 15)
@@ -252,19 +256,35 @@ export function AdminProfessorForm({ initialData, unidades = [], cursos = [] }: 
                             />
                         </div>
 
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input type="email" placeholder="email@uemg.br" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Institucional</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="email@uemg.br" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="emailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Alternativo (Pessoal)</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="email@gmail.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <div className="flex gap-4 items-end">
                             <FormField

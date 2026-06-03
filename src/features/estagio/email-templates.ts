@@ -39,7 +39,7 @@ export function buildInternAlertHtml(data: InternAlertData): string {
         ${obsSection}
 
         <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
-            Acesse o <a href="https://sge-uemg.vercel.app/" style="color: #2563eb;">SGE UEMG</a> para ver mais detalhes e submeter seus documentos.
+            Acesse o <a href="https://sge-sistemas.vercel.app" style="color: #2563eb;">SGE UEMG</a> para ver mais detalhes e submeter seus documentos.
         </p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
         <p style="font-size: 12px; color: #9ca3af;">

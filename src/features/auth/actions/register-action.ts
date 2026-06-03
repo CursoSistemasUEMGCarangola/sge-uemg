@@ -43,7 +43,7 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
     }
   }
 
-  const { email, password, fullName, matricula, periodo, termsAccepted, cursoId } = validatedFields.data
+  const { email, password, fullName, matricula, periodo, termsAccepted, cursoId, emailAlternativo } = validatedFields.data
 
   // Use Admin Client to bypass email verification requirement
   const adminClient = createAdminClient()
@@ -144,6 +144,7 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
         update: {
           nomeCompleto: fullName,
           email: email,
+          emailAlternativo: emailAlternativo,
           telefone: validatedFields.data.telefone,
           role: 'ALUNO',
         },
@@ -151,6 +152,7 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
           id: userId,
           nomeCompleto: fullName,
           email: email,
+          emailAlternativo: emailAlternativo,
           telefone: validatedFields.data.telefone,
           role: 'ALUNO',
         }

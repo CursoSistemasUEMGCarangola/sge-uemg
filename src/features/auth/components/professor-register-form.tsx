@@ -62,6 +62,8 @@ export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFor
             confirmMasp: "",
             email: "",
             confirmEmail: "",
+            emailAlternativo: "",
+            confirmEmailAlternativo: "",
             telefone: "",
             cursoId: 0,
             password: "",
@@ -242,6 +244,36 @@ export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFor
                                         <FormLabel>Confirme o Email</FormLabel>
                                         <FormControl>
                                             <Input type="email" placeholder="Repita o email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Email Alternativo Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="emailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Alternativo (Pessoal)</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="Ex: seu-email@gmail.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="confirmEmailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirme o Email Alternativo</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="Repita o email alternativo" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

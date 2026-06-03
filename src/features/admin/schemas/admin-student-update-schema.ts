@@ -7,7 +7,11 @@ export const adminStudentUpdateSchema = z.object({
         .regex(/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ ]+$/, "O nome deve estar em letras maiúsculas"),
     matricula: z.string().min(1, "Matrícula é obrigatória"),
     email: z.string().email("Email inválido"),
+    emailAlternativo: z.string().email("Email alternativo inválido"),
     telefone: z.string().min(1, "Telefone é obrigatório"),
     periodo: z.string().min(1, "Período é obrigatório"),
     password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").optional().or(z.literal("")),
+}).refine((data) => data.email !== data.emailAlternativo, {
+    message: "O e-mail alternativo deve ser diferente do e-mail institucional",
+    path: ["emailAlternativo"],
 })

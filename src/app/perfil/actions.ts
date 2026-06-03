@@ -14,9 +14,18 @@ export async function updateProfile(prevState: any, formData: FormData) {
 
     const nomeCompleto = formData.get('nome') as string
     const telefone = formData.get('telefone') as string
+    const emailAlternativo = formData.get('emailAlternativo') as string
 
     if (!nomeCompleto || nomeCompleto.length < 3) {
         return { error: 'Nome completo inválido.' }
+    }
+
+    if (!emailAlternativo || !emailAlternativo.includes('@')) {
+        return { error: 'E-mail alternativo inválido.' }
+    }
+
+    if (user.email && emailAlternativo.toLowerCase().trim() === user.email.toLowerCase().trim()) {
+        return { error: 'O e-mail alternativo deve ser diferente do e-mail institucional.' }
     }
 
     try {
@@ -24,6 +33,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
             where: { id: user.id },
             data: {
                 nomeCompleto,
+                emailAlternativo: emailAlternativo.trim(),
                 // @ts-ignore
                 telefone
             }

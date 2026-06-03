@@ -41,6 +41,7 @@ export function AdminStudentForm({ initialData }: any) {
             fullName: initialData?.fullName || "",
             matricula: initialData?.matricula || "",
             email: initialData?.email || "",
+            emailAlternativo: initialData?.emailAlternativo || "",
             telefone: initialData?.telefone || "",
             periodo: initialData?.periodo || "",
             password: "",
@@ -197,7 +198,7 @@ export function AdminStudentForm({ initialData }: any) {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>Email Institucional</FormLabel>
                                         <FormControl>
                                             <Input type="email" placeholder="email@uemg.br" {...field} />
                                         </FormControl>
@@ -206,6 +207,22 @@ export function AdminStudentForm({ initialData }: any) {
                                 )}
                             />
 
+                            <FormField
+                                control={form.control}
+                                name="emailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Alternativo (Pessoal)</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="email@gmail.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
                                 name="telefone"

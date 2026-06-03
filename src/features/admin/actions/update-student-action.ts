@@ -25,7 +25,7 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
         }
     }
 
-    const { id, email, password, fullName, matricula, telefone, periodo } = validatedFields.data
+    const { id, email, password, fullName, matricula, telefone, periodo, emailAlternativo } = validatedFields.data
 
     try {
         const adminClient = createAdminClient()
@@ -37,6 +37,7 @@ export async function updateStudentAction(prevState: any, formData: FormData) {
                 data: {
                     nomeCompleto: fullName,
                     email,
+                    emailAlternativo: emailAlternativo,
                     telefone
                 }
             })

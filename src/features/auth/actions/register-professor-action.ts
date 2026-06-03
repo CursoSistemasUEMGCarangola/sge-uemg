@@ -46,7 +46,7 @@ export async function registerProfessorAction(prevState: any, formData: FormData
         }
     }
 
-    const { email, password, fullName, masp, telefone, cursoId } = validatedFields.data
+    const { email, password, fullName, masp, telefone, cursoId, emailAlternativo } = validatedFields.data
 
     try {
         // 1. Check if user already exists in Public Schema (Prisma)
@@ -105,6 +105,7 @@ export async function registerProfessorAction(prevState: any, formData: FormData
                 update: {
                     nomeCompleto: fullName,
                     role: 'PROFESSOR',
+                    emailAlternativo: emailAlternativo,
                     telefone: telefone
                 },
                 create: {
@@ -112,6 +113,7 @@ export async function registerProfessorAction(prevState: any, formData: FormData
                     email,
                     nomeCompleto: fullName,
                     role: 'PROFESSOR',
+                    emailAlternativo: emailAlternativo,
                     telefone: telefone
                 }
             })

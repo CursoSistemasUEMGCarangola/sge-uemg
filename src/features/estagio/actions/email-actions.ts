@@ -163,7 +163,7 @@ async function processEmailForContract(contrato: any): Promise<EmailActionResult
         const html = buildInternAlertHtml(alertData)
         
         await sendEmail({
-            to: contrato.aluno.profile.email,
+            to: contrato.aluno.profile.emailAlternativo || contrato.aluno.profile.email,
             subject: `[SGE UEMG] Acompanhamento de Estágio - ${isDelayed ? 'Atenção: Atraso' : 'Próximos Passos'}`,
             html
         })

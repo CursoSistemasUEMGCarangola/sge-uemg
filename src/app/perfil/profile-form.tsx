@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CardContent, CardFooter } from "@/components/ui/card"
-import { User, Phone, Mail } from "lucide-react"
+import { User, Phone, Mail, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const initialState = {
     message: null as string | null,
@@ -30,6 +31,17 @@ export function ProfileForm({ profile }) {
     return (
         <form action={formAction}>
             <CardContent className="space-y-4">
+                {/* @ts-ignore */}
+                {!profile.emailAlternativo && (
+                    <Alert variant="destructive" className="mb-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Ação Requerida</AlertTitle>
+                        <AlertDescription>
+                            Você precisa cadastrar um e-mail alternativo pessoal (ex: Gmail) para poder recuperar sua senha e receber notificações do sistema.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 <div className="space-y-2">
                     <Label htmlFor="email">Email (Não alterável)</Label>
                     <div className="relative">
@@ -105,6 +117,27 @@ export function ProfileForm({ profile }) {
                         />
                     </div>
                 </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="emailAlternativo">Email Alternativo (Pessoal)</Label>
+                    <div className="relative">
+                        <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="emailAlternativo"
+                            name="emailAlternativo"
+                            type="email"
+                            placeholder="Ex: seu-email@gmail.com"
+                            // @ts-ignore
+                            defaultValue={profile.emailAlternativo || ''}
+                            className="pl-9"
+                            required
+                        />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Obrigatório. Utilizado para recuperação de senha e recebimento de notificações do SGE.
+                    </p>
+                </div>
+
                 {/* @ts-ignore */}
                 {state?.error && <p className="text-red-500 text-sm">{state.error}</p>}
                 {/* @ts-ignore */}

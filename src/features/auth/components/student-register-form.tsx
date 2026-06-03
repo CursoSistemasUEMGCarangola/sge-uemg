@@ -61,6 +61,8 @@ export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormPro
             confirmMatricula: "",
             email: "",
             confirmEmail: "",
+            emailAlternativo: "",
+            confirmEmailAlternativo: "",
             telefone: "",
             periodo: "",
             cursoId: 0, // Initial value
@@ -208,6 +210,37 @@ export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormPro
                                         <FormLabel>Confirmar Email</FormLabel>
                                         <FormControl>
                                             <Input type="email" placeholder="Repita o email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Email Alternativo */}
+                            <FormField
+                                control={form.control}
+                                name="emailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Alternativo (Pessoal)</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="Ex: seu-email@gmail.com" {...field} />
+                                        </FormControl>
+                                        <FormDescription>Essencial para recuperação de senha e alertas.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="confirmEmailAlternativo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirmar Email Alternativo</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="Repita o e-mail alternativo" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
