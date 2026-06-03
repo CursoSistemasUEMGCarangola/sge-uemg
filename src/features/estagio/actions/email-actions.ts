@@ -23,7 +23,7 @@ async function ensureProfessorHasAccess(ofertaId?: number): Promise<number[]> {
         where: { profileId: user.id },
         include: { ofertas: true }
     })
-    
+
     if (!prof) throw new Error("Perfil de professor não encontrado")
 
     // Filter by specific oferta or use all
@@ -73,9 +73,9 @@ export async function sendBulkAlertsAction(ofertaId?: number): Promise<EmailActi
             else errorsCount++;
         }
 
-        return { 
-            success: true, 
-            message: `Alertas enviados com sucesso! Foram enviados ${sentCount} e-mails. (${errorsCount} falhas)` 
+        return {
+            success: true,
+            message: `Alertas enviados com sucesso! Foram enviados ${sentCount} e-mails. (${errorsCount} falhas)`
         }
 
     } catch (error: any) {
@@ -130,7 +130,7 @@ export async function sendSingleAlertAction(contratoId: number): Promise<EmailAc
 async function processEmailForContract(contrato: any): Promise<EmailActionResult> {
     try {
         const acompanhamentos = contrato.acompanhamentos;
-        const firstPending = acompanhamentos.find((a: any) => 
+        const firstPending = acompanhamentos.find((a: any) =>
             a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
         )
 
@@ -161,10 +161,10 @@ async function processEmailForContract(contrato: any): Promise<EmailActionResult
         }
 
         const html = buildInternAlertHtml(alertData)
-        
+
         await sendEmail({
             to: contrato.aluno.profile.emailAlternativo || contrato.aluno.profile.email,
-            subject: `[SGE UEMG] Acompanhamento de Estágio - ${isDelayed ? 'Atenção: Atraso' : 'Próximos Passos'}`,
+            subject: `[SGE - Sistemas de Informação] Acompanhamento de Estágio - ${isDelayed ? 'Atenção: Atraso' : 'Próximos Passos'}`,
             html
         })
 

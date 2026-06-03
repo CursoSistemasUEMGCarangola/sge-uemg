@@ -58,7 +58,7 @@ export async function recoverPassword(formData: FormData) {
         // Dispara o e-mail usando o Transporter do Nodemailer com o SMTP do Gmail configurado no .env
         const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
-                <h2 style="color: #1e3a8a; font-weight: bold; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #eff6ff; padding-bottom: 10px;">Recuperação de Senha - SGE UEMG</h2>
+                <h2 style="color: #1e3a8a; font-weight: bold; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #eff6ff; padding-bottom: 10px;">Recuperação de Senha - SGE Sistemas de Informação</h2>
                 <p style="font-size: 14px; color: #374151; line-height: 1.5;">Olá,</p>
                 <p style="font-size: 14px; color: #374151; line-height: 1.5;">Você solicitou a redefinição de senha para a sua conta no <strong>Sistema de Gestão de Estágios (SGE) do Curso de Sistemas de Informação - UEMG Unidade Carangola</strong>.</p>
                 <p style="font-size: 14px; color: #374151; line-height: 1.5;">Clique no botão abaixo para prosseguir com a redefinição da sua senha. Este link expira em breve.</p>
@@ -77,7 +77,7 @@ export async function recoverPassword(formData: FormData) {
 
         const mailResult = await sendEmail({
             to: profile.emailAlternativo,
-            subject: 'Recuperação de Senha - SGE UEMG',
+            subject: 'Recuperação de Senha - SGE Sistemas de Informação',
             html: emailHtml
         })
 
