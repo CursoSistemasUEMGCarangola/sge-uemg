@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // 1. Redirect unauthenticated users to Login
-    if (!user && request.nextUrl.pathname !== '/' && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
+    if (!user && request.nextUrl.pathname !== '/' && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api/diag')) {
         // Allow public assets
         if (request.nextUrl.pathname.startsWith('/_next') || request.nextUrl.pathname.startsWith('/static') || request.nextUrl.pathname.includes('.')) {
             return response
