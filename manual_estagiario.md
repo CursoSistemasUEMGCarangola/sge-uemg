@@ -14,8 +14,14 @@ Bem-vindo ao **SGE - Sistema de Gestão de Estágios do Curso de Sistemas de Inf
 
 Os alunos podem realizar o cadastro diretamente no sistema, desde que a **Janela de Cadastro** esteja aberta pela administração.
 
-* Para se cadastrar, acesse a tela de registro, preencha seus dados pessoais (nome completo, e-mail, matrícula e período atual) e defina uma senha segura.
+* Para se cadastrar, acesse a tela de registro, preencha seus dados pessoais (nome completo, e-mail institucional, matrícula e período atual) e defina uma senha segura.
+* **E-mail Alternativo Obrigatório:** No formulário de cadastro, você deverá obrigatoriamente informar um **E-mail Alternativo** pessoal (como Gmail, Outlook, Yahoo, etc.) e confirmá-lo.
 * **Senha segura:** Garanta que sua senha tenha no mínimo **8 caracteres** para atender aos critérios de segurança.
+
+> [!IMPORTANT]
+> **Por que o E-mail Alternativo é obrigatório e crucial?**
+> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos. 
+> Para garantir que você consiga receber os links de **recuperação de senha** e as **notificações/alertas de acompanhamento de estágio** enviadas por seus professores orientadores, o sistema exige um e-mail alternativo pessoal. Todas as comunicações automáticas da plataforma serão enviadas para esse endereço.
 
 > [!IMPORTANT]
 > Se o cadastro estiver bloqueado com a mensagem de que a janela está fechada, aguarde a liberação da secretaria ou entre em contato com o coordenador do seu curso.
@@ -25,6 +31,7 @@ Os alunos podem realizar o cadastro diretamente no sistema, desde que a **Janela
 
 Após o login, você poderá acessar a página **"Minha Conta"** (no menu superior ou lateral) para:
 
+* Atualizar seu **e-mail alternativo pessoal** (obrigatório para recebimento de notificações).
 * Atualizar seu telefone de contato.
 * Alterar sua senha de acesso.
 * Verificar a consistência dos seus dados cadastrais.

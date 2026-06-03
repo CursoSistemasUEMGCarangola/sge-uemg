@@ -13,11 +13,17 @@ Bem-vindo ao **SGE - Sistema de Gestão de Estágios do Curso de Sistemas de Inf
 ### 1.1. Cadastro e Login
 
 * **Criação de Contas:** Para garantir a segurança institucional do sistema, o cadastro de novos orientadores é de uso restrito. **Apenas o Administrador do sistema pode cadastrar contas de professores.** Se você ainda não possui acesso, solicite a criação ao administrador da unidade.
-* **Fazer Login:** Acesse a página de login, insira seu e-mail e a senha provisória enviada. Defina uma nova senha imediatamente após o primeiro acesso para garantir a segurança.
+* **E-mail Alternativo Obrigatório:** O administrador exigirá um **E-mail Alternativo** pessoal (como Gmail, Outlook, etc.) durante a criação do seu cadastro. Esse e-mail alternativo é fundamental e obrigatório para viabilizar as comunicações da plataforma (como a recuperação de senha).
+* **Fazer Login:** Acesse a página de login, insira seu e-mail institucional e a senha provisória enviada. Defina uma nova senha imediatamente após o primeiro acesso para garantir a segurança.
+
+> [!IMPORTANT]
+> **Por que o E-mail Alternativo é obrigatório e crucial?**
+> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos. 
+> Para garantir que você consiga receber os links de **recuperação de senha** e as notificações da plataforma, o sistema exige um e-mail alternativo pessoal. Todas as comunicações automáticas da plataforma voltadas para você serão enviadas para esse endereço.
 
 ### 1.2. Gerenciamento da Conta
 
-Na aba **"Minha Conta"**, você pode atualizar seu telefone de contato, alterar sua senha de acesso e revisar suas informações básicas de cadastro.
+Na aba **"Minha Conta"**, você pode atualizar seu **e-mail alternativo pessoal** (obrigatório para recebimento de notificações), seu telefone de contato, alterar sua senha de acesso e revisar suas informações básicas de cadastro.
 
 ---
 
@@ -121,7 +127,7 @@ Para evitar atrasos e garantir o fluxo contínuo das etapas de auditoria física
 ### 5.1. Alertas Individuais
 
 * Se o aluno estiver atrasado ou precisar de uma notificação rápida sobre pendências físicas, entre na página de detalhes do estágio dele e clique no botão **"Enviar Alerta de Atraso"** (ícone de sino com envelope).
-* O sistema enviará um e-mail para o endereço acadêmico cadastrado do aluno, cobrando a regularização da etapa atual pendente.
+* O sistema enviará um e-mail para o **e-mail alternativo pessoal** cadastrado pelo aluno (com fallback para o institucional caso não esteja preenchido), cobrando a regularização da etapa atual pendente.
 
 ### 5.2. Alertas em Massa (Cobrança por Turma)
 
