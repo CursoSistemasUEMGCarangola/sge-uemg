@@ -29,7 +29,7 @@ export async function recoverPassword(formData: FormData) {
             // Se o erro for que o usuário não existe, retornamos sucesso genérico por segurança (evita user enumeration)
             if (error.status === 404 || error.message.includes('not found') || (error as any).code === 'user_not_found') {
                 console.warn(`Tentativa de recuperação para e-mail inexistente: ${email}`)
-                return { success: true }
+                return { success: true, debugInfo: 'email_not_found' }
             }
             console.error('Erro ao gerar link de recuperação:', error)
             return { error: 'Erro ao processar a recuperação de senha.' }
