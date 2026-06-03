@@ -382,3 +382,16 @@
 **Contexto:** Necessidade do orientador disparar acompanhamentos aos estagiários de forma ativa.
 **Solução/Lição Aprendida:** O fluxo de mensageria foi desacoplado. As variáveis do SMTP são validadas de forma estrita em um módulo de serviço (`src/lib/email.ts`) com templates puramente funcionais (`email-templates.ts`). As Server Actions invocam este serviço seja em batch lidando com iterações sequenciais, ou individualmente, sempre garantindo o retorno de um tipo coeso `EmailActionResult` para o frontend atualizar o estado das UI via Toasts.
 **Prevenção:** Separar lógica de injeção HTML de regras de negócio em Server Actions garante que os alertas por e-mail não virem gargalos no fluxo de aprovação de estágios.
+
+### [2026-06-03] - [INFRA/EMAIL] Bloqueios de SMTP em Serverless (Vercel) e Transição para API HTTP da Brevo
+
+**Contexto:** O envio de e-mails usando Nodemailer via SMTP do Gmail (`smtp.gmail.com`) funcionava localmente, mas em produção (Vercel) as mensagens eram bloqueadas silenciosamente pelo Google/Vercel devido à faixa de IPs de servidores compartilhados. Os e-mails do mailer padrão do Supabase também eram bloqueados por baixa reputação de IP.
+**Solução:** Transição para envio por **API HTTP da Brevo** (`POST https://api.brevo.com/v3/smtp/email`) utilizando o `fetch` nativo. Lógicas híbridas em `src/lib/email.ts` detectam se `SMTP_PASS` é uma chave Brevo (`xkeysib-`) e desviam o envio para a API HTTP, mantendo o Nodemailer apenas como fallback. Requisições HTTP em serverless são mais rápidas, leves e evitam as restrições de porta e IP do SMTP clássico.
+**Prevenção:** Em ambientes serverless (Vercel/Next.js), dê preferência para APIs transacionais HTTP (Brevo, Resend) em vez de conexões SMTP persistentes (Nodemailer TCP) para garantir entregabilidade.
+
+### [2026-06-03] - [LOGIC/EMAIL] Contornando Bloqueio Institucional via E-mail Alternativo Obrigatório
+
+**Contexto:** Os servidores de e-mail institucionais da UEMG (`@uemg.br`) rejeitam sumariamente mensagens automáticas de servidores externos, impedindo recuperação de senha e alertas. Como não é possível alterar as regras de firewall da universidade, os usuários ficavam sem comunicação.
+**Solução:** Introdução de um campo **E-mail Alternativo** (`emailAlternativo`) obrigatório no modelo `Profile`. O e-mail institucional é mantido estritamente como identidade de autenticação (Supabase Auth), mas e-mails de recuperação de senha e alertas de acompanhamento são direcionados ao e-mail alternativo do usuário (pessoal, ex: Gmail). O formulário de recuperação aceita ambos os e-mails para localização do perfil, mas o link vai para o alternativo.
+**Prevenção:** Em sistemas integrados a redes corporativas ou acadêmicas com firewalls de e-mail rígidos, projete o sistema desde o início separando a "Identidade de Login" (institucional) do "Canal de Comunicação" (alternativo pessoal).
+
