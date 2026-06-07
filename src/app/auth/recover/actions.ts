@@ -86,7 +86,17 @@ export async function recoverPassword(formData: FormData) {
             return { error: 'Falha ao enviar e-mail de recuperação. Entre em contato com o suporte.' }
         }
 
-        return { success: true }
+        // Mask the alternative email for security (e.g. a***b@gmail.com)
+        const [localPart, domain] = profile.emailAlternativo.split('@')
+        let maskedEmail = profile.emailAlternativo
+        if (localPart && domain) {
+            const maskedLocal = localPart.length > 2 
+                ? `${localPart[0]}***${localPart[localPart.length - 1]}`
+                : `${localPart[0]}***`
+            maskedEmail = `${maskedLocal}@${domain}`
+        }
+
+        return { success: true, maskedEmail }
     } catch (e: any) {
         console.error('Erro inesperado na Server Action de recuperação:', e)
         return { error: 'Ocorreu um erro inesperado no servidor. Tente novamente.' }

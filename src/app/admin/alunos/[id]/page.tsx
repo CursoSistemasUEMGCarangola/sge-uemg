@@ -25,6 +25,7 @@ export default async function EditAlunoPage({ params }: EditAlunoPageProps) {
         fullName: aluno.profile.nomeCompleto,
         matricula: aluno.matricula,
         email: aluno.profile.email,
+        emailAlternativo: aluno.profile.emailAlternativo,
         telefone: aluno.profile.telefone || "",
         periodo: aluno.periodoAtual.toString()
     }

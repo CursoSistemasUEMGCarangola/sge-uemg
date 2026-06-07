@@ -14,6 +14,7 @@ export default function RecoverPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [maskedEmail, setMaskedEmail] = useState<string>('')
 
     async function handleSubmit(formData: FormData) {
         setIsLoading(true)
@@ -27,6 +28,9 @@ export default function RecoverPage() {
                 setError(result.error)
             } else {
                 setSuccess(true)
+                if (result.maskedEmail) {
+                    setMaskedEmail(result.maskedEmail)
+                }
             }
         } catch (e) {
             setError('Ocorreu um erro inesperado. Tente novamente.')
@@ -43,7 +47,7 @@ export default function RecoverPage() {
                         Recuperar Senha
                     </CardTitle>
                     <CardDescription>
-                        Digite seu email para receber um link de redefinição de senha.
+                        Digite seu e-mail institucional para solicitar a recuperação. O link para gerar a nova senha será enviado EXCLUSIVAMENTE para o seu e-mail alternativo cadastrado.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -55,7 +59,7 @@ export default function RecoverPage() {
                                 </div>
                                 <h3 className="text-lg font-semibold text-green-900 mb-2">Email Enviado!</h3>
                                 <p className="text-green-700 text-sm">
-                                    Verifique sua caixa de entrada (e spam) para encontrar o link de redefinição.
+                                    Verifique a caixa de entrada (e spam) do e-mail alternativo <strong>{maskedEmail || 'cadastrado'}</strong> para encontrar o link de redefinição.
                                 </p>
                             </div>
                             <Button asChild className="w-full" variant="outline">
@@ -65,12 +69,12 @@ export default function RecoverPage() {
                     ) : (
                         <form action={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email Cadastrado</Label>
+                                <Label htmlFor="email">Email Institucional</Label>
                                 <Input
                                     id="email"
                                     name="email"
                                     type="email"
-                                    placeholder="ex: aluno@uemg.br"
+                                    placeholder="ex: aluno@uemg.br ou @discente.uemg.br"
                                     required
                                 />
                             </div>

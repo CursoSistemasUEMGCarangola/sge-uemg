@@ -196,8 +196,9 @@ export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormPro
                                     <FormItem>
                                         <FormLabel>Email Institucional</FormLabel>
                                         <FormControl>
-                                            <Input type="email" placeholder="@uemg.br" {...field} />
+                                            <Input type="email" placeholder="@uemg.br ou @discente.uemg.br" {...field} />
                                         </FormControl>
+                                        <FormDescription>Este será o seu login único no sistema. O cadastro só é aceito com e-mail institucional da UEMG.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -209,7 +210,7 @@ export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormPro
                                     <FormItem>
                                         <FormLabel>Confirmar Email</FormLabel>
                                         <FormControl>
-                                            <Input type="email" placeholder="Repita o email" {...field} />
+                                            <Input type="email" placeholder="Repita o email institucional" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -228,7 +229,7 @@ export function StudentRegisterForm({ unidades, cursos }: StudentRegisterFormPro
                                         <FormControl>
                                             <Input type="email" placeholder="Ex: seu-email@gmail.com" {...field} />
                                         </FormControl>
-                                        <FormDescription>Essencial para recuperação de senha e alertas.</FormDescription>
+                                        <FormDescription>Usado EXCLUSIVAMENTE para enviar o link de recuperação de senha e alertas.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}

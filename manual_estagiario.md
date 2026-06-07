@@ -14,9 +14,10 @@ Bem-vindo ao **SGE - Sistema de Gestão de Estágios do Curso de Sistemas de Inf
 
 Os alunos podem realizar o cadastro diretamente no sistema, desde que a **Janela de Cadastro** esteja aberta pela administração.
 
-* Para se cadastrar, acesse a tela de registro, preencha seus dados pessoais (nome completo, e-mail institucional, matrícula e período atual) e defina uma senha segura.
-* **E-mail Alternativo Obrigatório:** No formulário de cadastro, você deverá obrigatoriamente informar um **E-mail Alternativo** pessoal (como Gmail, Outlook, Yahoo, etc.) e confirmá-lo.
-* **Senha segura:** Garanta que sua senha tenha no mínimo **8 caracteres** para atender aos critérios de segurança.
+* **Acesso Inicial:** Acesse a plataforma e clique em "Criar Conta". Preencha os dados requisitados, selecionando sua unidade, curso e período atual.
+* **E-mail Institucional (Login):** É obrigatório o uso do e-mail institucional da UEMG (ex: `@uemg.br` ou `@discente.uemg.br`) para realizar o seu cadastro. **Ele será a sua identidade e o seu login único de acesso ao sistema.** Nenhum outro tipo de e-mail é aceito para a criação da conta.
+* **E-mail Alternativo (Comunicação):** No formulário de cadastro, você deverá obrigatoriamente informar um **E-mail Alternativo** pessoal (como Gmail, Outlook, Yahoo, etc.) e confirmá-lo. Ele será usado exclusivamente para a comunicação do sistema com você.
+* **Senha segura:** Garanta que sua senha tenha no mínimo **6 caracteres** para atender aos critérios de segurança.
 
 > [!IMPORTANT]
 > **Por que o E-mail Alternativo é obrigatório e crucial?**
@@ -27,14 +28,23 @@ Os alunos podem realizar o cadastro diretamente no sistema, desde que a **Janela
 > Se o cadastro estiver bloqueado com a mensagem de que a janela está fechada, aguarde a liberação da secretaria ou entre em contato com o coordenador do seu curso.
 > **Importante:** Professores e orientadores não podem se cadastrar sozinhos; suas contas são criadas exclusivamente pelo administrador do sistema.
 
-### 1.2. Gerenciamento do Perfil
+### 1.2. Recuperação de Senha
+
+Caso você esqueça sua senha de acesso, o sistema SGE possui um fluxo de recuperação autônomo. É fundamental entender o papel dos seus e-mails neste processo:
+
+1. Na tela de Login, clique no link **"Esqueci minha senha"**.
+2. Na página de recuperação, você deve **obrigatoriamente digitar o seu E-mail Institucional** (a sua chave de identificação no sistema).
+3. Ao clicar em enviar, o sistema processará sua solicitação e enviará o formulário para criação da nova senha **EXCLUSIVAMENTE para a caixa de entrada do seu E-mail Alternativo** cadastrado. Uma mensagem de sucesso exibirá o e-mail parcialmente oculto (ex: `a***o@gmail.com`) para lembrá-lo qual endereço você forneceu.
+4. Acesse seu e-mail pessoal (verifique também as caixas de spam ou promoções), clique no link seguro e cadastre sua nova senha.
+
+### 1.3. Gerenciamento do Perfil
 
 Após o login, você poderá acessar a página **"Minha Conta"** (no menu superior ou lateral) para:
 
 * Atualizar seu **e-mail alternativo pessoal** (obrigatório para recebimento de notificações).
 * Atualizar seu telefone de contato.
 * Alterar sua senha de acesso.
-* Verificar a consistência dos seus dados cadastrais.
+* Verificar a consistência dos seus dados cadastrais (Matrícula e E-mail Institucional não são alteráveis).
 
 ---
 

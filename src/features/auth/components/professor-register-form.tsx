@@ -232,6 +232,7 @@ export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFor
                                         <FormControl>
                                             <Input type="email" placeholder="seu.email@uemg.br" {...field} />
                                         </FormControl>
+                                        <FormDescription>Este será o seu login único no sistema. O cadastro exige e-mail institucional.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -241,7 +242,7 @@ export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFor
                                 name="confirmEmail"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Confirme o Email</FormLabel>
+                                        <FormLabel>Confirme o Email Institucional</FormLabel>
                                         <FormControl>
                                             <Input type="email" placeholder="Repita o email" {...field} />
                                         </FormControl>
@@ -262,6 +263,7 @@ export function ProfessorRegisterForm({ unidades, cursos }: ProfessorRegisterFor
                                         <FormControl>
                                             <Input type="email" placeholder="Ex: seu-email@gmail.com" {...field} />
                                         </FormControl>
+                                        <FormDescription>Usado EXCLUSIVAMENTE para enviar o link de recuperação de senha.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}

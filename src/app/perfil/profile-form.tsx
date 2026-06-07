@@ -43,7 +43,7 @@ export function ProfileForm({ profile }) {
                 )}
 
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email (Não alterável)</Label>
+                    <Label htmlFor="email">Email Institucional (Não alterável)</Label>
                     <div className="relative">
                         <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -54,6 +54,9 @@ export function ProfileForm({ profile }) {
                             disabled
                         />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                        Este é o seu login único no sistema SGE.
+                    </p>
                 </div>
 
                 {/* @ts-ignore */}

@@ -395,3 +395,9 @@
 **Solução:** Introdução de um campo **E-mail Alternativo** (`emailAlternativo`) obrigatório no modelo `Profile`. O e-mail institucional é mantido estritamente como identidade de autenticação (Supabase Auth), mas e-mails de recuperação de senha e alertas de acompanhamento são direcionados ao e-mail alternativo do usuário (pessoal, ex: Gmail). O formulário de recuperação aceita ambos os e-mails para localização do perfil, mas o link vai para o alternativo.
 **Prevenção:** Em sistemas integrados a redes corporativas ou acadêmicas com firewalls de e-mail rígidos, projete o sistema desde o início separando a "Identidade de Login" (institucional) do "Canal de Comunicação" (alternativo pessoal).
 
+### [2026-06-07] - [UX/REACT] Campos Ocultos em initialData e Falsa Impressão de Perda de Dados
+
+**Contexto:** O painel administrativo possui formulários de edição de usuários. O campo `emailAlternativo` foi adicionado ao formulário, mas esquecido no objeto `initialData` populado pelo backend. Como o campo não vinha do servidor para a UI, o formulário o inicializava como vazio (`""`) toda vez que a tela era aberta, passando a impressão de que os dados "não ficavam gravados no banco" após a edição, quando o erro era de exibição/hidratação de dados.
+**Solução:** Inclusão explícita do campo `emailAlternativo` dentro do objeto `initialData` retornado pelo servidor nas páginas de edição (`/admin/alunos/[id]/page.tsx` e congêneres).
+**Prevenção:** Sempre que um novo campo for adicionado à base de dados e ao formulário de edição (Zod Schema), certifique-se de adicioná-lo também no mapeamento para o estado inicial (`initialData`) da página de carregamento.
+

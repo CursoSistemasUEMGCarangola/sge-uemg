@@ -33,6 +33,7 @@ export default async function EditProfessorPage({ params }: EditProfessorPagePro
         fullName: professor.profile.nomeCompleto,
         masp: professor.masp,
         email: professor.profile.email,
+        emailAlternativo: professor.profile.emailAlternativo,
         telefone: professor.profile.telefone || "",
         cursoId: professor.cursoId || 0
     }
