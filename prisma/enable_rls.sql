@@ -19,3 +19,4 @@ ALTER TABLE public.feriado_recesso ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documento_modelo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.informacoes_gerais_estagio ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.relatorio_encerramento ENABLE ROW LEVEL SECURITY;
