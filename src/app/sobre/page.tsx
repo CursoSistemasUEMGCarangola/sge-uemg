@@ -14,16 +14,13 @@ export default function SobrePage() {
                 
                 <div className="prose prose-slate dark:prose-invert max-w-none">
                     <p className="text-lg leading-relaxed text-muted-foreground">
-                        O Sistema de Gestão de Estágios é fruto de um Projeto de Extensão proposto pelo professor Nilton Freitas Junior e registrado no sistema SIGA sob o número 26407. Tem como objetivo o desenvolvimento e a implantação de uma plataforma web dedicada exclusivamente à gestão do fluxo de estágios dos discentes da UEMG Unidade Carangola. 
+                        O projeto de extensão "Calendário de Provas Digital: Integração e Acessibilidade Acadêmica", registrado no sistema SIGA sob o número 26408 e proposto pelo professor Nilton Freitas Junior, consiste no desenvolvimento e implementação de uma aplicação móvel voltada para os discentes do curso de Sistemas de Informação da UEMG Unidade Carangola. O objetivo central é facilitar o acesso ao cronograma de avaliações, centralizando informações que, embora definidas institucionalmente, muitas vezes carecem de um canal de consulta ágil e portátil.
                     </p>
                     <p className="text-lg leading-relaxed text-muted-foreground mt-4">
-                        Atualmente, o controle das etapas do estágio — que compreende desde a submissão de Termos de Compromisso até a validação de Relatórios Finais — é realizado de maneira fragmentada, com o suporte de planilhas Excel, repositórios no Microsoft Teams e formulários no Microsoft Forms.
+                        Desenvolvido sob o paradigma No-Code através da plataforma Glide, o aplicativo prioriza a usabilidade e a eficiência, permitindo que os estudantes consultem datas e horários de provas de forma instantânea. Além do calendário, a ferramenta atua como um repositório de informações essenciais, disponibilizando os regulamentos que regem as avaliações da UEMG e a relação dos docentes que atuam em cada período letivo.
                     </p>
                     <p className="text-lg leading-relaxed text-muted-foreground mt-4">
-                        A proposta central é a migração deste modelo híbrido para um sistema online unificado, projetado para oferecer alta eficiência operacional e nenhum custo de manutenção. O diferencial do projeto reside na centralização absoluta dos processos, eliminando a dispersão de dados e proporcionando maior praticidade e rastreabilidade para alunos e coordenação.
-                    </p>
-                    <p className="text-lg leading-relaxed text-muted-foreground mt-4">
-                        Através de uma arquitetura simplificada e voltada para a automação de rotinas administrativas, o portal busca substituir ferramentas genéricas por uma solução estruturada que garanta agilidade na validação documental e segurança na organização das informações, consolidando a maturidade tecnológica do curso de Sistemas de Informação em seus processos internos de gestão.
+                        A iniciativa busca promover a organização acadêmica e a democratização da informação no ambiente universitário. Ao utilizar uma tecnologia de rápido desenvolvimento e baixo custo de manutenção, o projeto demonstra como soluções tecnológicas simplificadas podem resolver problemas logísticos cotidianos, melhorando a comunicação interna e o planejamento dos estudantes ao longo do semestre.
                     </p>
                 </div>
             </div>
