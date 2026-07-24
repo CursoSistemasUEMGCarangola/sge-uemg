@@ -36,6 +36,7 @@ export async function GET() {
             documentosModelo,
             informacoesGeraisEstagio,
             systemConfig,
+            relatoriosEncerramento,
             authUsersResponse,
         ] = await Promise.all([
             prisma.profile.findMany(),
@@ -54,6 +55,7 @@ export async function GET() {
             prisma.documentoModelo.findMany(),
             prisma.informacoesGeraisEstagio.findMany(),
             prisma.systemConfig.findMany(),
+            prisma.relatorioEncerramento.findMany(),
             supabaseAdmin.auth.admin.listUsers(),
         ])
 
@@ -88,6 +90,7 @@ export async function GET() {
             documentosModelo,
             informacoesGeraisEstagio,
             systemConfig,
+            relatoriosEncerramento,
         }
 
         const totalRecords = Object.values(data).reduce(
