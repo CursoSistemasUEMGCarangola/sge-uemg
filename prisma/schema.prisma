@@ -126,6 +126,7 @@ model OfertaEstagio {
   curso     CursoEstagio      @relation(fields: [cursoEstagioId], references: [id])
   professor Professor         @relation(fields: [professorOrientadorId], references: [id])
   contratos ContratoEstagio[]
+  relatorio RelatorioEncerramento?
 
   @@map("oferta_estagio")
   @@schema("public")
@@ -273,7 +274,20 @@ enum StatusAprovacao {
   PENDENTE
   ATIVO
   REJEITADO
+  ENCERRADO
   @@map("status_aprovacao")
+  @@schema("public")
+}
+
+model RelatorioEncerramento {
+  id               Int      @id @default(autoincrement()) @map("id_relatorio")
+  idOferta         Int      @unique @map("id_oferta")
+  dataEncerramento DateTime @default(now()) @map("data_encerramento") @db.Timestamptz
+  dadosSnapshot    Json     @map("dados_snapshot")
+  
+  oferta           OfertaEstagio @relation(fields: [idOferta], references: [id])
+
+  @@map("relatorio_encerramento")
   @@schema("public")
 }
 

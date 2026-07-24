@@ -34,3 +34,6 @@ ts-debug.log*
 # Ambiente e Segredos (CRÍTICO)
 .env*
 !.env.example
+
+# Documentos Antigravity
+instructions/

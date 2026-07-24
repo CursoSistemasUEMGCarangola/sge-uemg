@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Calendar, UserRoundCheck, Briefcase, ListOrdered } from "lucide-react"
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Calendar, UserRoundCheck, Briefcase, ListOrdered, ShieldCheck, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
 import { redirect } from "next/navigation"
@@ -114,11 +114,25 @@ export default async function AdminLayout({
                         </Button>
                     </Link>
 
+                    <Link href="/admin/historico-orientacoes">
+                        <Button variant="ghost" className="w-full justify-start gap-2">
+                            <History className="h-4 w-4" />
+                            Histórico de Orientações
+                        </Button>
+                    </Link>
+
                     {/* Shared: Documentos */}
                     <Link href="/admin/documentos">
                         <Button variant="ghost" className="w-full justify-start gap-2">
                             <FileText className="h-4 w-4" />
                             Documentos
+                        </Button>
+                    </Link>
+
+                    <Link href="/admin/verificar-documento">
+                        <Button variant="ghost" className="w-full justify-start gap-2">
+                            <ShieldCheck className="h-4 w-4" />
+                            Validar Documentos
                         </Button>
                     </Link>
 

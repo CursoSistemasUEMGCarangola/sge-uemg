@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function addFeriado(data: Date, descricao: string, tipo: TipoFeriado) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN' && role !== 'PROFESSOR') throw new Error("Unauthorized")
+    if (role !== 'ADMIN' && role !== 'PROFESSOR') return { error: "Sem permissão." }
 
     try {
         await prisma.feriadoRecesso.create({
@@ -26,7 +26,7 @@ export async function addFeriado(data: Date, descricao: string, tipo: TipoFeriad
 
 export async function removeFeriado(id: number) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN' && role !== 'PROFESSOR') throw new Error("Unauthorized")
+    if (role !== 'ADMIN' && role !== 'PROFESSOR') return { error: "Sem permissão." }
 
     await prisma.feriadoRecesso.delete({ where: { id } })
     revalidatePath('/admin/calendario')
@@ -41,7 +41,7 @@ export async function getFeriados() {
 
 export async function toggleModoEleitoralAction(ativar: boolean) {
     const role = await getCurrentUserRole()
-    if (role !== 'ADMIN') throw new Error("Unauthorized")
+    if (role !== 'ADMIN') return { error: "Sem permissão." }
 
     await prisma.systemConfig.upsert({
         where: { key: 'MODO_ELEITORAL' },

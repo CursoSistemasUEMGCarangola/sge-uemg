@@ -138,6 +138,14 @@ graph TD
 * **Objetivo:** Homologação final do estágio no sistema.
 * **Ação no Sistema:** Nenhuma. Ao final desta etapa, seu contrato constará como concluído com sucesso.
 
+### 3.1. Histórico e Relatório Detalhado
+
+Após a conclusão e encerramento do estágio:
+* O acompanhamento sairá do seu painel principal (Dashboard) para manter a tela focada apenas nos estágios ativos.
+* Você poderá acessar todos os seus estágios finalizados através do menu **"Histórico de Estágios"** na barra lateral.
+* Neste histórico, você pode emitir a qualquer momento o seu **Relatório Detalhado de Conclusão (PDF)**.
+* **Segurança e Idoneidade:** O relatório em PDF possui um **Código de Autenticidade (Hash)** único impresso no rodapé. Este código impede falsificações e pode ser utilizado pela instituição para validar a veracidade e integridade do seu documento através do portal administrativo.
+
 ---
 
 ## 4. Gerenciamento de Prazos, Alertas e Correções

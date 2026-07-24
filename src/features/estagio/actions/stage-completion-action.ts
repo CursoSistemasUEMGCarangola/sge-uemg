@@ -7,7 +7,7 @@ import { getCurrentUserRole } from "@/lib/auth"
 export async function completeStageAction(acompanhamentoId: number) {
     const role = await getCurrentUserRole()
     if (role !== 'ADMIN' && role !== 'PROFESSOR') {
-        return { error: "Sem permissão para realizar esta ação." }
+        return { error: "Sem permissão." }
     }
 
     try {

@@ -89,25 +89,13 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
 
 
     // AUTOMATIC RECOVERY FOR ORPHAN USERS
-    // If Auth says "User already registered" but we know (from Step 0) that Profile doesn't exist,
-    // it means we have a "zombie" Auth user from a failed previous transaction.
     if (authError && authError.message?.includes("A user with this email address has already been registered")) {
-      console.log(`[Registration] Orphan user detected for ${email}. Attempting self-healing...`)
-
-      // Try to find the orphan user ID to delete it
-      // Note: listUsers() is paginated (default 50). Ideally we search by email, but admin SDK limitation may apply.
-      // We fetch a larger batch to increase odds of finding it in dev/test scenarios.
       const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
-
       const orphan = listData?.users.find(u => u.email === email)
 
       if (orphan) {
-        console.log(`[Registration] Deleting orphan user ${orphan.id}...`)
         const { error: deleteError } = await adminClient.auth.admin.deleteUser(orphan.id)
-
         if (!deleteError) {
-          // Retry Creation
-          console.log(`[Registration] Orphan deleted. Retrying creation...`)
           const retryResult = await createAuthUser()
           authData = retryResult.data
           authError = retryResult.error
@@ -188,7 +176,6 @@ export async function registerStudentAction(prevState: RegisterStudentState, for
     }
 
     // SEG-07a: Não expor detalhes internos (stack trace, mensagens do Prisma) ao cliente
-    console.error("Erro ao registrar aluno:", error)
     return {
       success: false,
       message: "Erro interno no servidor. Tente novamente mais tarde.",

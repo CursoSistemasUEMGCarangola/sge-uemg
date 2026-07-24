@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { FileClock, CheckCircle2, AlertCircle, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SendAlertButton } from "./estagios/components/send-alert-button"
+import { EncerrarOrientacaoDialog } from "@/features/estagio/components/encerrar-orientacao-dialog"
+import { FileDown, Ban } from "lucide-react"
 
 interface ProfessorDashboardClientProps {
     contratos: any[]
@@ -19,8 +21,9 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
     // Filter contracts based on selection
     const filteredContratos = (selectedOfertaId
-        ? initialContratos.filter(c => c.oferta?.id === selectedOfertaId)
-        : [...initialContratos]).sort((a, b) => {
+        ? initialContratos.filter(c => c.oferta?.id === selectedOfertaId && c.oferta?.ativo !== false)
+        : initialContratos.filter(c => c.oferta?.ativo !== false)
+    ).sort((a, b) => {
             const nameA = a.aluno?.profile?.nomeCompleto || "";
             const nameB = b.aluno?.profile?.nomeCompleto || "";
             return nameA.localeCompare(nameB);
@@ -58,12 +61,13 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                 <Card
                                     key={oferta.id}
                                     className={cn(
-                                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md",
+                                        "transition-all duration-200 border-l-4 shadow-sm",
+                                        oferta.ativo !== false ? "cursor-pointer hover:shadow-md" : "opacity-80",
                                         isSelected
                                             ? "border-l-primary ring-2 ring-primary ring-offset-2 bg-primary/5"
-                                            : "border-l-yellow-500 bg-muted/40 hover:bg-muted/60"
+                                            : oferta.ativo === false ? "border-l-gray-400 bg-muted/20" : "border-l-yellow-500 bg-muted/40 hover:bg-muted/60"
                                     )}
-                                    onClick={() => handleOfertaClick(oferta.id)}
+                                    onClick={() => oferta.ativo !== false && handleOfertaClick(oferta.id)}
                                 >
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-lg font-bold">
@@ -79,9 +83,28 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-muted-foreground mb-2">Vínculo de Orientação Ativo</p>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <CheckCircle2 className="h-3 w-3 text-green-600" />
-                                            {isSelected ? "Selecionado" : "Clique para filtrar"}
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3">
+                                            {oferta.ativo === false ? (
+                                                <div className="flex flex-col gap-2 w-full">
+                                                    <span className="flex items-center gap-1 text-red-600 font-medium">
+                                                        <Ban className="h-3 w-3" /> Orientação Encerrada
+                                                    </span>
+                                                    <Link href={`/api/relatorios/encerramento-turma/${oferta.id}`} target="_blank">
+                                                        <Button variant="outline" size="sm" className="w-full text-xs h-8">
+                                                            <FileDown className="mr-2 h-3 w-3" />
+                                                            Baixar Relatório (PDF)
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col gap-2 w-full">
+                                                    <span className="flex items-center gap-1">
+                                                        <CheckCircle2 className="h-3 w-3 text-green-600" />
+                                                        {isSelected ? "Selecionado" : "Clique para filtrar"}
+                                                    </span>
+                                                    <EncerrarOrientacaoDialog ofertaId={oferta.id} disabled={!isSelected} />
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>

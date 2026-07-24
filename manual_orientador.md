@@ -47,6 +47,7 @@ No topo do painel, você verá o card **"Minhas Orientações"**. Ele lista todo
 
 * Cada cartão exibe: Nome do estágio, curso, unidade acadêmica, semestre letivo correspondente e período vinculado.
 * **Filtragem Rápida:** Clique em um dos cartões de orientação para filtrar a tabela de alunos e os indicadores de estatísticas. Apenas os alunos daquela turma/semestre serão exibidos. Clique novamente para desmarcar e ver todos.
+* **Encerramento de Orientação:** Quando todos os alunos de uma orientação concluírem suas etapas (100%), um botão **"Encerrar Orientação"** ficará disponível no cartão. Ao confirmar o encerramento, a turma sairá do painel de controle ativo e será arquivada permanentemente.
 
 ### 2.2. Indicadores Métricos (Stats)
 
@@ -152,3 +153,21 @@ Para evitar atrasos e garantir o fluxo contínuo das etapas de auditoria física
 1. **Validação de Documento Físico:** Lembre-se que o sistema é um rastreador de metadados. A aprovação digital da etapa de análise (`EM_ANALISE`) deve ser realizada **apenas após o recebimento e conferência física do documento assinado no setor de protocolo**.
 2. **Prazos Dinâmicos:** Os prazos são ancorados na data de conclusão da etapa anterior. Fique atento aos alunos com o selo **"ATRASADO"** na sua dashboard e use as ferramentas de notificação por e-mail para cobrar a regularização acadêmica.
 3. **Reversões Seguras:** O botão de reversão de etapa limpa com segurança as datas limites e registros transientes, garantindo que o banco de dados não fique inconsistente caso precise voltar atrás em uma aprovação.
+
+---
+
+## 7. Histórico e Validação de Documentos
+
+O painel administrativo possui ferramentas dedicadas na barra lateral para consulta e auditoria de estágios finalizados e homologados.
+
+### 7.1. Histórico de Orientações
+
+* **Objetivo:** Consultar o arquivo morto de todas as suas turmas/orientações que já foram encerradas.
+* **Ação:** Acesse **"Histórico de Orientações"** no menu lateral. Para cada turma listada, você poderá baixar o **Relatório Consolidado de Turma (PDF)**. Este documento resume o status final, a etapa de parada e os dados de todos os alunos vinculados àquela orientação.
+
+### 7.2. Validar Documentos (Autenticidade e Antifraude)
+
+* **Objetivo:** O sistema protege a instituição contra fraudes em relatórios impressos, tanto de alunos quanto de professores, através de criptografia (Hash SHA-256).
+* **Ação:** Acesse **"Validar Documentos"** no menu lateral (símbolo de escudo).
+* Caso receba um Relatório Detalhado de Conclusão (entregue pelo Aluno) ou um Relatório Consolidado (emitido pelo Orientador), localize o **Código de Autenticidade** impresso no rodapé (ex: `12-A1B2C3...` ou `TURMA-42-A1B2...`).
+* Digite o código na plataforma. O sistema fará a checagem com a assinatura digital do banco de dados e, se o documento for autêntico e inalterado, validará em tela verde os dados originais (Nome, Curso, Status Final e Data de Conclusão). Caso haja qualquer alteração, o sistema emitirá um alerta de documento forjado.

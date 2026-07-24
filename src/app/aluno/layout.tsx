@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Home, FileText, PlusCircle, LogOut, User } from "lucide-react"
+import { Home, FileText, PlusCircle, LogOut, User, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logoutAction } from "@/features/auth/actions/logout-action"
 
@@ -77,6 +77,12 @@ export default async function AlunoLayout({
                         <Button variant="ghost" className="w-full justify-start gap-2">
                             <FileText className="h-4 w-4" />
                             Manuais
+                        </Button>
+                    </Link>
+                    <Link href="/aluno/historico">
+                        <Button variant="ghost" className="w-full justify-start gap-2">
+                            <History className="h-4 w-4" />
+                            Histórico de Estágios
                         </Button>
                     </Link>
 

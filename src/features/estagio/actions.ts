@@ -7,36 +7,11 @@ import { NovoEstagioFormData, novoEstagioSchema } from "./schemas"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { isJanelaCadastroAberta } from "@/lib/system"
+import { assertAlunoOwnsContract } from "@/lib/security"
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SEG-01: Helper de segurança — verifica que o usuário autenticado é dono do contrato.
-// Retorna { error: string } se falhar, ou null se OK.
-// Todas as Server Actions de aluno que operam sobre um contratoId devem chamar isto.
-// ─────────────────────────────────────────────────────────────────────────────
-async function assertAlunoOwnsContract(contratoId: number): Promise<{ error: string } | null> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: "Não autenticado." }
-
-    const aluno = await prisma.aluno.findUnique({
-        where: { profileId: user.id },
-        select: { id: true }
-    })
-    if (!aluno) return { error: "Perfil de aluno não encontrado." }
-
-    const contrato = await prisma.contratoEstagio.findUnique({
-        where: { id: contratoId },
-        select: { idAluno: true }
-    })
-    if (!contrato) return { error: "Contrato não encontrado." }
-    if (contrato.idAluno !== aluno.id) return { error: "Acesso negado: este contrato não pertence ao seu perfil." }
-
-    return null // OK
-}
+// Helper assertAlunoOwnsContract extraído para @/lib/security
 
 export async function createEstagio(data: NovoEstagioFormData) {
-    console.log("SERVER ACTION: createEstagio START")
-
     // 1. Authentication & Validation
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -47,10 +22,8 @@ export async function createEstagio(data: NovoEstagioFormData) {
 
     const validation = novoEstagioSchema.safeParse(data)
     if (!validation.success) {
-        console.log("SERVER ACTION: Zod validation failed", JSON.stringify(validation.error.format(), null, 2))
         return { error: "Dados inválidos. Verifique o formulário." }
     }
-    console.log("SERVER ACTION: Zod validation success")
 
     const { empresa, supervisor, estagio } = validation.data
 
@@ -63,7 +36,6 @@ export async function createEstagio(data: NovoEstagioFormData) {
         if (!aluno) {
             return { error: "Perfil de aluno não encontrado." }
         }
-        console.log("SERVER ACTION: Student found", { id: aluno.id, periodo: aluno.periodoAtual })
 
         // 3. Find Active Offer for Student's Period AND Selected Course
         const oferta = await prisma.ofertaEstagio.findFirst({
@@ -78,14 +50,11 @@ export async function createEstagio(data: NovoEstagioFormData) {
         })
 
         if (!oferta) {
-            console.log(`SERVER ACTION: No active offer found for period ${aluno.periodoAtual} and course ${estagio.idCurso}`)
             return { error: `Nenhuma oferta de estágio ativa encontrada para o curso selecionado.` }
         }
-        console.log("SERVER ACTION: Offer found", oferta.id)
 
         // 4. Create Internship (Transaction to ensure consistency)
         await prisma.$transaction(async (tx) => {
-            console.log("SERVER ACTION: Starting transaction")
             // A. Create CampoEstagio (Company + Supervisor)
             const campo = await tx.campoEstagio.create({
                 data: {
@@ -101,7 +70,6 @@ export async function createEstagio(data: NovoEstagioFormData) {
                     supervisorTitulacao: supervisor.titulacao,
                 }
             })
-            console.log("SERVER ACTION: CampoEstagio created", campo.id)
 
             // B. Create ContratoEstagio
             const contrato = await tx.contratoEstagio.create({
@@ -114,13 +82,10 @@ export async function createEstagio(data: NovoEstagioFormData) {
                     dataInicioPrevista: estagio.dataInicio,
                     cargaHorariaDiaria: estagio.cargaHorariaDiaria,
                     atribuicoes: estagio.atribuicoes,
-                    statusAprovacao: 'PENDENTE'
                 }
             })
-            console.log("SERVER ACTION: ContratoEstagio created", contrato.id)
         })
 
-        console.log("SERVER ACTION: Transaction committed")
         revalidatePath('/aluno')
         return { success: true }
 
@@ -133,7 +98,7 @@ export async function createEstagio(data: NovoEstagioFormData) {
 export async function approveStage(contratoId: number, etapaId: number, feedback?: string) {
     const role = await getCurrentUserRole()
     if (role !== 'PROFESSOR' && role !== 'ADMIN') {
-        throw new Error("Unauthorized")
+        return { error: "Sem permissão." }
     }
 
     // 1. Update Current Stage to Approved
@@ -178,7 +143,7 @@ export async function approveStage(contratoId: number, etapaId: number, feedback
 export async function rejectStage(contratoId: number, etapaId: number, feedback: string) {
     const role = await getCurrentUserRole()
     if (role !== 'PROFESSOR' && role !== 'ADMIN') {
-        throw new Error("Unauthorized")
+        return { error: "Sem permissão." }
     }
 
     await prisma.acompanhamentoEtapa.updateMany({
@@ -206,7 +171,7 @@ export async function rejectStage(contratoId: number, etapaId: number, feedback:
 export async function submitEtapaLink(contratoId: number, etapaId: number, link: string) {
     const role = await getCurrentUserRole()
     if (role !== 'ALUNO') {
-        throw new Error("Unauthorized")
+        return { error: "Sem permissão." }
     }
 
     // SEG-01: Verificar que o contrato pertence ao aluno autenticado
@@ -233,7 +198,7 @@ export async function submitEtapaLink(contratoId: number, etapaId: number, link:
 
 export async function logAtividade(contratoId: number, data: Date, horas: number, descricao: string) {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     // Fetch Contract to get Limits
     const contrato = await prisma.contratoEstagio.findUnique({
@@ -342,7 +307,7 @@ export async function logAtividade(contratoId: number, data: Date, horas: number
 
 export async function deleteAtividade(id: number) {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     // SEG-12 + SEG-01: Verificar que a atividade pertence a um contrato do aluno autenticado
     const atividade = await prisma.diarioAtividade.findUnique({
@@ -362,7 +327,7 @@ export async function deleteAtividade(id: number) {
 
 export async function submitRelatorioAtividades(contratoId: number, etapaId: number) {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     // SEG-01: Verificar que o contrato pertence ao aluno autenticado
     const ownerCheck = await assertAlunoOwnsContract(contratoId)
@@ -396,7 +361,7 @@ export async function submitRelatorioAtividades(contratoId: number, etapaId: num
 // Save draft without submitting
 export async function saveRelatorioAvaliacao(contratoId: number, texto: string) {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     // SEG-01: Verificar que o contrato pertence ao aluno autenticado
     const ownerCheck = await assertAlunoOwnsContract(contratoId)
@@ -413,7 +378,7 @@ export async function saveRelatorioAvaliacao(contratoId: number, texto: string) 
 
 export async function submitRelatorio(contratoId: number, etapaId: number, texto: string) {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     // SEG-01: Verificar que o contrato pertence ao aluno autenticado
     const ownerCheck = await assertAlunoOwnsContract(contratoId)
@@ -606,7 +571,7 @@ export async function updateEstagioAction(
 export async function revertStage(contratoId: number) {
     const role = await getCurrentUserRole()
     if (role !== 'PROFESSOR' && role !== 'ADMIN') {
-        throw new Error("Unauthorized")
+        return { error: "Sem permissão." }
     }
 
     // 1. Find the latest ATIVO stage (highest number)
@@ -656,9 +621,9 @@ export async function revertStage(contratoId: number) {
     return { success: true }
 }
 
-export async function aprimorarTextoComIA(texto: string) {
+export async function aprimorarTextoComIA(texto: string, contexto: 'AVALIACAO' | 'ATIVIDADES' = 'AVALIACAO') {
     const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
+    if (role !== 'ALUNO') return { error: "Sem permissão." }
 
     if (!texto || texto.trim().length === 0) {
         return { error: "O texto não pode estar vazio." }
@@ -669,7 +634,11 @@ export async function aprimorarTextoComIA(texto: string) {
         return { error: "Chave da API do OpenRouter não configurada no servidor." }
     }
 
-    const promptText = `Aprimore o texto a seguir, que será utilizado como avaliação de conformidade com as atividades desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. Regras obrigatórias: 1) O idioma deve ser o Português do Brasil. 2) Retorne APENAS o texto aprimorado, nada além disso. 3) NÃO inclua saudações, introduções, conclusões ou explicações (como "Aqui está o texto..." ou "Com certeza!"). 4) NÃO utilize formatação Markdown (como asteriscos para negrito ou hashtags), retorne apenas texto puro. Texto original:\n\n${texto}`;
+    const contextoStr = contexto === 'AVALIACAO' 
+        ? "avaliação de conformidade com as atividades desenvolvidas"
+        : "apresentação das atividades que serão desenvolvidas";
+
+    const promptText = `Aprimore o texto a seguir, que será utilizado como ${contextoStr} em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. Regras obrigatórias: 1) O idioma deve ser o Português do Brasil. 2) Retorne APENAS o texto aprimorado, nada além disso. 3) NÃO inclua saudações, introduções, conclusões ou explicações (como "Aqui está o texto..." ou "Com certeza!"). 4) NÃO utilize formatação Markdown (como asteriscos para negrito ou hashtags), retorne apenas texto puro. Texto original:\n\n${texto}`;
 
     try {
         const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
@@ -713,59 +682,7 @@ export async function aprimorarTextoComIA(texto: string) {
     }
 }
 
+// Wrapper for backwards compatibility if still used directly
 export async function aprimorarAtividadesComIA(texto: string) {
-    const role = await getCurrentUserRole()
-    if (role !== 'ALUNO') throw new Error("Unauthorized")
-
-    if (!texto || texto.trim().length === 0) {
-        return { error: "O texto não pode estar vazio." }
-    }
-
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-        return { error: "Chave da API do OpenRouter não configurada no servidor." }
-    }
-
-    const promptText = `Aprimore o texto a seguir, que será utilizado como apresentação das atividades que serão desenvolvidas em um estágio acadêmico relacionado a um curso superior de Sistemas de Informação. Regras obrigatórias: 1) O idioma deve ser o Português do Brasil. 2) Retorne APENAS o texto aprimorado, nada além disso. 3) NÃO inclua saudações, introduções, conclusões ou explicações (como "Aqui está o texto..." ou "Com certeza!"). 4) NÃO utilize formatação Markdown (como asteriscos para negrito ou hashtags), retorne apenas texto puro. Texto original:\n\n${texto}`;
-
-    try {
-        const response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: "openrouter/auto",
-                messages: [
-                    {
-                        role: "user",
-                        content: promptText
-                    }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error("OpenRouter API Error:", response.status, errorData);
-            if (response.status === 429) {
-                return { error: "Cota de uso da IA excedida (Erro 429). Tente novamente mais tarde e verifique os limites de uso da chave." }
-            }
-            return { error: "Erro ao comunicar com a IA." }
-        }
-
-        const data = await response.json();
-        const aprimorado = data?.choices?.[0]?.message?.content;
-
-        if (!aprimorado) {
-            return { error: "Resposta inesperada da IA." }
-        }
-
-        return { success: true, text: aprimorado }
-
-    } catch (error) {
-        console.error("Fetch Exception:", error);
-        return { error: "Falha na conexão com a IA." }
-    }
+    return aprimorarTextoComIA(texto, 'ATIVIDADES');
 }

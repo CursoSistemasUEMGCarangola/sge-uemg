@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket, FileText, AlertCircle } from "lucide-react"
+import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket, FileText, AlertCircle, FileDown, History } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getStudentDashboardData } from "@/features/estagio/data"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
@@ -19,6 +19,8 @@ export default async function AlunoDashboard() {
 
     const { contratos } = await getStudentDashboardData(user.id)
 
+    const contratosAtivos = contratos.filter(c => c.statusAprovacao !== 'ENCERRADO')
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -31,7 +33,7 @@ export default async function AlunoDashboard() {
                 </Link>
             </div>
 
-            {contratos.length === 0 ? (
+            {contratosAtivos.length === 0 ? (
                 <Card className="border-dashed border-2 shadow-none bg-muted/20">
                     <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                         <div className="rounded-full bg-background p-4 mb-4 shadow-sm">
@@ -52,7 +54,10 @@ export default async function AlunoDashboard() {
                 </Card>
             ) : (
                 <div className="grid gap-6">
-                    {contratos.map((contrato) => {
+                    {contratosAtivos.length > 0 && (
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold tracking-tight">Estágios em Andamento</h2>
+                            {contratosAtivos.map((contrato) => {
                         // Determine current step index (1-based because Stepper expects IDs)
                         // Logic: Find first PENDING step. If all approved, check status.
                         const sortedAcompanhamentos = [...contrato.acompanhamentos].sort((a, b) => a.etapaDef.numeroEtapa - b.etapaDef.numeroEtapa)
@@ -179,7 +184,19 @@ export default async function AlunoDashboard() {
                                         2. AND the PREVIOUS stage is completed (ATIVO) OR it's the first stage
                                     */}
                                     {(() => {
-                                        if (!firstPending) return <Button variant="outline" size="sm" disabled>Concluído</Button>
+                                        if (!firstPending) {
+                                            // Concluído (aguardando professor encerrar ou apenas 100%)
+                                            return (
+                                                <div className="w-full flex justify-end sm:flex-1">
+                                                    <Link href={`/api/relatorios/estagio-aluno/${contrato.id}`} target="_blank" className="w-full sm:w-auto">
+                                                        <Button size="lg" className="w-full sm:min-w-[250px] text-lg font-bold shadow-lg bg-green-600 hover:bg-green-700" variant="default">
+                                                            <FileDown className="mr-2 h-5 w-5" />
+                                                            Baixar Relatório Detalhado
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            )
+                                        }
 
                                         const currentStepIndex = contrato.acompanhamentos.findIndex(a => a.id === firstPending.id)
                                         const previousStep = currentStepIndex > 0 ? contrato.acompanhamentos[currentStepIndex - 1] : null
@@ -274,6 +291,8 @@ export default async function AlunoDashboard() {
                             </Card>
                         )
                     })}
+                        </div>
+                    )}
                 </div>
             )}
         </div>

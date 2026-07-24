@@ -120,9 +120,15 @@ export default async function LandingPage() {
                             : "© 2026 UEMG Carangola. Todos os direitos reservados."
                         }
                     </p>
-                    <div className="flex gap-6">
-                        <Link href="#" className={`transition-colors text-sm font-medium ${cls.footerLink}`}>
+                    <div className="flex gap-4 md:gap-6 flex-wrap justify-center">
+                        <Link href="/sobre" className={`transition-colors text-sm font-medium ${cls.footerLink}`}>
                             Sobre
+                        </Link>
+                        <Link href="/termos" className={`transition-colors text-sm font-medium ${cls.footerLink}`}>
+                            Termos de Uso
+                        </Link>
+                        <Link href="/privacidade" className={`transition-colors text-sm font-medium ${cls.footerLink}`}>
+                            Política de Privacidade
                         </Link>
                     </div>
                 </div>
