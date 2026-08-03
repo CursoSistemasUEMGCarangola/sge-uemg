@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { CardContent, CardFooter } from "@/components/ui/card"
 import { User, Phone, Mail, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const initialState = {
     message: null as string | null,
@@ -15,7 +16,7 @@ const initialState = {
 }
 
 // @ts-ignore
-export function ProfileForm({ profile }) {
+export function ProfileForm({ profile, canEditPeriod = false }) {
 
     const formatPhone = (value: string) => {
         return value
@@ -31,6 +32,18 @@ export function ProfileForm({ profile }) {
     return (
         <form action={formAction}>
             <CardContent className="space-y-4">
+                {canEditPeriod && profile.periodo && (
+                    <Alert variant="destructive" className="mb-4 bg-red-50/50 border-red-200 dark:bg-red-900/20 dark:border-red-900">
+                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500" />
+                        <AlertTitle className="text-red-700 dark:text-red-400 font-bold">Atenção Máxima</AlertTitle>
+                        <AlertDescription className="text-red-700 dark:text-red-400 font-medium">
+                            Alterar o seu período letivo modificará diretamente as ofertas de estágio disponíveis.
+                            Atualize este dado APENAS se você avançou de semestre na grade curricular da universidade.
+                            Falsificar seu período atual resultará na rejeição sumária do seu cadastro pelo professor.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 {/* @ts-ignore */}
                 {!profile.emailAlternativo && (
                     <Alert variant="destructive" className="mb-4">
@@ -76,14 +89,29 @@ export function ProfileForm({ profile }) {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="periodo">Período Atual (Não alterável)</Label>
-                            <Input
-                                id="periodo"
-                                // @ts-ignore
-                                value={`${profile.periodo}º Período`}
-                                className="bg-muted"
-                                disabled
-                            />
+                            <Label htmlFor="periodo">Período Atual {!canEditPeriod && "(Não alterável)"}</Label>
+                            {canEditPeriod ? (
+                                <Select name="periodo" defaultValue={profile.periodo?.toString()}>
+                                    <SelectTrigger id="periodo" className="bg-background">
+                                        <SelectValue placeholder="Selecione seu período" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) => (
+                                            <SelectItem key={p} value={p.toString()}>
+                                                {p}º Período
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Input
+                                    id="periodo"
+                                    // @ts-ignore
+                                    value={`${profile.periodo}º Período`}
+                                    className="bg-muted"
+                                    disabled
+                                />
+                            )}
                         </div>
                     </div>
                 )}

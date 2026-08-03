@@ -102,7 +102,8 @@ Conforme o estagiário avança, o card de ação contextual solicitará sua aná
 Quando o aluno inicia um novo processo de estágio no sistema, o contrato nasce com status **PENDENTE**.
 
 * O card de ação informará: *"Este estágio aguarda sua aprovação para iniciar."*
-* **Ação:** Analise as atribuições e dados cadastrais. Clique no botão de ações rápidas no topo e selecione **"Aprovar"** para ativar o contrato e liberar o aluno para a **Etapa 1**.
+* **Auditoria de Período:** O sistema permite que o aluno atualize o seu "Período Atual" de forma autônoma na virada do semestre para que ele tenha acesso às novas ofertas correspondentes à turma dele. Cabe a você validar com muito rigor se o aluno realmente pertence ao período declarado antes de deferir o contrato.
+* **Ação:** Analise as atribuições e dados cadastrais informados. Clique no botão de ações rápidas no topo e selecione **"Aprovar"** para ativar o contrato e liberar o aluno para a **Etapa 1**. Em caso de tentativa de burla de período, selecione "Rejeitar".
 
 ### 4.2. Fluxo de Análise da Etapa Atual (Status EM_ANALISE)
 

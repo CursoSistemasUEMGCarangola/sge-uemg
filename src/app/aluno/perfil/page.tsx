@@ -12,13 +12,23 @@ export default async function AlunoPerfilPage() {
 
     if (!user) redirect('/login')
 
-    // Fetch Profile AND Student Data
+    // Fetch Profile AND Student Data with contracts to check editability
     const profile = await prisma.profile.findUnique({
         where: { id: user.id },
         include: {
-            aluno: true // Include relation to get matricula/periodo
+            aluno: {
+                include: {
+                    contratos: {
+                        where: {
+                            statusAprovacao: { in: ['PENDENTE', 'ATIVO'] }
+                        }
+                    }
+                }
+            }
         }
     })
+
+    const canEditPeriod = profile?.aluno?.contratos ? profile.aluno.contratos.length === 0 : false
 
     if (!profile) return <div>Perfil não encontrado.</div>
 
@@ -46,7 +56,7 @@ export default async function AlunoPerfilPage() {
                         Mantenha esses dados atualizados para facilitar o contato da coordenação e empresas.
                     </CardDescription>
                 </CardHeader>
-                <ProfileForm profile={profileData} />
+                <ProfileForm profile={profileData} canEditPeriod={canEditPeriod} />
             </Card>
 
             <PasswordChangeForm />

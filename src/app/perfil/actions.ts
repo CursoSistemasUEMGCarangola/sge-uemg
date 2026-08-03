@@ -28,6 +28,8 @@ export async function updateProfile(prevState: any, formData: FormData) {
         return { error: 'O e-mail alternativo deve ser diferente do e-mail institucional.' }
     }
 
+    const periodoStr = formData.get('periodo') as string
+
     try {
         await prisma.profile.update({
             where: { id: user.id },
@@ -38,6 +40,27 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 telefone
             }
         })
+
+        if (periodoStr) {
+            const aluno = await prisma.aluno.findUnique({ where: { profileId: user.id } })
+            if (aluno) {
+                const contratosAtivos = await prisma.contratoEstagio.count({
+                    where: { idAluno: aluno.id, statusAprovacao: { in: ['PENDENTE', 'ATIVO'] } }
+                })
+
+                if (contratosAtivos > 0) {
+                    return { error: 'Bloqueio de Segurança: Não é possível alterar o período enquanto houver um contrato de estágio ativo ou pendente.' }
+                }
+
+                const periodo = parseInt(periodoStr, 10)
+                if (!isNaN(periodo) && periodo > 0 && periodo <= 10) {
+                    await prisma.aluno.update({
+                        where: { id: aluno.id },
+                        data: { periodoAtual: periodo }
+                    })
+                }
+            }
+        }
     } catch (error) {
         console.error("Profile update error:", error)
         return { error: 'Erro ao atualizar perfil.' }

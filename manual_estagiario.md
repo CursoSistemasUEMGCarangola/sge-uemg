@@ -44,6 +44,7 @@ Após o login, você poderá acessar a página **"Minha Conta"** (no menu superi
 * Atualizar seu **e-mail alternativo pessoal** (obrigatório para recebimento de notificações).
 * Atualizar seu telefone de contato.
 * Alterar sua senha de acesso.
+* **Atualizar seu Período Atual:** Ao avançar de semestre letivo na universidade, você deve atualizar seu período no sistema para ter acesso às novas ofertas de estágio. Esta edição **só estará liberada** caso você não possua nenhum contrato de estágio em andamento (Ativo ou Pendente). **Atenção:** Falsificar seu período atual para acessar ofertas não correspondentes à sua grade resultará na rejeição sumária do seu cadastro pelo professor orientador.
 * Verificar a consistência dos seus dados cadastrais (Matrícula e E-mail Institucional não são alteráveis).
 
 ---
