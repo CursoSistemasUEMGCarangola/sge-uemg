@@ -325,6 +325,7 @@
 
 **Contexto:** Ao migrar o SGE para um novo projeto Supabase, o `supabase db dump` exigia Docker Desktop (indisponível). Usar `pg_dump` diretamente com a porta padrão 5432 (pooled) falhava. Após o dump, a restauração no novo banco revelou que: (1) o schema `public` tem dependências de tipos/enums que já existem no Supabase, (2) a tabela `profiles` tem FK para `auth.users` que impede inserção de dados, e (3) os usuários de `auth.users` não são migrados automaticamente.
 **Solução:**
+
 1. **Dump**: Usar `pg_dump --schema=public` pela porta `6543` (Session Pooler direto) ao invés de `5432`.
 2. **Schema**: Aplicar o dump com `psql -f` — erros de "type already exists" são inofensivos (enums padrão do Supabase).
 3. **Data**: Dropar FK `profiles_id_fkey` antes da importação, recriar depois com `NOT VALID` para permitir dados órfãos temporariamente.
@@ -335,6 +336,7 @@
 
 **Contexto:** A necessidade de fazer dumps recorrentes do banco exigia ferramentas CLI (pg_dump, Docker, Supabase CLI) que nem sempre estão disponíveis. Solução: embutir a funcionalidade de backup diretamente no painel admin do sistema.
 **Solução:**
+
 1. **API Route** (`/api/backup`): Consulta todas as 16 tabelas via `Promise.all` com Prisma + `supabase.auth.admin.listUsers()` para incluir auth.users.
 2. **Segurança**: Verificação de role `ADMIN` via `getCurrentUserRole()` antes de permitir o export.
 3. **Output**: JSON com metadados (versão, data, contagem) + dados completos, retornado como download via `Content-Disposition: attachment`.
@@ -401,3 +403,8 @@
 **Solução:** Inclusão explícita do campo `emailAlternativo` dentro do objeto `initialData` retornado pelo servidor nas páginas de edição (`/admin/alunos/[id]/page.tsx` e congêneres).
 **Prevenção:** Sempre que um novo campo for adicionado à base de dados e ao formulário de edição (Zod Schema), certifique-se de adicioná-lo também no mapeamento para o estado inicial (`initialData`) da página de carregamento.
 
+### [2026-08-03] - [SECURITY/LOGIC] Proteção Dupla em Edição de Dados Estruturais (Período Letivo)
+
+**Contexto:** O período letivo do aluno precisava se tornar editável para que ele acompanhasse as ofertas correspondentes ao seu semestre atual. Porém, alterar esse dado enquanto há contratos (estágios) em andamento corromperia a integridade da auditoria com o professor, configurando fraude de grade curricular.
+**Solução:** Implementação de bloqueio relacional condicional duplo. No Frontend (`page.tsx` + `profile-form.tsx`), a UI busca os contratos e desabilita o campo caso exista algum com status `ATIVO` ou `PENDENTE`. Na Server Action (`actions.ts`), a mesmíssima verificação relacional é repetida antes do Prisma executar o update, para evitar *bypass* via chamadas HTTP diretas.
+**Prevenção:** Em dados de "Perfil" que servem como âncora mestre para fluxos de negócio subsequentes (ex: Período, Curso, Papel), nunca libere a edição irrestrita sem validar se o usuário possui "processos abertos" dependentes dessa âncora. Sempre faça o espelhamento da trava visual do Frontend no Server-Side.
