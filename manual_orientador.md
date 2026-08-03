@@ -19,7 +19,7 @@ Bem-vindo ao **SGE - Sistema de Gestão de Estágios do Curso de Sistemas de Inf
 
 > [!IMPORTANT]
 > **Por que o E-mail Alternativo é obrigatório e crucial?**
-> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos. 
+> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos.
 > Para garantir que você consiga receber os links de **recuperação de senha** e as notificações da plataforma, o sistema exige um e-mail alternativo pessoal. Todas as comunicações automáticas da plataforma voltadas para você serão enviadas para esse endereço.
 
 ### 1.2. Recuperação de Senha
@@ -151,7 +151,7 @@ Para evitar atrasos e garantir o fluxo contínuo das etapas de auditoria física
 
 ## 6. Regras de Ouro para o Orientador
 
-1. **Validação de Documento Físico:** Lembre-se que o sistema é um rastreador de metadados. A aprovação digital da etapa de análise (`EM_ANALISE`) deve ser realizada **apenas após o recebimento e conferência física do documento assinado no setor de protocolo**.
+1. **Validação de Documento Físico:** Lembre-se que o sistema é um rastreador de metadados. A aprovação digital da etapa de análise (`EM_ANALISE`) deve ser realizada **apenas após o recebimento e conferência física do documento assinado**.
 2. **Prazos Dinâmicos:** Os prazos são ancorados na data de conclusão da etapa anterior. Fique atento aos alunos com o selo **"ATRASADO"** na sua dashboard e use as ferramentas de notificação por e-mail para cobrar a regularização acadêmica.
 3. **Reversões Seguras:** O botão de reversão de etapa limpa com segurança as datas limites e registros transientes, garantindo que o banco de dados não fique inconsistente caso precise voltar atrás em uma aprovação.
 

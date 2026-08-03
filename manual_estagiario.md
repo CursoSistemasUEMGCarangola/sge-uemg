@@ -90,7 +90,7 @@ graph TD
 
 * **Objetivo:** Informar as especificações do estágio e emitir a folha de capa.
 * **Ação no Sistema:** Clique em **"Emitir a Capa do Estágio"**. Revise todos os dados e clique em **"Gerar PDF / Imprimir"**. O sistema irá gerar um PDF no seu navegador com layout oficializado.
-* **Ação Física (Fora do Sistema):** Imprima a Capa gerada, anexe-a ao Termo de Compromisso de Estágio (TCE) físico assinado pelas partes e protocole os documentos na secretaria/protocolo da UEMG.
+* **Ação Física (Fora do Sistema):** Imprima a Capa gerada, anexe-a ao Termo de Compromisso de Estágio (TCE) físico assinado pelas partes e protocole os documentos para o professor orientador do estágio.
 
 ### Etapa 2: Conferência de Dados (Aguardar)
 
@@ -112,7 +112,7 @@ graph TD
     * **Dias bloqueados:** O sistema bloqueia automaticamente lançamentos em **finais de semana (sábados e domingos)**, **feriados** e **recessos acadêmicos**. A lista de feriados cadastrados fica visível na barra lateral para sua consulta.
     * **Alterações:** Você pode cadastrar e excluir lançamentos livremente enquanto estiver nesta etapa.
   * **Conclusão:** Continue lançando suas atividades diárias até que a barra de progresso atinja **100% da Carga Horária Exigida** (ex: 150 horas). Ao atingir a meta, um botão **"Gerar PDF"** ficará disponível. Clique para emitir o PDF formatado do seu Plano de Atividades.
-* **Ação Física:** Imprima o documento gerado pelo sistema, recolha as assinaturas físicas (sua e do supervisor da empresa) e protocole o documento na instituição.
+* **Ação Física:** Imprima o documento gerado pelo sistema, recolha as assinaturas físicas (sua e do supervisor da empresa) e protocole o documento para o professor orientador do estágio.
 
 ### Etapa 5: Conferência do Plano (Aguardar)
 
@@ -127,7 +127,7 @@ graph TD
   * **Preenchimento:** Escreva sua autoavaliação (mínimo de 50 caracteres).
   * **Aprimoramento com IA:** Clique em **"Sugestão de Aprimoramento com IA"** para que a inteligência artificial organize suas ideias em um português acadêmico impecável.
   * **Exportação:** Clique em **"Gerar PDF do Relatório Final"**. O sistema salvará seu texto no banco de dados e baixará automaticamente o arquivo PDF.
-* **Ação Física:** Imprima o PDF do Relatório Final, assine, colete as assinaturas do Supervisor e do Professor Orientador, e protocole o documento na instituição.
+* **Ação Física:** Imprima o PDF do Relatório Final, assine, colete as assinaturas do Supervisor e do Professor Orientador, e protocole o documento para o professor orientador do estágio.
 
 ### Etapa 7: Conferência do Relatório (Aguardar)
 
