@@ -39,7 +39,7 @@ export function ProfileForm({ profile, canEditPeriod = false }) {
                         <AlertDescription className="text-red-700 dark:text-red-400 font-medium">
                             Alterar o seu período letivo modificará diretamente as ofertas de estágio disponíveis.
                             Atualize este dado APENAS se você avançou de semestre na grade curricular da universidade.
-                            Falsificar seu período atual resultará na rejeição sumária do seu cadastro pelo professor.
+                            Informar incorretamente seu período atual resultará na rejeição sumária do seu cadastro pelo professor.
                         </AlertDescription>
                     </Alert>
                 )}
