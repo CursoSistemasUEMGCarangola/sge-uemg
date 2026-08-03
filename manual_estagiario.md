@@ -21,7 +21,7 @@ Os alunos podem realizar o cadastro diretamente no sistema, desde que a **Janela
 
 > [!IMPORTANT]
 > **Por que o E-mail Alternativo é obrigatório e crucial?**
-> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos. 
+> Os servidores de e-mail institucional da UEMG possuem políticas rígidas de segurança que costumam bloquear o recebimento de mensagens automáticas vindas de sistemas externos.
 > Para garantir que você consiga receber os links de **recuperação de senha** e as **notificações/alertas de acompanhamento de estágio** enviadas por seus professores orientadores, o sistema exige um e-mail alternativo pessoal. Todas as comunicações automáticas da plataforma serão enviadas para esse endereço.
 
 > [!IMPORTANT]
@@ -44,7 +44,7 @@ Após o login, você poderá acessar a página **"Minha Conta"** (no menu superi
 * Atualizar seu **e-mail alternativo pessoal** (obrigatório para recebimento de notificações).
 * Atualizar seu telefone de contato.
 * Alterar sua senha de acesso.
-* **Atualizar seu Período Atual:** Ao avançar de semestre letivo na universidade, você deve atualizar seu período no sistema para ter acesso às novas ofertas de estágio. Esta edição **só estará liberada** caso você não possua nenhum contrato de estágio em andamento (Ativo ou Pendente). **Atenção:** Falsificar seu período atual para acessar ofertas não correspondentes à sua grade resultará na rejeição sumária do seu cadastro pelo professor orientador.
+* **Atualizar seu Período Atual:** Ao avançar de semestre letivo na universidade, você deve atualizar seu período no sistema para ter acesso às novas ofertas de estágio. Esta edição **só estará liberada** caso você não possua nenhum contrato de estágio em andamento (Ativo ou Pendente). **Atenção:** Informar incorretamente seu período atual para acessar ofertas não correspondentes à sua grade resultará na rejeição sumária do seu cadastro pelo professor orientador.
 * Verificar a consistência dos seus dados cadastrais (Matrícula e E-mail Institucional não são alteráveis).
 
 ---
@@ -142,6 +142,7 @@ graph TD
 ### 3.1. Histórico e Relatório Detalhado
 
 Após a conclusão e encerramento do estágio:
+
 * O acompanhamento sairá do seu painel principal (Dashboard) para manter a tela focada apenas nos estágios ativos.
 * Você poderá acessar todos os seus estágios finalizados através do menu **"Histórico de Estágios"** na barra lateral.
 * Neste histórico, você pode emitir a qualquer momento o seu **Relatório Detalhado de Conclusão (PDF)**.
