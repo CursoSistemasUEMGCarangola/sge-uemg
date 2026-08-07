@@ -19,6 +19,7 @@ O **SGE (Sistema de Gestão de Estágios)** é uma plataforma web desenvolvida c
 - **ORM:** Prisma
 - **Autenticação:** Supabase Auth
 - **Geração de PDF:** `@react-pdf/renderer`
+- **Serviço de E-mail:** Brevo API HTTP
 - **Deploy:** Vercel
 
 ## Como Rodar Localmente
