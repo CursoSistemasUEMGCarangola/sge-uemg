@@ -17,7 +17,6 @@
 /sql/data.sql
 /sql/roles.sql
 /sql/production_cleanup.sql
-/sql/schema.sql
 
 # Misc
 .DS_Store

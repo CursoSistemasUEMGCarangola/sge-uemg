@@ -298,3 +298,11 @@ model SystemConfig {
   @@map("system_config")
   @@schema("public")
 }
+
+model Keepalive {
+  id       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pingedAt DateTime @default(now()) @map("pinged_at") @db.Timestamptz
+
+  @@map("keepalive")
+  @@schema("public")
+}
