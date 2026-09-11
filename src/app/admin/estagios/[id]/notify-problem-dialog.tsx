@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { rejectStage } from "@/features/estagio/actions"
+import { notifyStageAction } from "@/features/estagio/actions"
+
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { MessageSquareWarning } from "lucide-react"
+import { MessageSquare } from "lucide-react"
 
 interface NotifyProblemDialogProps {
     contratoId: number
@@ -30,18 +31,23 @@ export function NotifyProblemDialog({ contratoId, etapaId, etapaNome }: NotifyPr
     const { toast } = useToast()
 
     async function handleNotify() {
-        if (!feedback || feedback.length < 10) {
-            toast({ title: "Erro", description: "Mensagem obrigatória (mínimo 10 caracteres).", variant: "destructive" })
+        if (!feedback || feedback.trim().length < 5) {
+            toast({ title: "Erro", description: "Mensagem obrigatória (mínimo 5 caracteres).", variant: "destructive" })
             return
         }
 
         setLoading(true)
         try {
-            await rejectStage(contratoId, etapaId, feedback)
-            toast({ title: "Sucesso", description: "Aluno notificado. O status foi alterado para Rejeitado." })
-            setOpen(false)
+            const res = await notifyStageAction(contratoId, etapaId, feedback)
+            if (res.error) {
+                toast({ title: "Erro", description: res.error, variant: "destructive" })
+            } else {
+                toast({ title: "Sucesso", description: "Orientação enviada com sucesso ao aluno." })
+                setOpen(false)
+                setFeedback("")
+            }
         } catch (error) {
-            toast({ title: "Erro", description: "Falha ao enviar notificação.", variant: "destructive" })
+            toast({ title: "Erro", description: "Falha ao enviar orientação.", variant: "destructive" })
         } finally {
             setLoading(false)
         }
@@ -53,25 +59,24 @@ export function NotifyProblemDialog({ contratoId, etapaId, etapaNome }: NotifyPr
                 <Button 
                     variant="outline" 
                     size="sm"
-                    className="text-amber-700 border-amber-300 hover:bg-amber-600 hover:text-white transition-colors"
+                    className="text-blue-700 border-blue-300 hover:bg-blue-600 hover:text-white transition-colors"
                 >
-                    <MessageSquareWarning className="mr-2 h-4 w-4" />
-                    Notificar Problema
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Enviar Orientação
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Notificar Problema na Etapa: {etapaNome}</DialogTitle>
+                    <DialogTitle>Enviar Orientação na Etapa: {etapaNome}</DialogTitle>
                     <DialogDescription>
-                        Esta mensagem aparecerá como um alerta para o aluno. Use para solicitar correções ou ações imediatas.
-                        O status da etapa mudará para "Rejeitado".
+                        Esta mensagem aparecerá como uma orientação para o aluno sobre procedimentos e necessidades do estágio. O status da etapa não será alterado para Rejeitado.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                    <Label htmlFor="feedback-notify">Mensagem para o Aluno (Obrigatório)</Label>
+                    <Label htmlFor="feedback-notify">Texto da Orientação (Obrigatório)</Label>
                     <Textarea
                         id="feedback-notify"
-                        placeholder="Descreva o problema ou o que o aluno deve fazer..."
+                        placeholder="Descreva as orientações, procedimentos ou necessidades para o aluno..."
                         value={feedback}
                         onChange={e => setFeedback(e.target.value)}
                         className="min-h-[100px]"
@@ -79,11 +84,12 @@ export function NotifyProblemDialog({ contratoId, etapaId, etapaNome }: NotifyPr
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                    <Button onClick={handleNotify} disabled={loading} className="bg-amber-600 hover:bg-amber-700 text-white">
-                        {loading ? "Enviando..." : "Enviar Notificação"}
+                    <Button onClick={handleNotify} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        {loading ? "Enviando..." : "Enviar Orientação"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     )
 }
+

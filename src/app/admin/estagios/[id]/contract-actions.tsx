@@ -14,18 +14,32 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { deleteContractAction, updateContractStatusAction } from "@/features/estagio/actions"
-import { Trash2, CheckCircle, Loader2 } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { deleteContractAction, updateContractStatusAction, rejectContractAction } from "@/features/estagio/actions"
+import { Trash2, CheckCircle, Loader2, XCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface ContractActionsProps {
     contractId: number
-    status: string // 'PENDENTE' | 'APROVADO' | 'REJEITADO'
+    status: string // 'PENDENTE' | 'ATIVO' | 'REJEITADO'
     currentStepId: number
 }
 
 export function ContractActions({ contractId, status, currentStepId }: ContractActionsProps) {
     const [isPending, startTransition] = useTransition()
+    const [rejectOpen, setRejectOpen] = useState(false)
+    const [rejectJustificativa, setRejectJustificativa] = useState("")
+    const [isRejecting, setIsRejecting] = useState(false)
     const { toast } = useToast()
     const router = useRouter()
 
@@ -48,12 +62,51 @@ export function ContractActions({ contractId, status, currentStepId }: ContractA
         })
     }
 
+    const handleReject = async () => {
+        if (!rejectJustificativa || rejectJustificativa.trim().length < 15) {
+            toast({
+                variant: "destructive",
+                title: "Erro",
+                description: "A justificativa é obrigatória e deve ter pelo menos 15 caracteres.",
+            })
+            return
+        }
+
+        setIsRejecting(true)
+        try {
+            const result = await rejectContractAction(contractId, rejectJustificativa)
+            if (result.success) {
+                toast({
+                    title: "Estágio Rejeitado",
+                    description: "A solicitação foi indeferida e o aluno foi formalmente notificado.",
+                })
+                setRejectOpen(false)
+                setRejectJustificativa("")
+                router.refresh()
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Erro",
+                    description: result.error,
+                })
+            }
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Erro",
+                description: "Falha ao registrar a rejeição do estágio.",
+            })
+        } finally {
+            setIsRejecting(false)
+        }
+    }
+
     const handleDelete = () => {
         startTransition(async () => {
             const result = await deleteContractAction(contractId)
             if (result.success) {
                 toast({
-                    title: "Contrato Liquldado",
+                    title: "Contrato Liquidado",
                     description: "O registro de estágio foi excluído permanentemente.",
                 })
                 router.push('/admin') // Redirect to dashboard
@@ -70,17 +123,19 @@ export function ContractActions({ contractId, status, currentStepId }: ContractA
 
     return (
         <div className="flex gap-2">
-            {status === 'PENDENTE' && (
+            {(status === 'PENDENTE' || status === 'REJEITADO') && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            Tornar Ativo
+                            {status === 'REJEITADO' ? "Reativar Estágio" : "Tornar Ativo"}
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar Ativação</AlertDialogTitle>
+                            <AlertDialogTitle>
+                                {status === 'REJEITADO' ? "Confirmar Reativação do Estágio" : "Confirmar Ativação"}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
                                 Tem certeza que deseja alterar o status deste estágio para <strong>ATIVO</strong>?<br />
                                 Isso indicará que o aluno está apto a iniciar ou continuar as atividades.
@@ -96,10 +151,57 @@ export function ContractActions({ contractId, status, currentStepId }: ContractA
                 </AlertDialog>
             )}
 
+            {(status === 'PENDENTE' || status === 'ATIVO') && (
+                <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="border-red-600 text-red-600 hover:bg-red-50">
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Rejeitar Estágio
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="text-red-700 flex items-center gap-2">
+                                <XCircle className="h-5 w-5" />
+                                Rejeitar e Indeferir Estágio
+                            </DialogTitle>
+                            <DialogDescription>
+                                Esta ação rejeitará formalmente o estágio do aluno. O status mudará para <strong>REJEITADO</strong>, o parecer será documentado no sistema e enviado por e-mail ao aluno.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 space-y-2">
+                            <Label htmlFor="justificativa-rejeicao" className="text-sm font-semibold">
+                                Justificativa do Indeferimento (Obrigatória, mín. 15 caracteres)
+                            </Label>
+                            <Textarea
+                                id="justificativa-rejeicao"
+                                placeholder="Explique os motivos formais da rejeição (ex: incompatibilidade de plano pedagógico, pendência documental crítica, empresa não credenciada)..."
+                                value={rejectJustificativa}
+                                onChange={e => setRejectJustificativa(e.target.value)}
+                                className="min-h-[120px]"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={isRejecting}>
+                                Cancelar
+                            </Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={handleReject} 
+                                disabled={isRejecting || rejectJustificativa.trim().length < 15}
+                            >
+                                {isRejecting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                Confirmar Rejeição do Estágio
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
+
             {currentStepId === 1 && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
+                        <Button variant="destructive" size="icon" title="Excluir Estágio">
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </AlertDialogTrigger>

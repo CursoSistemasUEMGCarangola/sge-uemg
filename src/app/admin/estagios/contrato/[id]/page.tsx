@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Stepper } from "@/components/ui/stepper"
-import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft, FileClock, MessageSquareWarning } from "lucide-react"
+import { CheckCircle, XCircle, ExternalLink, FileText, ChevronLeft, FileClock, MessageSquareWarning, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
@@ -60,7 +60,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                 </div>
                 <div className="ml-auto flex items-center gap-2">
                     <SendAlertButton type="single" targetId={contrato.id} variant="outline" />
-                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : 'secondary'}>
+                    <Badge variant={contrato.statusAprovacao === 'ATIVO' ? 'success' : contrato.statusAprovacao === 'REJEITADO' ? 'destructive' : 'secondary'}>
                         {contrato.statusAprovacao}
                     </Badge>
                     <ContractActions 
@@ -70,6 +70,19 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                     />
                 </div>
             </div>
+
+            {/* Contract Rejection Banner */}
+            {contrato.statusAprovacao === 'REJEITADO' && (
+                <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-900 shadow-sm flex items-start gap-3">
+                    <XCircle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                    <div>
+                        <h3 className="font-bold text-red-800 text-base">Estágio Indeferido / Rejeitado</h3>
+                        <p className="text-sm text-red-700 mt-1">
+                            <strong>Justificativa do Orientador:</strong> {contrato.observacoesProfessor || "Sem justificativa registrada."}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="grid gap-6 md:grid-cols-2">
@@ -143,20 +156,20 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
 
                     {/* Notification History Card */}
                     {contrato.acompanhamentos.some((a: any) => a.observacoes) && (
-                        <Card className="border-amber-200 bg-amber-50/50">
+                        <Card className="border-blue-200 bg-blue-50/40">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <MessageSquareWarning className="h-5 w-5 text-amber-600" />
-                                    Histórico de Notificações
+                                <CardTitle className="text-lg flex items-center gap-2 text-blue-900">
+                                    <MessageSquare className="h-5 w-5 text-blue-600" />
+                                    Orientações e Notificações do Orientador
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {contrato.acompanhamentos
                                     .filter((a: any) => a.observacoes)
                                     .map((a: any) => (
-                                        <div key={a.id} className="bg-white p-3 rounded-md border border-amber-100 shadow-sm text-sm">
+                                        <div key={a.id} className="bg-white p-3 rounded-md border border-blue-100 shadow-sm text-sm">
                                             <div className="flex justify-between items-start mb-1">
-                                                <span className="font-bold text-amber-800">
+                                                <span className="font-bold text-blue-900">
                                                     Etapa {a.etapaDef.numeroEtapa}: {a.etapaDef.descricao}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
@@ -172,6 +185,7 @@ export default async function EstagioDetailsPage({ params }: { params: { id: str
                             </CardContent>
                         </Card>
                     )}
+
 
                     {/* Action Card */}
                     {contrato.statusAprovacao === 'PENDENTE' ? (

@@ -32,7 +32,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
     // Calculate stats based on filtered contracts
     const pendentes = filteredContratos.filter(c => c.statusAprovacao === 'PENDENTE').length
     const ativos = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !c.dataConclusaoEstagio).length
-    const alertas = filteredContratos.filter(c => c.acompanhamentos.some((a: any) => a.status === 'REJEITADO')).length
+    const alertas = filteredContratos.filter(c => c.statusAprovacao === 'REJEITADO' || c.acompanhamentos.some((a: any) => a.status === 'REJEITADO')).length
 
     const handleOfertaClick = (ofertaId: number) => {
         if (selectedOfertaId === ofertaId) {

@@ -498,3 +498,12 @@ A camada de Data (`getEmpresasRanking` e `getEmpresasNomes`) foi refatorada para
 `razao.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "")`
 Isso retira toda a acentuação, espaços e pontuação (`ACAO` = `AÇÃO`). A chave de agrupamento se torna super-resiliente (`INFOCLICKINFORMATICALTDAME`), enquanto o sistema preserva para exibição (display name) a variação textual mais longa e formatada que encontrar na iteração.
 **Prevenção:** Agrupamentos estatísticos baseados em texto digitado por usuários **nunca** devem depender apenas de um `toUpperCase()`. Utilize chaves de agrupamento higienizadas via Regex (strip non-alphanumerics) na camada Node.js, contornando as limitações do SQL tradicional e salvando o trabalho manual da equipe de dados.
+
+### [2026-09-11] - [UX/DOMAIN] Desacoplamento de Notificações Pedagógicas e Rejeição Formal de Estágio
+
+**Contexto:** Enviar uma notificação ao aluno pela interface chamava `rejectStage`, alterando o status da etapa para `REJEITADO` e exibindo badges destrutivos vermelhos, gerando pânico nos alunos quando o professor só queria avisar sobre trâmites ou procedimentos do estágio. Ao mesmo tempo, não havia na interface um fluxo para o orientador indeferir formalmente o contrato de estágio com justificativa documentada.
+**Solução:**
+1. Desacoplamento: "Enviar Orientação" passa a invocar `notifyStageAction`, salvando o recado em `acompanhamento_etapa.observacoes` sem mutar o status para `REJEITADO`.
+2. UI do Aluno: Exibição diferenciada com card informativo azul amigável para orientações da etapa, mantendo alertas destrutivos apenas para documentos devolvidos.
+3. Rejeição do Contrato: Implementação de `rejectContractAction`, exigindo justificativa formal (mínimo 15 caracteres), gravando em `contrato_estagio.observacoes_professor`, disparando e-mail explicativo ao aluno e exibindo banner de indeferimento sem quebrar os históricos e relatórios PDF.
+**Prevenção:** Em sistemas acadêmicos, separe categoricamente "Comunicação Pedagógica / Orientação" de "Atos Administrativos Terminativos / Rejeição". Nunca reutilize status punitivos para canais de mensageria informativa.

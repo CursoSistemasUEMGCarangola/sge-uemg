@@ -26,8 +26,11 @@ const STATUS_BADGE_MAP: Record<string, any> = {
 };
 const FINAL_STATUS_MAP: Record<string, any> = {
     ATIVO: 'success',
-    ENCERRADO: 'outline'
+    ENCERRADO: 'outline',
+    REJEITADO: 'destructive',
+    PENDENTE: 'secondary'
 };
+
 
 export function ContratoTable({ contratos }: ContratoTableProps) {
     if (contratos.length === 0) {

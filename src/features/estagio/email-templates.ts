@@ -78,3 +78,35 @@ export function buildNewInternshipRequestHtml(data: NewInternshipRequestData): s
     </div>
     `;
 }
+
+export interface ContractRejectedData {
+    internName: string;
+    courseName: string;
+    companyName: string;
+    professorName: string;
+    justification: string;
+}
+
+export function buildContractRejectedHtml(data: ContractRejectedData): string {
+    return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+        <h2 style="color: #b91c1c;">Aviso de Indeferimento de Estágio</h2>
+        <p>Olá, <strong>${data.internName}</strong>,</p>
+        <p>Informamos que o seu registro de estágio na disciplina <strong>${data.courseName}</strong> vinculado à empresa <strong>${data.companyName}</strong> foi <strong>rejeitado/indeferido</strong> pelo professor orientador <strong>${data.professorName}</strong>.</p>
+        
+        <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 4px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #991b1b; font-size: 16px;">Justificativa Oficial do Orientador:</h3>
+            <p style="color: #7f1d1d; white-space: pre-wrap; margin-bottom: 0;">${data.justification}</p>
+        </div>
+
+        <p style="margin-top: 20px; font-size: 14px; color: #4b5563;">
+            Acesse o <a href="https://sge-sistemas.vercel.app/aluno" style="color: #2563eb; font-weight: bold;">Painel do Aluno no SGE</a> para visualizar os detalhes e, se necessário, entre em contato com o seu professor orientador ou inicie um novo cadastro regularizado.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #9ca3af;">
+            Este é um e-mail automático enviado pelo Sistema de Gestão de Estágios da UEMG. Por favor, não responda a este e-mail.
+        </p>
+    </div>
+    `;
+}
+

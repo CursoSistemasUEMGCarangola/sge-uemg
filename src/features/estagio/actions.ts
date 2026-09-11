@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma"
 import { isJanelaCadastroAberta } from "@/lib/system"
 import { assertAlunoOwnsContract } from "@/lib/security"
 import { sendEmail } from "@/lib/email"
-import { buildNewInternshipRequestHtml } from "./email-templates"
+import { buildNewInternshipRequestHtml, buildContractRejectedHtml } from "./email-templates"
 
 // Helper assertAlunoOwnsContract extraído para @/lib/security
 
@@ -198,6 +198,30 @@ export async function rejectStage(contratoId: number, etapaId: number, feedback:
     */
 
     revalidatePath(`/admin/estagios/${contratoId}`)
+    return { success: true }
+}
+
+export async function notifyStageAction(contratoId: number, etapaId: number, message: string) {
+    const role = await getCurrentUserRole()
+    if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+        return { error: "Sem permissão." }
+    }
+
+    const trimmed = message?.trim() || ""
+    if (trimmed.length < 5) {
+        return { error: "A orientação deve conter pelo menos 5 caracteres." }
+    }
+
+    await prisma.acompanhamentoEtapa.updateMany({
+        where: { idContrato: contratoId, idEtapaDef: etapaId },
+        data: {
+            observacoes: trimmed
+        }
+    })
+
+    revalidatePath(`/admin/estagios/${contratoId}`)
+    revalidatePath(`/admin/estagios/contrato/${contratoId}`)
+    revalidatePath('/aluno')
     return { success: true }
 }
 
@@ -477,16 +501,14 @@ export async function deleteContractAction(id: number) {
     }
 }
 
-export async function updateContractStatusAction(id: number, status: 'ATIVO' | 'PENDENTE') {
+export async function updateContractStatusAction(id: number, status: 'ATIVO' | 'PENDENTE' | 'REJEITADO') {
     const role = await getCurrentUserRole()
     if (role !== 'PROFESSOR' && role !== 'ADMIN') {
         return { success: false, error: "Sem permissão (updateContractStatus)." }
     }
 
     try {
-        // User request: Change from Pendente to Ativo.
-        // Logic: active -> ATIVO.
-        const dbStatus = status === 'ATIVO' ? 'ATIVO' : 'PENDENTE'
+        const dbStatus = status === 'ATIVO' ? 'ATIVO' : status === 'REJEITADO' ? 'REJEITADO' : 'PENDENTE'
 
         await prisma.$transaction(async (tx) => {
             // 1. Update Contract Status
@@ -532,11 +554,86 @@ export async function updateContractStatusAction(id: number, status: 'ATIVO' | '
         })
 
         revalidatePath(`/admin/estagios/${id}`)
+        revalidatePath(`/admin/estagios/contrato/${id}`)
         revalidatePath('/admin')
+        revalidatePath('/aluno')
         return { success: true }
     } catch (error) {
         console.error("Erro ao atualizar status:", error)
         return { success: false, error: "Erro ao atualizar status." }
+    }
+}
+
+export async function rejectContractAction(contratoId: number, justificativa: string) {
+    const role = await getCurrentUserRole()
+    if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+        return { success: false, error: "Sem permissão para rejeitar este estágio." }
+    }
+
+    const trimmedJustificativa = justificativa?.trim() || ""
+    if (trimmedJustificativa.length < 15) {
+        return { success: false, error: "A justificativa da rejeição é obrigatória e deve ter no mínimo 15 caracteres." }
+    }
+
+    try {
+        const contrato = await prisma.contratoEstagio.findUnique({
+            where: { id: contratoId },
+            include: {
+                aluno: { include: { profile: true } },
+                oferta: {
+                    include: {
+                        curso: true,
+                        professor: { include: { profile: true } }
+                    }
+                },
+                campo: true
+            }
+        })
+
+        if (!contrato) {
+            return { success: false, error: "Contrato de estágio não encontrado." }
+        }
+
+        // Atualizar contrato com status REJEITADO e justificativa em observacoesProfessor
+        await prisma.contratoEstagio.update({
+            where: { id: contratoId },
+            data: {
+                statusAprovacao: 'REJEITADO',
+                observacoesProfessor: trimmedJustificativa
+            }
+        })
+
+        // Enviar e-mail de notificação ao aluno
+        const studentEmail = contrato.aluno.profile.emailAlternativo || contrato.aluno.profile.email
+        if (studentEmail) {
+            try {
+                const emailHtml = buildContractRejectedHtml({
+                    internName: contrato.aluno.profile.nomeCompleto,
+                    courseName: contrato.oferta.curso.nome,
+                    companyName: contrato.campo.nomeFantasia,
+                    professorName: contrato.oferta.professor.profile.nomeCompleto,
+                    justification: trimmedJustificativa
+                })
+
+                await sendEmail({
+                    to: studentEmail,
+                    subject: `[SGE-UEMG] Atualização Importante: Solicitação de Estágio Indeferida`,
+                    html: emailHtml
+                })
+            } catch (emailErr) {
+                console.error("Erro ao enviar e-mail de rejeição de estágio:", emailErr)
+            }
+        }
+
+        revalidatePath(`/admin/estagios/${contratoId}`)
+        revalidatePath(`/admin/estagios/contrato/${contratoId}`)
+        revalidatePath('/admin')
+        revalidatePath('/aluno')
+
+        return { success: true }
+    } catch (error) {
+        console.error("Erro ao rejeitar contrato:", error)
+        return { success: false, error: "Erro interno ao registrar a rejeição do estágio." }
     }
 }
 

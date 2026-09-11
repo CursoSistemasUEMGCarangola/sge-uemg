@@ -57,11 +57,15 @@ const StudentPdfDocument = ({ contrato }: { contrato: any }) => {
                     <Text style={styles.infoText}>Curso: {contrato.oferta.curso.nome}</Text>
                     <Text style={styles.infoText}>Campo de Estágio: {contrato.campo.nomeFantasia}</Text>
                     <Text style={styles.infoText}>Professor Orientador: {contrato.oferta.professor.profile.nomeCompleto}</Text>
-                    <Text style={styles.infoText}>Status Final: {contrato.statusAprovacao === 'ENCERRADO' ? 'ENCERRADO' : contrato.statusAprovacao === 'ATIVO' ? 'CONCLUÍDO' : contrato.statusAprovacao}</Text>
+                    <Text style={styles.infoText}>Status Final: {contrato.statusAprovacao === 'ENCERRADO' ? 'ENCERRADO' : contrato.statusAprovacao === 'ATIVO' ? 'CONCLUÍDO' : contrato.statusAprovacao === 'REJEITADO' ? 'INDEFERIDO / REJEITADO' : contrato.statusAprovacao}</Text>
                     {contrato.dataConclusaoEstagio && (
                         <Text style={styles.infoText}>Concluído em: {new Date(contrato.dataConclusaoEstagio).toLocaleDateString('pt-BR')}</Text>
                     )}
+                    {contrato.observacoesProfessor && (
+                        <Text style={styles.infoText}>Parecer da Orientação: {contrato.observacoesProfessor}</Text>
+                    )}
                 </View>
+
 
                 <Text style={styles.sectionTitle}>Histórico de Etapas</Text>
                 {contrato.acompanhamentos.map((acomp: any, idx: number) => (

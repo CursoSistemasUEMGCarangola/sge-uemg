@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket, FileText, AlertCircle, FileDown, History } from "lucide-react"
+import { PlusCircle, Building2, Calendar as CalendarIcon, Clock, BookOpen, Rocket, FileText, AlertCircle, FileDown, History, MessageSquare } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getStudentDashboardData } from "@/features/estagio/data"
 import { getCurrentUserRole, createClient } from "@/lib/auth"
@@ -23,9 +23,12 @@ export default async function AlunoDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                <Link href="/aluno/novo-estagio">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Painel do Aluno</h1>
+                    <p className="text-muted-foreground">Acompanhe seus estágios e submeta os documentos necessários.</p>
+                </div>
+                <Link href="/aluno/novo">
                     <Button>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Iniciar Novo Estágio
@@ -34,30 +37,15 @@ export default async function AlunoDashboard() {
             </div>
 
             {contratosAtivos.length === 0 ? (
-                <Card className="border-dashed border-2 shadow-none bg-muted/20">
-                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="rounded-full bg-background p-4 mb-4 shadow-sm">
-                            <Rocket className="h-8 w-8 text-primary" />
-                        </div>
-                        <h3 className="text-xl font-semibold">Comece sua jornada de estágio</h3>
-                        <p className="text-muted-foreground max-w-sm mt-2 mb-6">
-                            Você ainda não tem nenhum processo de estágio cadastrado.
-                            Inicie um novo processo para regularizar sua situação.
-                        </p>
-                        <Link href="/aluno/novo-estagio">
-                            <Button size="lg" className="font-semibold">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Iniciar Novo Estágio
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
+                <div className="text-center py-12 border rounded-md bg-muted/10">
+                    <p className="text-muted-foreground mb-4">Você ainda não possui nenhum processo de estágio em andamento.</p>
+                    <Link href="/aluno/novo">
+                        <Button variant="outline">Cadastrar Primeiro Estágio</Button>
+                    </Link>
+                </div>
             ) : (
                 <div className="grid gap-6">
-                    {contratosAtivos.length > 0 && (
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold tracking-tight">Estágios em Andamento</h2>
-                            {contratosAtivos.map((contrato) => {
+                    {contratosAtivos.map((contrato) => {
                         // Determine current step index (1-based because Stepper expects IDs)
                         // Logic: Find first PENDING step. If all approved, check status.
                         const sortedAcompanhamentos = [...contrato.acompanhamentos].sort((a, b) => a.etapaDef.numeroEtapa - b.etapaDef.numeroEtapa)
@@ -88,6 +76,22 @@ export default async function AlunoDashboard() {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-6">
+                                    {/* Contract Rejection Alert */}
+                                    {contrato.statusAprovacao === 'REJEITADO' && (
+                                        <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-900 shadow-sm flex items-start gap-3">
+                                            <AlertCircle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <h4 className="font-bold text-red-800 text-base">Estágio Indeferido / Rejeitado pelo Professor Orientador</h4>
+                                                <p className="text-sm text-red-700 mt-1">
+                                                    <strong>Justificativa Oficial:</strong> {contrato.observacoesProfessor || "Sem parecer detalhado registrado. Entre em contato com seu orientador."}
+                                                </p>
+                                                <p className="text-xs text-red-600 mt-2 font-medium">
+                                                    Este estágio não pode prosseguir. Entre em contato com a coordenação/orientação ou registre uma nova solicitação caso necessário.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
                                         <div className="flex items-center gap-2">
                                             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
@@ -110,35 +114,55 @@ export default async function AlunoDashboard() {
                                             }))}
                                         />
 
-                                        {/* Feedback / Rejection Alert */}
+                                        {/* Feedback / Rejection Alert vs Pedagogical Orientation */}
                                         {firstPending?.observacoes && (
                                             <div className="mt-6 mb-2"><br />
-                                                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
-                                                    <AlertCircle className="h-4 w-4" />
-                                                    <AlertTitle className="font-bold flex items-center justify-between gap-2">
-                                                        <span>Atenção: Correção Necessária na Etapa {firstPending.etapaDef.numeroEtapa}</span>
-                                                        <span className="text-xs font-normal opacity-80">
-                                                            {firstPending.updatedAt && new Date(firstPending.updatedAt).toLocaleDateString('pt-BR')}
-                                                        </span>
-                                                    </AlertTitle>
-                                                    <AlertDescription className="mt-2 text-sm font-medium">
-                                                        {firstPending.observacoes}
-                                                    </AlertDescription>
-                                                </Alert>
+                                                {firstPending.status === 'REJEITADO' ? (
+                                                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                                                        <AlertCircle className="h-4 w-4" />
+                                                        <AlertTitle className="font-bold flex items-center justify-between gap-2">
+                                                            <span>Atenção: Correção Necessária na Etapa {firstPending.etapaDef.numeroEtapa}</span>
+                                                            <span className="text-xs font-normal opacity-80">
+                                                                {firstPending.updatedAt && new Date(firstPending.updatedAt).toLocaleDateString('pt-BR')}
+                                                            </span>
+                                                        </AlertTitle>
+                                                        <AlertDescription className="mt-2 text-sm font-medium">
+                                                            {firstPending.observacoes}
+                                                        </AlertDescription>
+                                                    </Alert>
+                                                ) : (
+                                                    <Alert className="bg-blue-50/90 border-blue-200 text-blue-900">
+                                                        <MessageSquare className="h-4 w-4 text-blue-600" />
+                                                        <AlertTitle className="font-bold flex items-center justify-between gap-2 text-blue-900">
+                                                            <span>Orientação do Professor Orientador (Etapa {firstPending.etapaDef.numeroEtapa})</span>
+                                                            <span className="text-xs font-normal text-blue-700 opacity-80">
+                                                                {firstPending.updatedAt && new Date(firstPending.updatedAt).toLocaleDateString('pt-BR')}
+                                                            </span>
+                                                        </AlertTitle>
+                                                        <AlertDescription className="mt-2 text-sm font-medium text-blue-800">
+                                                            {firstPending.observacoes}
+                                                        </AlertDescription>
+                                                    </Alert>
+                                                )}
                                             </div>
                                         )}
 
                                         <div className="mt-4 text-center">
                                             <p className="text-lg text-muted-foreground">
                                                 <br />Etapa Atual: <span className="font-bold text-xl text-primary">
-                                                    {contrato.statusAprovacao === 'PENDENTE'
-                                                        ? "PENDENTE: AGUARDANDO APROVAÇÃO DO PROFESSOR ORIENTADOR"
-                                                        : (firstPending?.etapaDef.descricao || "Concluído")
+                                                    {contrato.statusAprovacao === 'REJEITADO'
+                                                        ? "ESTÁGIO INDEFERIDO / REJEITADO"
+                                                        : contrato.statusAprovacao === 'PENDENTE'
+                                                            ? "PENDENTE: AGUARDANDO APROVAÇÃO DO PROFESSOR ORIENTADOR"
+                                                            : (firstPending?.etapaDef.descricao || "Concluído")
                                                     }
                                                 </span>
                                             </p>
                                             <p className="text-base font-medium text-foreground mt-2">
-                                                {firstPending?.etapaDef.orientacaoTextual}
+                                                {contrato.statusAprovacao === 'REJEITADO'
+                                                    ? "Consulte a justificativa oficial do orientador acima."
+                                                    : firstPending?.etapaDef.orientacaoTextual
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -184,6 +208,15 @@ export default async function AlunoDashboard() {
                                         2. AND the PREVIOUS stage is completed (ATIVO) OR it's the first stage
                                     */}
                                     {(() => {
+                                        if (contrato.statusAprovacao === 'REJEITADO') {
+                                            return (
+                                                <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 px-4 py-2 rounded-md text-sm font-medium">
+                                                    <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                                                    <span>Processo de estágio indeferido. Consulte a justificativa oficial acima.</span>
+                                                </div>
+                                            )
+                                        }
+
                                         if (!firstPending) {
                                             // Concluído (aguardando professor encerrar ou apenas 100%)
                                             return (
@@ -291,8 +324,6 @@ export default async function AlunoDashboard() {
                             </Card>
                         )
                     })}
-                        </div>
-                    )}
                 </div>
             )}
         </div>

@@ -154,7 +154,7 @@ Além do seu histórico, você tem acesso ao **Ranking Empresas** na barra later
 
 ---
 
-## 4. Gerenciamento de Prazos, Alertas e Correções
+## 4. Gerenciamento de Prazos, Orientações e Correções
 
 ### 4.1. Monitoramento de Prazos
 
@@ -164,18 +164,35 @@ Na dashboard, abaixo do título de cada etapa pendente, o sistema exibirá uma c
 * O prazo é calculado dinamicamente adicionando o número de dias úteis/limites configurados pelo administrador a partir da data de conclusão da etapa anterior.
 * **Atenção:** Se o prazo for ultrapassado, a data ficará destacada em **vermelho e negrito**, indicando que a etapa está atrasada. O orientador poderá enviar e-mails de cobrança automatizados nesses cenários.
 
-### 4.2. Fluxo de Correções (Status "REJEITADO")
+### 4.2. Orientações Pedagógicas do Orientador (Mensagens Informativas)
 
-Se o professor orientador ou a instituição encontrarem alguma divergência entre as informações digitadas e o documento físico, a etapa correspondente será alterada para o status **"REJEITADO"**.
+Muitas vezes, o professor orientador enviará avisos, lembretes sobre tramitação na universidade ou instruções de procedimentos:
 
-* **Alerta Vermelho na Dashboard:** Um card de alerta vermelho de alta visibilidade aparecerá no topo do seu contrato, contendo a data da rejeição e a observação detalhada escrita pelo professor.
-* **Correção:** Você deve ler com atenção o feedback do orientador, clicar no botão correspondente da etapa e corrigir os dados necessários (por exemplo, na Etapa 1, você poderá editar os dados da capa novamente para sanar as inconsistências).
+* **Card Azul Informativo:** As orientações pedagógicas aparecem em um quadro azul com tom instrutivo na sua dashboard.
+* **Não é um Problema:** Receber uma orientação **não significa que sua etapa foi rejeitada**. Sua etapa continua normalmente como pendente ou em análise, sem qualquer estigma de erro. Leia as orientações para conduzir seu estágio com tranquilidade.
+
+### 4.3. Fluxo de Correções de Documentos (Etapa "REJEITADO")
+
+Se o professor orientador ou a instituição encontrarem alguma divergência entre as informações digitadas e o documento físico submetido para conferência, a etapa correspondente será devolvida com o status **"REJEITADO"**:
+
+* **Alerta de Correção Necessária:** Um card de alerta vermelho aparecerá informando a etapa e a observação detalhada escrita pelo professor.
+* **Correção:** Você deve ler com atenção o feedback do orientador, clicar no botão correspondente da etapa e corrigir os dados necessários.
 * **Reenvio:** Ao salvar as alterações ou gerar um novo documento corrigido, o processo volta para análise do orientador.
 
 > [!NOTE]
 > **Ajustes de Capa (Etapa 1):** Caso o professor note que dados como o nome da empresa ou o nome do supervisor estão errados durante a Etapa 1, ele rejeitará a etapa. O sistema abrirá novamente todos os campos do formulário de cadastro para que você faça os ajustes sem precisar cancelar o processo.
 
+### 4.4. Indeferimento Formal do Estágio (Contrato "REJEITADO")
+
+Caso sua solicitação inicial de estágio não seja aceita pelo orientador (por exemplo, por incompatibilidade de área de atuação com a grade de Sistemas de Informação ou problemas estruturais no campo de estágio):
+
+* O estágio constará como **REJEITADO** no topo do seu painel.
+* Um quadro vermelho em destaque exibirá a **Justificativa Oficial do Orientador** explicando formalmente o motivo da decisão.
+* Você também receberá uma notificação detalhada com esse parecer no seu **e-mail alternativo** cadastrado.
+* As ações daquele contrato ficam suspensas. Procure o professor orientador ou a coordenação para tirar dúvidas ou inicie um novo cadastro regularizado no sistema.
+
 ---
+
 
 ## 5. Regras de Ouro para o Sucesso do Estágio
 

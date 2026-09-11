@@ -55,7 +55,7 @@ Os indicadores são atualizados dinamicamente de acordo com o filtro aplicado:
 
 * **Pendentes de Aprovação:** Contratos novos cadastrados por alunos que aguardam seu deferimento para iniciarem as etapas oficiais de estágio.
 * **Estágios Ativos:** Alunos que já tiveram o contrato aprovado e estão progredindo entre as Etapas 1 e 8.
-* **Alertas/Rejeitados:** Quantidade de etapas que foram sinalizadas com correções necessárias e estão no momento sob ação do aluno.
+* **Alertas/Rejeitados:** Quantidade de estágios indeferidos ou etapas sinalizadas com correções necessárias sob ação do aluno.
 
 ### 2.3. Tabela Geral de Acompanhamento
 
@@ -95,7 +95,7 @@ Exibe todas as informações declaradas pelo aluno no início do processo:
 Aqui você gerencia o fluxo cronológico das 8 etapas sequenciais:
 
 * **Stepper de Progresso:** Um indicador visual de 1 a 8 que mostra graficamente em qual etapa o aluno está.
-* **Histórico de Notificações:** Linha do tempo exibindo todos os feedbacks corretivos e observações passadas enviados a este aluno, facilitando o acompanhamento de reincidências de erros.
+* **Orientações e Notificações do Orientador:** Linha do tempo exibindo todas as orientações pedagógicas, avisos de procedimentos e observações passadas enviados a este aluno.
 * **Card de Ação Contextual (O Cérebro do Fluxo):** Modifica-se automaticamente dependendo do status atual do estágio do aluno.
 
 ---
@@ -104,13 +104,16 @@ Aqui você gerencia o fluxo cronológico das 8 etapas sequenciais:
 
 Conforme o estagiário avança, o card de ação contextual solicitará sua análise ou exibirá o progresso. Existem três fluxos principais que você deve dominar:
 
-### 4.1. Aprovação Inicial do Contrato (Status PENDENTE)
+### 4.1. Aprovação Inicial ou Indeferimento do Contrato (Status PENDENTE / ATIVO)
 
 Quando o aluno inicia um novo processo de estágio no sistema, o contrato nasce com status **PENDENTE**.
 
 * O card de ação informará: *"Este estágio aguarda sua aprovação para iniciar."*
-* **Auditoria de Período:** O sistema permite que o aluno atualize o seu "Período Atual" de forma autônoma na virada do semestre para que ele tenha acesso às novas ofertas correspondentes à turma dele. Cabe a você validar com muito rigor se o aluno realmente pertence ao período declarado antes de deferir o contrato.
-* **Ação:** Analise as atribuições e dados cadastrais informados. Clique no botão de ações rápidas no topo e selecione **"Aprovar"** para ativar o contrato e liberar o aluno para a **Etapa 1**. Em caso de tentativa de burla de período, selecione "Rejeitar".
+* **Auditoria de Período e Conformidade:** Valide com rigor se o aluno pertence ao período declarado, se a empresa é adequada e se as atividades propostas condizem com a grade curricular do curso.
+* **Ações Disponíveis no Cabeçalho:**
+  * **"Tornar Ativo" (Aprovar):** Ativa o contrato e libera o aluno para a **Etapa 1** (Capa).
+  * **"Rejeitar Estágio" (Indeferir):** Caso o estágio não cumpra os requisitos do curso (ex: incompatibilidade de área, empresa não autorizada, tentativa de burla). O sistema abre um diálogo obrigatório para você redigir a justificativa formal (mínimo de 15 caracteres). O contrato passa para status `REJEITADO`, o parecer fica registrado permanentemente no histórico e um e-mail com a justificativa é enviado imediatamente ao aluno.
+  * **Reativação:** Caso um estágio rejeitado seja reconsiderado após regularização, o orientador pode clicar em **"Reativar Estágio"** para torná-lo ativo novamente.
 
 ### 4.2. Fluxo de Análise da Etapa Atual (Status EM_ANALISE)
 
@@ -124,18 +127,27 @@ O sistema disponibiliza os dados coletados na tela para sua auditoria:
 Após ler e conferir se o documento físico correspondente foi protocolado e assinado, você tomará uma das ações:
 
 1. **Aprovar Etapa:** Registra que o documento físico/digital está em conformidade. O sistema grava a data de conclusão, avança o aluno para o próximo passo no Stepper e calcula automaticamente o prazo da próxima etapa.
-2. **Rejeitar Etapa:** Caso haja erros (ex: falta de assinaturas físicas, descrição inadequada, rasuras). O sistema abre um diálogo onde você deve descrever o feedback de correção. O status da etapa muda para `REJEITADO` e o aluno recebe um alerta destacado em vermelho no painel dele para fazer o reajuste.
+2. **Rejeitar Etapa (Devolução de Documento):** Caso haja erros específicos no documento submetido (ex: falta de assinaturas físicas, descrição inadequada, rasuras). O status desta etapa muda para `REJEITADO` e o aluno recebe um alerta destacado de correção para fazer o reajuste e reenvio.
 
-### 4.3. Lógica de Correção de Capa (Ajustes na Etapa 1)
+### 4.3. Enviar Orientação Pedagógica (Sem Rejeitar a Etapa)
 
-Caso você identifique erros de digitação nos dados da empresa ou supervisor durante a Etapa 1, ao clicar em **"Rejeitar"** e justificar o motivo, o sistema desbloqueará automaticamente todos os campos do formulário para o aluno. Ele poderá ajustar as informações necessárias e submeter novamente sem que você precise cancelar o contrato.
+Muitas vezes, o orientador precisa apenas instruir o aluno sobre prazos, alertar sobre trâmites da secretaria ou tirar dúvidas sobre o preenchimento da etapa sem interromper ou penalizar o estágio:
 
-### 4.4. Ações de Emergência e Correções Lógicas
+* Clique no botão **"Enviar Orientação"** no card da etapa.
+* Digite a orientação ou procedimento necessário.
+* **Regra de Ouro:** Esta ação **NÃO altera o status da etapa para Rejeitado**. A etapa continua no estado em que estava (`PENDENTE` ou `EM_ANALISE`), e o aluno recebe uma nota informativa azul amigável no painel dele, estimulando a comunicação sem gerar falsos alertas de punição.
+
+### 4.4. Lógica de Correção de Capa (Ajustes na Etapa 1)
+
+Caso você identifique erros de digitação nos dados da empresa ou supervisor durante a Etapa 1, ao clicar em **"Rejeitar"** na etapa e justificar o motivo, o sistema desbloqueará automaticamente todos os campos do formulário para o aluno. Ele poderá ajustar as informações necessárias e submeter novamente sem que você precise cancelar o contrato.
+
+### 4.5. Ações de Emergência e Correções Lógicas
 
 Na parte inferior do card de ações da etapa, você conta com ferramentas para ajustar o fluxo em casos excepcionais:
 
 * **Concluir Etapa Manualmente:** Permite forçar o avanço de uma etapa mesmo se o aluno não tiver realizado a ação digital correspondente (útil para destravar casos específicos autorizados pela coordenação).
 * **Reverter Etapa (Desfazer Ação):** Se você aprovou uma etapa incorretamente, clique em **"Reverter Etapa"**. Esta ação limpa os metadados (como a data de conclusão da etapa anterior) e retorna o aluno para o estado pendente da etapa em questão, preservando a coerência dos dados e do histórico.
+
 
 ---
 

@@ -181,8 +181,10 @@ Este documento define a estratégia de entrega incremental do SGE. Cada fase des
 **Manutenção (v1.9.2):** 23/08/2026 - Correção no Ranking de Empresas limitando resultados estritamente aos estágios associados ao "Termo de Compromisso de Estágio". Auditoria de Segurança profunda em Data Fetchers: Implementação de proteção contra IDOR em consultas diretas, blindagem de sessão contra bypass em objetos de filtro (Zero Trust) e refatoração de complexidade ciclomática em dashboards.
 **Correção UX (v1.9.3):** 23/08/2026 - Desacoplamento do filtro de tipo de documentação no Autocomplete do formulário de novo estágio, permitindo que os alunos visualizem todas as empresas da base (incluindo as de Pedido de Dispensa), maximizando a prevenção contra duplicações de cadastro (mantendo proteção Multi-Tenant).
 **Manutenção & Evolução (v1.9.4):** 29/08/2026 - Correção no Ranking de Empresas: Normalização avançada de strings para agrupamento de empresas similares, desvinculação do escopo de Professor para nível de Curso/Unidade em contextos globais, garantindo visibilidade correta da tabela, além de desativação de cache estático (force-dynamic) nas rotas de Ranking.
+**Regras de Negócio e UX (v1.9.5):** 11/09/2026 - Desacoplamento de Notificações Pedagógicas ("Enviar Orientação") do status REJEITADO, preservando o fluxo sem punição indevida na etapa. Implementação do fluxo formal de Indeferimento/Rejeição de Estágio no nível de contrato com justificativa obrigatória registrada, comunicada ao aluno por e-mail e refletida nos manuais e relatórios.
 
 O projeto SGE-UEMG atingiu todos os requisitos funcionais e não-funcionais planejados. O sistema está pronto para implantação em ambiente de homologação/produção.
+
 
 ### Próximos Passos (Maintenance & Growth)
 
