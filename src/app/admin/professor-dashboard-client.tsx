@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileClock, CheckCircle2, AlertCircle, Briefcase } from "lucide-react"
+import { FileClock, CheckCircle2, Briefcase, Clock, CheckCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SendAlertButton } from "./estagios/components/send-alert-button"
 import { EncerrarOrientacaoDialog } from "@/features/estagio/components/encerrar-orientacao-dialog"
@@ -29,10 +29,21 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
             return nameA.localeCompare(nameB);
         });
 
+    // Helper to determine if contract completed all stages
+    const isContratoConcluido = (contrato: any) => {
+        if (contrato.dataConclusaoEstagio) return true
+        if (contrato.statusAprovacao === 'ENCERRADO') return true
+        const hasPendingStep = contrato.acompanhamentos?.some((a: any) =>
+            a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
+        )
+        return Boolean(contrato.acompanhamentos?.length > 0 && !hasPendingStep)
+    }
+
     // Calculate stats based on filtered contracts
     const pendentes = filteredContratos.filter(c => c.statusAprovacao === 'PENDENTE').length
-    const ativos = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !c.dataConclusaoEstagio).length
-    const alertas = filteredContratos.filter(c => c.statusAprovacao === 'REJEITADO' || c.acompanhamentos.some((a: any) => a.status === 'REJEITADO')).length
+    const ativos = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO').length
+    const emAndamento = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !isContratoConcluido(c)).length
+    const concluidos = filteredContratos.filter(c => isContratoConcluido(c)).length
 
     const handleOfertaClick = (ofertaId: number) => {
         if (selectedOfertaId === ofertaId) {
@@ -115,7 +126,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
             )}
 
             {/* Stats Cards (Dynamic) */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Pendentes de Aprovação</CardTitle>
@@ -138,12 +149,22 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Alertas/Rejeitados</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">Estágios em Andamento</CardTitle>
+                        <Clock className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{alertas}</div>
-                        <p className="text-xs text-muted-foreground">Requer atenção</p>
+                        <div className="text-2xl font-bold">{emAndamento}</div>
+                        <p className="text-xs text-muted-foreground">Cursando etapas</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Estágios Concluídos</CardTitle>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{concluidos}</div>
+                        <p className="text-xs text-muted-foreground">Com sucesso</p>
                     </CardContent>
                 </Card>
             </div>
@@ -173,7 +194,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                                 const currentStepStatus = currentStepDef ? currentStepDef.status : "CONCLUIDO"
 
                                 return (
-                                    <tr key={contrato.id} className="hover:bg-muted/10 transition-colors">
+                                    <tr key={contrato.id} className="hover:bg-muted/70 transition-colors">
                                         <td className="px-4 py-3 font-medium text-foreground">
                                             {contrato.aluno.profile.nomeCompleto}
                                         </td>
