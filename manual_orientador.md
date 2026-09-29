@@ -49,13 +49,17 @@ No topo do painel, você verá o card **"Minhas Orientações"**. Ele lista todo
 * **Filtragem Rápida:** Clique em um dos cartões de orientação para filtrar a tabela de alunos e os indicadores de estatísticas. Apenas os alunos daquela turma/semestre serão exibidos. Clique novamente para desmarcar e ver todos.
 * **Encerramento de Orientação:** Quando todos os alunos de uma orientação concluírem suas etapas (100%), um botão **"Encerrar Orientação"** ficará disponível no cartão. Ao confirmar o encerramento, a turma sairá do painel de controle ativo e será arquivada permanentemente.
 
-### 2.2. Indicadores Métricos (Stats)
+### 2.2. Indicadores Métricos e Filtros Interativos (Cards Clicáveis)
 
-Os indicadores são atualizados dinamicamente de acordo com o filtro aplicado:
+Os 5 cards métricos na parte superior funcionam como **filtros interativos** da tabela de alunos. Clicar em um card filtra imediatamente a lista abaixo para o status selecionado. Clicar novamente no mesmo card desmarca o filtro e restaura a listagem completa:
 
-* **Pendentes de Aprovação:** Contratos novos cadastrados por alunos que aguardam seu deferimento para iniciarem as etapas oficiais de estágio.
-* **Estágios Ativos:** Alunos que já tiveram o contrato aprovado e estão progredindo entre as Etapas 1 e 8.
-* **Alertas/Rejeitados:** Quantidade de estágios indeferidos ou etapas sinalizadas com correções necessárias sob ação do aluno.
+1. **Pendentes de Aprovação:** Contratos novos cadastrados por alunos que aguardam seu deferimento para iniciarem as etapas oficiais de estágio.
+2. **Estágios Rejeitados:** Contratos que foram formalmente indeferidos pelo orientador com justificativa registrada.
+3. **Estágios Ativos:** Contratos que já foram deferidos e encontram-se habilitados no sistema.
+4. **Estágios em Andamento:** Subconjunto dos estágios ativos que ainda estão cursando etapas (não concluíram todas as fases).
+5. **Estágios Concluídos:** Estágios que cumpriram todas as etapas curriculares ou possuem data de conclusão/encerramento homologada.
+
+> **Dica de Uso:** Quando um filtro de card estiver ativo, uma barra informativa acima da tabela exibirá o nome do filtro aplicado, o quantitativo de estagiários correspondentes e um botão rápido para **"Limpar filtro"**.
 
 ### 2.3. Tabela Geral de Acompanhamento
 
@@ -160,11 +164,20 @@ Para evitar atrasos e garantir o fluxo contínuo das etapas de auditoria física
 * Se o aluno estiver atrasado ou precisar de uma notificação rápida sobre pendências físicas, entre na página de detalhes do estágio dele e clique no botão **"Enviar Alerta de Atraso"** (ícone de sino com envelope).
 * O sistema enviará um e-mail para o **e-mail alternativo pessoal** cadastrado pelo aluno (com fallback para o institucional caso não esteja preenchido), cobrando a regularização da etapa atual pendente.
 
-### 5.2. Alertas em Massa (Cobrança por Turma)
+### 5.2. Enviar Mensagem a Todos (Comunicação Coletiva Contextual)
 
-* Se você deseja realizar uma cobrança coletiva, selecione uma de suas orientações no painel inicial.
-* Ao lado de *"Minhas Orientações"*, clique no botão **"Enviar Alertas em Massa"**.
-* O sistema buscará todos os estagiários daquela turma selecionada que estejam com o status de etapa atrasado (com base no prazo dinâmico expirado) e enviará notificações em lote em segundo plano, sem travar sua navegação.
+No cabeçalho de *"Minhas Orientações"*, o orientador conta com o botão **"Enviar Mensagem a Todos"** para comunicar orientações, avisos de prazos ou comunicados formais:
+
+* **Sensibilidade ao Filtro Ativo:** O envio é direcionado estritamente aos alunos que estão sendo exibidos na listagem no momento. Ou seja, você pode segmentar os destinatários combinando:
+  * O filtro de **Turma/Orientação** (selecionando um card de disciplina específico ou todas as turmas);
+  * O filtro dos **Cards de Status** (ex: enviar apenas para os *"Estágios Rejeitados"*, apenas para *"Pendentes de Aprovação"* ou para a turma inteira).
+* **Caixa de Diálogo Transparente:** Ao clicar no botão, uma janela modal é exibida indicando explicitamente:
+  * A turma filtrada e o status selecionado;
+  * O quantitativo exato de alunos que receberão a mensagem;
+  * Aviso claro informando que a mensagem será encaminhada para os **e-mails alternativos pessoais** cadastrados pelos alunos.
+* **Formulação da Mensagem:** Você pode definir um assunto personalizado (opcional) e digitar o conteúdo completo do comunicado em um campo de texto dedicado com contador de caracteres.
+* **Confirmação Dupla Obrigatória:** Antes de disparar, o sistema solicita uma confirmação expressa para você revisar os dados do envio (quantidade de destinatários e filtros aplicados), prevenindo disparos acidentais por engano.
+* **Disparo Seguro:** Ao confirmar, o sistema formata um e-mail institucional oficial e realiza os disparos para a caixa de entrada dos alunos, informando o total de sucessos ao término.
 
 ---
 

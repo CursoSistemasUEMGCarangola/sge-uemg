@@ -20,6 +20,20 @@ const STATUS_LABELS: Record<NonNullable<StatusFilter>, string> = {
     CONCLUIDO: 'Estágios Concluídos',
 }
 
+function getFirstPendingStep(acompanhamentos?: any[]) {
+    return acompanhamentos?.find((a: any) => 
+        a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
+    )
+}
+
+const STATUS_PREDICATES: Record<NonNullable<StatusFilter>, (contrato: any, isConcluido: boolean) => boolean> = {
+    PENDENTE: (c) => c.statusAprovacao === 'PENDENTE',
+    REJEITADO: (c) => c.statusAprovacao === 'REJEITADO',
+    ATIVO: (c) => c.statusAprovacao === 'ATIVO',
+    EM_ANDAMENTO: (c, isConcluido) => c.statusAprovacao === 'ATIVO' && !isConcluido,
+    CONCLUIDO: (_c, isConcluido) => isConcluido,
+}
+
 interface ProfessorDashboardClientProps {
     contratos: any[]
     ofertas: any[]
@@ -41,11 +55,8 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
     // Helper to determine if contract completed all stages
     const isContratoConcluido = (contrato: any) => {
-        if (contrato.dataConclusaoEstagio) return true
-        if (contrato.statusAprovacao === 'ENCERRADO') return true
-        const hasPendingStep = contrato.acompanhamentos?.some((a: any) =>
-            a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
-        )
+        if (contrato.dataConclusaoEstagio || contrato.statusAprovacao === 'ENCERRADO') return true
+        const hasPendingStep = getFirstPendingStep(contrato.acompanhamentos)
         return Boolean(contrato.acompanhamentos?.length > 0 && !hasPendingStep)
     }
 
@@ -56,28 +67,76 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
     const emAndamento = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !isContratoConcluido(c)).length
     const concluidos = filteredContratos.filter(c => isContratoConcluido(c)).length
 
-    // Filter contracts by selected card status
-    const displayedContratos = filteredContratos.filter(c => {
-        if (!selectedStatus) return true
-        if (selectedStatus === 'PENDENTE') return c.statusAprovacao === 'PENDENTE'
-        if (selectedStatus === 'REJEITADO') return c.statusAprovacao === 'REJEITADO'
-        if (selectedStatus === 'ATIVO') return c.statusAprovacao === 'ATIVO'
-        if (selectedStatus === 'EM_ANDAMENTO') return c.statusAprovacao === 'ATIVO' && !isContratoConcluido(c)
-        if (selectedStatus === 'CONCLUIDO') return isContratoConcluido(c)
-        return true
-    })
+    // Filter contracts by selected card status (O(1) dictionary predicate lookup)
+    const displayedContratos = selectedStatus
+        ? filteredContratos.filter(c => STATUS_PREDICATES[selectedStatus](c, isContratoConcluido(c)))
+        : filteredContratos
 
     const handleOfertaClick = (ofertaId: number) => {
-        if (selectedOfertaId === ofertaId) {
-            setSelectedOfertaId(null) // Deselect
-        } else {
-            setSelectedOfertaId(ofertaId) // Select
-        }
+        setSelectedOfertaId(prev => prev === ofertaId ? null : ofertaId)
     }
 
     const handleStatusClick = (status: StatusFilter) => {
         setSelectedStatus(prev => prev === status ? null : status)
     }
+
+    const cardsConfig = [
+        {
+            status: 'PENDENTE' as const,
+            title: 'Pendentes de Aprovação',
+            count: pendentes,
+            icon: FileClock,
+            iconClass: 'text-amber-500',
+            subtextDefault: 'Aguardando ação',
+            borderColor: 'border-l-amber-500',
+            activeRingClass: 'ring-2 ring-amber-500 ring-offset-2 bg-amber-50/40 dark:bg-amber-950/20',
+            hoverBorderClass: 'hover:border-l-amber-400',
+        },
+        {
+            status: 'REJEITADO' as const,
+            title: 'Estágios Rejeitados',
+            count: rejeitados,
+            icon: XCircle,
+            iconClass: 'text-destructive',
+            subtextDefault: 'Indeferidos',
+            borderColor: 'border-l-red-500',
+            activeRingClass: 'ring-2 ring-red-500 ring-offset-2 bg-red-50/40 dark:bg-red-950/20',
+            hoverBorderClass: 'hover:border-l-red-400',
+        },
+        {
+            status: 'ATIVO' as const,
+            title: 'Estágios Ativos',
+            count: ativos,
+            icon: CheckCircle2,
+            iconClass: 'text-muted-foreground',
+            subtextDefault: 'Em andamento',
+            borderColor: 'border-l-blue-500',
+            activeRingClass: 'ring-2 ring-blue-500 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20',
+            hoverBorderClass: 'hover:border-l-blue-400',
+        },
+        {
+            status: 'EM_ANDAMENTO' as const,
+            title: 'Estágios em Andamento',
+            count: emAndamento,
+            icon: Clock,
+            iconClass: 'text-blue-600',
+            subtextDefault: 'Cursando etapas',
+            borderColor: 'border-l-blue-600',
+            activeRingClass: 'ring-2 ring-blue-600 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20',
+            hoverBorderClass: 'hover:border-l-blue-400',
+        },
+        {
+            status: 'CONCLUIDO' as const,
+            title: 'Estágios Concluídos',
+            count: concluidos,
+            icon: CheckCircle,
+            iconClass: 'text-green-600',
+            subtextDefault: 'Com sucesso',
+            borderColor: 'border-l-green-600',
+            activeRingClass: 'ring-2 ring-green-600 ring-offset-2 bg-green-50/40 dark:bg-green-950/20',
+            hoverBorderClass: 'hover:border-l-green-400',
+        },
+    ]
 
     return (
         <div className="space-y-6">
@@ -161,110 +220,43 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
             {/* Stats Cards (Dynamic & Clickable) */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                <Card
-                    onClick={() => handleStatusClick('PENDENTE')}
-                    className={cn(
-                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
-                        selectedStatus === 'PENDENTE'
-                            ? "border-l-amber-500 ring-2 ring-amber-500 ring-offset-2 bg-amber-50/40 dark:bg-amber-950/20"
-                            : "border-l-transparent hover:border-l-amber-400 hover:bg-muted/40"
-                    )}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Pendentes de Aprovação</CardTitle>
-                        <FileClock className="h-4 w-4 text-amber-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{pendentes}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {selectedStatus === 'PENDENTE' ? '● Filtro ativo' : 'Aguardando ação'}
-                        </p>
-                    </CardContent>
-                </Card>
+                {cardsConfig.map((card) => {
+                    const isSelected = selectedStatus === card.status
+                    const Icon = card.icon
 
-                <Card
-                    onClick={() => handleStatusClick('REJEITADO')}
-                    className={cn(
-                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
-                        selectedStatus === 'REJEITADO'
-                            ? "border-l-red-500 ring-2 ring-red-500 ring-offset-2 bg-red-50/40 dark:bg-red-950/20"
-                            : "border-l-transparent hover:border-l-red-400 hover:bg-muted/40"
-                    )}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estágios Rejeitados</CardTitle>
-                        <XCircle className="h-4 w-4 text-destructive" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{rejeitados}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {selectedStatus === 'REJEITADO' ? '● Filtro ativo' : 'Indeferidos'}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card
-                    onClick={() => handleStatusClick('ATIVO')}
-                    className={cn(
-                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
-                        selectedStatus === 'ATIVO'
-                            ? "border-l-blue-500 ring-2 ring-blue-500 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20"
-                            : "border-l-transparent hover:border-l-blue-400 hover:bg-muted/40"
-                    )}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estágios Ativos</CardTitle>
-                        <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{ativos}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {selectedStatus === 'ATIVO' ? '● Filtro ativo' : 'Em andamento'}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card
-                    onClick={() => handleStatusClick('EM_ANDAMENTO')}
-                    className={cn(
-                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
-                        selectedStatus === 'EM_ANDAMENTO'
-                            ? "border-l-blue-600 ring-2 ring-blue-600 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20"
-                            : "border-l-transparent hover:border-l-blue-400 hover:bg-muted/40"
-                    )}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estágios em Andamento</CardTitle>
-                        <Clock className="h-4 w-4 text-blue-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{emAndamento}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {selectedStatus === 'EM_ANDAMENTO' ? '● Filtro ativo' : 'Cursando etapas'}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card
-                    onClick={() => handleStatusClick('CONCLUIDO')}
-                    className={cn(
-                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
-                        selectedStatus === 'CONCLUIDO'
-                            ? "border-l-green-600 ring-2 ring-green-600 ring-offset-2 bg-green-50/40 dark:bg-green-950/20"
-                            : "border-l-transparent hover:border-l-green-400 hover:bg-muted/40"
-                    )}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estágios Concluídos</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{concluidos}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {selectedStatus === 'CONCLUIDO' ? '● Filtro ativo' : 'Com sucesso'}
-                        </p>
-                    </CardContent>
-                </Card>
+                    return (
+                        <Card
+                            key={card.status}
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={isSelected}
+                            onClick={() => handleStatusClick(card.status)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault()
+                                    handleStatusClick(card.status)
+                                }
+                            }}
+                            className={cn(
+                                "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                isSelected
+                                    ? cn(card.borderColor, card.activeRingClass)
+                                    : cn("border-l-transparent hover:bg-muted/40", card.hoverBorderClass)
+                            )}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                                <Icon className={cn("h-4 w-4", card.iconClass)} />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{card.count}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    {isSelected ? '● Filtro ativo' : card.subtextDefault}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )
+                })}
             </div>
 
             {/* Indicador de filtro ativo */}
@@ -306,9 +298,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                         </thead>
                         <tbody className="divide-y">
                             {displayedContratos.map((contrato) => {
-                                const currentStepDef = contrato.acompanhamentos.find((a: any) => 
-                                    a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
-                                )
+                                const currentStepDef = getFirstPendingStep(contrato.acompanhamentos)
                                 const currentStepLabel = currentStepDef 
                                     ? `Etapa ${currentStepDef.etapaDef.numeroEtapa}` 
                                     : "Concluído"

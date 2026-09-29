@@ -507,3 +507,21 @@ Isso retira toda a acentuação, espaços e pontuação (`ACAO` = `AÇÃO`). A c
 2. UI do Aluno: Exibição diferenciada com card informativo azul amigável para orientações da etapa, mantendo alertas destrutivos apenas para documentos devolvidos.
 3. Rejeição do Contrato: Implementação de `rejectContractAction`, exigindo justificativa formal (mínimo 15 caracteres), gravando em `contrato_estagio.observacoes_professor`, disparando e-mail explicativo ao aluno e exibindo banner de indeferimento sem quebrar os históricos e relatórios PDF.
 **Prevenção:** Em sistemas acadêmicos, separe categoricamente "Comunicação Pedagógica / Orientação" de "Atos Administrativos Terminativos / Rejeição". Nunca reutilize status punitivos para canais de mensageria informativa.
+
+### [2026-09-29] - [SECURITY/EMAIL] Sanitização Anti-Injeção (HTML Escaping) em Templates de Mensageria Livre
+
+**Contexto:** Ao criar o recurso de envio de mensagens em lote personalizadas pelo professor orientador aos estagiários, a mensagem textual digitada no campo livre era interpolada diretamente no HTML do e-mail. Mesmo se tratando de um usuário autenticado (professor), interpolar strings cruas em templates de e-mail abre brechas de segurança para injeção de HTML (quebra de layout, inclusão de iframes ou links de phishing involuntários).
+**Solução:** Implementação de uma rotina pura de higienização de entidades HTML (`escapeHtml`) que substitui caracteres reservados (`&`, `<`, `>`, `"`, `'`) por suas respectivas entidades HTML seguras, convertendo quebras de linha (`\n`) para `<br />` de forma controlada.
+**Prevenção:** Em templates de e-mail transacionais ou comunicados, **nunca** interpole inputs de texto livre sem sanitização prévia de entidades HTML. Aplique o princípio Zero Trust mesmo para remetentes com privilégios administrativos.
+
+### [2026-09-29] - [UX/SAFETY] Dupla Confirmação Contextual e Sensibilidade a Filtros em Ações Coletivas
+
+**Contexto:** Rotinas de disparo em massa (como e-mails para alunos) disparavam sem confirmação explícita. Ao introduzir filtros dinâmicos de status no dashboard, havia o risco do orientador acreditar que a mensagem iria apenas para a turma inteira, ou apenas para os estágios com status selecionado, gerando notificações indesejadas por falta de clareza do escopo.
+**Solução:** Arquitetura de diálogo modal em duas etapas com sensibilidade ao estado ativo de filtros da interface (`displayedContratos`). A primeira etapa exibe com destaque um banner explicativo contextualizando a turma e o status selecionado com o quantitativo exato de destinatários. Ao avançar, um `AlertDialog` de confirmação obrigatório exige o aval consciente do usuário antes de acionar a Server Action.
+**Prevenção:** Ações coletivas com impacto externo (disparo de e-mails, exclusões em lote) devem sempre espelhar com exatidão a visão filtrada em tela e exigir uma etapa de confirmação com resumo quantitativo de destinatários para evitar disparos acidentais por engano.
+
+### [2026-09-29] - [CODE-QUALITY/CYCLOMATIC] Redução de Complexidade via Mapeamento de Predicados em Filtros Dinâmicos
+
+**Contexto:** Com a adição do card de "Estágios Rejeitados" e a conversão de todos os 5 cards de status em filtros da listagem de alunos, a função de filtragem acumulava uma cadeia de `if / else if` aninhados dentro do `.filter()`, elevando a complexidade ciclomática para $M \ge 6$ e tornando o código propenso a regressões em manutenções futuras.
+**Solução:** Abstração dos critérios lógicos em um dicionário estático e imutável de predicados puros `Record<StatusFilter, (item, isConcluido) => boolean>`, permitindo a busca da regra em tempo constante $O(1)$ e reduzindo a complexidade ciclomática do filtro para $M = 1$.
+**Prevenção:** Substitua cascata de condicionais repetitivas em rotinas de filtragem por dicionários de predicados indexados por chave de enum/type.

@@ -110,6 +110,15 @@ export function buildContractRejectedHtml(data: ContractRejectedData): string {
     `;
 }
 
+function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 export interface CustomProfessorMessageData {
     professorName: string;
     internName: string;
@@ -119,24 +128,25 @@ export interface CustomProfessorMessageData {
 }
 
 export function buildCustomProfessorMessageHtml(data: CustomProfessorMessageData): string {
+    const safeContent = escapeHtml(data.messageContent).replace(/\n/g, '<br />');
     const filterInfo = data.filterContext
         ? `<p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
-             <strong>Contexto do comunicado:</strong> ${data.filterContext}
+             <strong>Contexto do comunicado:</strong> ${escapeHtml(data.filterContext)}
            </p>`
         : '';
 
     return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
         <h2 style="color: #1d4ed8; margin-bottom: 8px;">Comunicado do Professor Orientador</h2>
-        <p style="font-size: 15px; margin-top: 0;">Olá, <strong>${data.internName}</strong>,</p>
+        <p style="font-size: 15px; margin-top: 0;">Olá, <strong>${escapeHtml(data.internName)}</strong>,</p>
         
-        <p>Você recebeu uma mensagem do seu professor orientador <strong>${data.professorName}</strong> referente à disciplina <strong>${data.courseName}</strong>.</p>
+        <p>Você recebeu uma mensagem do seu professor orientador <strong>${escapeHtml(data.professorName)}</strong> referente à disciplina <strong>${escapeHtml(data.courseName)}</strong>.</p>
         
         ${filterInfo}
 
         <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 18px; border-radius: 6px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #1e40af; font-size: 15px;">Mensagem:</h3>
-            <div style="color: #334155; white-space: pre-wrap; font-size: 14px; line-height: 1.6;">${data.messageContent}</div>
+            <div style="color: #334155; font-size: 14px; line-height: 1.6;">${safeContent}</div>
         </div>
 
         <p style="margin-top: 24px; font-size: 14px; color: #4b5563;">
@@ -149,3 +159,4 @@ export function buildCustomProfessorMessageHtml(data: CustomProfessorMessageData
     </div>
     `;
 }
+

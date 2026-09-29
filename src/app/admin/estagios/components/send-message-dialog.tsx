@@ -29,8 +29,19 @@ import { Mail, Loader2, Send, AlertCircle, Users, CheckCircle2 } from "lucide-re
 import { sendCustomBulkMessageAction } from "@/features/estagio/actions/email-actions"
 import { useToast } from "@/hooks/use-toast"
 
+interface ContratoItemSummary {
+    id: number
+    aluno?: {
+        profile?: {
+            nomeCompleto?: string
+            email?: string
+            emailAlternativo?: string | null
+        }
+    }
+}
+
 interface SendMessageDialogProps {
-    contratos: any[]
+    contratos: ContratoItemSummary[]
     selectedOfertaNome?: string | null
     selectedStatusLabel?: string | null
     className?: string
