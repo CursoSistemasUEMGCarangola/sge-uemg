@@ -5,11 +5,20 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileClock, CheckCircle2, Briefcase, Clock, CheckCircle } from "lucide-react"
+import { FileClock, CheckCircle2, Briefcase, Clock, CheckCircle, XCircle, FileDown, Ban } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { SendAlertButton } from "./estagios/components/send-alert-button"
+import { SendMessageDialog } from "./estagios/components/send-message-dialog"
 import { EncerrarOrientacaoDialog } from "@/features/estagio/components/encerrar-orientacao-dialog"
-import { FileDown, Ban } from "lucide-react"
+
+type StatusFilter = 'PENDENTE' | 'REJEITADO' | 'ATIVO' | 'EM_ANDAMENTO' | 'CONCLUIDO' | null
+
+const STATUS_LABELS: Record<NonNullable<StatusFilter>, string> = {
+    PENDENTE: 'Pendentes de Aprovação',
+    REJEITADO: 'Estágios Rejeitados',
+    ATIVO: 'Estágios Ativos',
+    EM_ANDAMENTO: 'Estágios em Andamento',
+    CONCLUIDO: 'Estágios Concluídos',
+}
 
 interface ProfessorDashboardClientProps {
     contratos: any[]
@@ -18,6 +27,7 @@ interface ProfessorDashboardClientProps {
 
 export function ProfessorDashboardClient({ contratos: initialContratos, ofertas }: ProfessorDashboardClientProps) {
     const [selectedOfertaId, setSelectedOfertaId] = useState<number | null>(null)
+    const [selectedStatus, setSelectedStatus] = useState<StatusFilter>(null)
 
     // Filter contracts based on selection
     const filteredContratos = (selectedOfertaId
@@ -41,9 +51,21 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
 
     // Calculate stats based on filtered contracts
     const pendentes = filteredContratos.filter(c => c.statusAprovacao === 'PENDENTE').length
+    const rejeitados = filteredContratos.filter(c => c.statusAprovacao === 'REJEITADO').length
     const ativos = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO').length
     const emAndamento = filteredContratos.filter(c => c.statusAprovacao === 'ATIVO' && !isContratoConcluido(c)).length
     const concluidos = filteredContratos.filter(c => isContratoConcluido(c)).length
+
+    // Filter contracts by selected card status
+    const displayedContratos = filteredContratos.filter(c => {
+        if (!selectedStatus) return true
+        if (selectedStatus === 'PENDENTE') return c.statusAprovacao === 'PENDENTE'
+        if (selectedStatus === 'REJEITADO') return c.statusAprovacao === 'REJEITADO'
+        if (selectedStatus === 'ATIVO') return c.statusAprovacao === 'ATIVO'
+        if (selectedStatus === 'EM_ANDAMENTO') return c.statusAprovacao === 'ATIVO' && !isContratoConcluido(c)
+        if (selectedStatus === 'CONCLUIDO') return isContratoConcluido(c)
+        return true
+    })
 
     const handleOfertaClick = (ofertaId: number) => {
         if (selectedOfertaId === ofertaId) {
@@ -51,6 +73,10 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
         } else {
             setSelectedOfertaId(ofertaId) // Select
         }
+    }
+
+    const handleStatusClick = (status: StatusFilter) => {
+        setSelectedStatus(prev => prev === status ? null : status)
     }
 
     return (
@@ -63,7 +89,15 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                             <Briefcase className="h-5 w-5 text-muted-foreground" />
                             Minhas Orientações
                         </h2>
-                        <SendAlertButton type="bulk" targetId={selectedOfertaId} />
+                        <SendMessageDialog
+                            contratos={displayedContratos}
+                            selectedOfertaNome={
+                                selectedOfertaId
+                                    ? ofertas?.find((o: any) => o.id === selectedOfertaId)?.curso?.nome
+                                    : null
+                            }
+                            selectedStatusLabel={selectedStatus ? STATUS_LABELS[selectedStatus] : null}
+                        />
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {ofertas.map((oferta: any) => {
@@ -125,52 +159,139 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                 </div>
             )}
 
-            {/* Stats Cards (Dynamic) */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            {/* Stats Cards (Dynamic & Clickable) */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <Card
+                    onClick={() => handleStatusClick('PENDENTE')}
+                    className={cn(
+                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
+                        selectedStatus === 'PENDENTE'
+                            ? "border-l-amber-500 ring-2 ring-amber-500 ring-offset-2 bg-amber-50/40 dark:bg-amber-950/20"
+                            : "border-l-transparent hover:border-l-amber-400 hover:bg-muted/40"
+                    )}
+                >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Pendentes de Aprovação</CardTitle>
-                        <FileClock className="h-4 w-4 text-muted-foreground" />
+                        <FileClock className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{pendentes}</div>
-                        <p className="text-xs text-muted-foreground">Aguardando ação</p>
+                        <p className="text-xs text-muted-foreground">
+                            {selectedStatus === 'PENDENTE' ? '● Filtro ativo' : 'Aguardando ação'}
+                        </p>
                     </CardContent>
                 </Card>
-                <Card>
+
+                <Card
+                    onClick={() => handleStatusClick('REJEITADO')}
+                    className={cn(
+                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
+                        selectedStatus === 'REJEITADO'
+                            ? "border-l-red-500 ring-2 ring-red-500 ring-offset-2 bg-red-50/40 dark:bg-red-950/20"
+                            : "border-l-transparent hover:border-l-red-400 hover:bg-muted/40"
+                    )}
+                >
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Estágios Rejeitados</CardTitle>
+                        <XCircle className="h-4 w-4 text-destructive" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{rejeitados}</div>
+                        <p className="text-xs text-muted-foreground">
+                            {selectedStatus === 'REJEITADO' ? '● Filtro ativo' : 'Indeferidos'}
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card
+                    onClick={() => handleStatusClick('ATIVO')}
+                    className={cn(
+                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
+                        selectedStatus === 'ATIVO'
+                            ? "border-l-blue-500 ring-2 ring-blue-500 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20"
+                            : "border-l-transparent hover:border-l-blue-400 hover:bg-muted/40"
+                    )}
+                >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Estágios Ativos</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{ativos}</div>
-                        <p className="text-xs text-muted-foreground">Em andamento</p>
+                        <p className="text-xs text-muted-foreground">
+                            {selectedStatus === 'ATIVO' ? '● Filtro ativo' : 'Em andamento'}
+                        </p>
                     </CardContent>
                 </Card>
-                <Card>
+
+                <Card
+                    onClick={() => handleStatusClick('EM_ANDAMENTO')}
+                    className={cn(
+                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
+                        selectedStatus === 'EM_ANDAMENTO'
+                            ? "border-l-blue-600 ring-2 ring-blue-600 ring-offset-2 bg-blue-50/40 dark:bg-blue-950/20"
+                            : "border-l-transparent hover:border-l-blue-400 hover:bg-muted/40"
+                    )}
+                >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Estágios em Andamento</CardTitle>
                         <Clock className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{emAndamento}</div>
-                        <p className="text-xs text-muted-foreground">Cursando etapas</p>
+                        <p className="text-xs text-muted-foreground">
+                            {selectedStatus === 'EM_ANDAMENTO' ? '● Filtro ativo' : 'Cursando etapas'}
+                        </p>
                     </CardContent>
                 </Card>
-                <Card>
+
+                <Card
+                    onClick={() => handleStatusClick('CONCLUIDO')}
+                    className={cn(
+                        "cursor-pointer transition-all duration-200 border-l-4 shadow-sm hover:shadow-md select-none",
+                        selectedStatus === 'CONCLUIDO'
+                            ? "border-l-green-600 ring-2 ring-green-600 ring-offset-2 bg-green-50/40 dark:bg-green-950/20"
+                            : "border-l-transparent hover:border-l-green-400 hover:bg-muted/40"
+                    )}
+                >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Estágios Concluídos</CardTitle>
                         <CheckCircle className="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{concluidos}</div>
-                        <p className="text-xs text-muted-foreground">Com sucesso</p>
+                        <p className="text-xs text-muted-foreground">
+                            {selectedStatus === 'CONCLUIDO' ? '● Filtro ativo' : 'Com sucesso'}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Indicador de filtro ativo */}
+            {selectedStatus && (
+                <div className="flex items-center justify-between bg-muted/50 border rounded-lg px-4 py-2.5 text-sm shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Filtro aplicado:</span>
+                        <Badge variant="secondary" className="font-semibold text-xs">
+                            {STATUS_LABELS[selectedStatus]}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                            ({displayedContratos.length} {displayedContratos.length === 1 ? 'estágio exibido' : 'estágios exibidos'})
+                        </span>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedStatus(null)}
+                        className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                        Limpar filtro
+                    </Button>
+                </div>
+            )}
+
             {/* Lista de Alunos (Dynamic) */}
-            {filteredContratos.length > 0 ? (
+            {displayedContratos.length > 0 ? (
                 <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
@@ -184,7 +305,7 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {filteredContratos.map((contrato) => {
+                            {displayedContratos.map((contrato) => {
                                 const currentStepDef = contrato.acompanhamentos.find((a: any) => 
                                     a.status === 'PENDENTE' || a.status === 'EM_ANALISE' || a.status === 'REJEITADO'
                                 )
@@ -256,7 +377,16 @@ export function ProfessorDashboardClient({ contratos: initialContratos, ofertas 
                 </div>
             ) : (
                 <div className="text-center py-12 border rounded-md bg-muted/10">
-                    <p className="text-muted-foreground">Nenhum estágio encontrado para esta seleção.</p>
+                    <p className="text-muted-foreground">
+                        {selectedStatus 
+                            ? `Nenhum estágio encontrado com o filtro "${STATUS_LABELS[selectedStatus]}".` 
+                            : "Nenhum estágio encontrado para esta seleção."}
+                    </p>
+                    {selectedStatus && (
+                        <Button variant="outline" size="sm" onClick={() => setSelectedStatus(null)} className="mt-3 text-xs">
+                            Limpar filtro de status
+                        </Button>
+                    )}
                 </div>
             )}
         </div>

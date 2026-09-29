@@ -110,3 +110,42 @@ export function buildContractRejectedHtml(data: ContractRejectedData): string {
     `;
 }
 
+export interface CustomProfessorMessageData {
+    professorName: string;
+    internName: string;
+    courseName: string;
+    messageContent: string;
+    filterContext?: string;
+}
+
+export function buildCustomProfessorMessageHtml(data: CustomProfessorMessageData): string {
+    const filterInfo = data.filterContext
+        ? `<p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
+             <strong>Contexto do comunicado:</strong> ${data.filterContext}
+           </p>`
+        : '';
+
+    return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+        <h2 style="color: #1d4ed8; margin-bottom: 8px;">Comunicado do Professor Orientador</h2>
+        <p style="font-size: 15px; margin-top: 0;">Olá, <strong>${data.internName}</strong>,</p>
+        
+        <p>Você recebeu uma mensagem do seu professor orientador <strong>${data.professorName}</strong> referente à disciplina <strong>${data.courseName}</strong>.</p>
+        
+        ${filterInfo}
+
+        <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 18px; border-radius: 6px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1e40af; font-size: 15px;">Mensagem:</h3>
+            <div style="color: #334155; white-space: pre-wrap; font-size: 14px; line-height: 1.6;">${data.messageContent}</div>
+        </div>
+
+        <p style="margin-top: 24px; font-size: 14px; color: #4b5563;">
+            Acesse o <a href="https://sge-sistemas.vercel.app/aluno" style="color: #2563eb; font-weight: bold;">Painel do Aluno no SGE</a> para acompanhar seu estágio, submeter documentos e verificar orientações.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #9ca3af;">
+            Este é um comunicado oficial enviado pelo Sistema de Gestão de Estágios da UEMG. Por favor, não responda diretamente a este e-mail automático.
+        </p>
+    </div>
+    `;
+}
