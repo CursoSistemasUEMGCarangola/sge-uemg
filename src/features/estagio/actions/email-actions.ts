@@ -15,7 +15,7 @@ export type EmailActionResult = {
 /**
  * Resolução com prioridade para emailAlternativo com fallback seguro para email principal
  */
-export function resolveStudentRecipientEmail(profile: { email: string; emailAlternativo?: string | null }): string | null {
+function resolveStudentRecipientEmail(profile: { email: string; emailAlternativo?: string | null }): string | null {
     const alt = profile.emailAlternativo?.trim()
     if (alt && alt.length > 0) return alt
     const main = profile.email?.trim()
@@ -191,7 +191,7 @@ async function processEmailForContract(contrato: any): Promise<EmailActionResult
     }
 }
 
-export const sendCustomBulkMessageSchema = z.object({
+const sendCustomBulkMessageSchema = z.object({
     contratoIds: z.array(z.number().int().positive()).min(1, "Selecione ao menos um contrato para envio."),
     assunto: z.string().trim().max(120, "O assunto deve ter no máximo 120 caracteres.").optional(),
     mensagem: z.string().trim().min(5, "A mensagem deve conter pelo menos 5 caracteres.").max(4000, "A mensagem não pode exceder 4000 caracteres."),
